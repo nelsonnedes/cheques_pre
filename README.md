@@ -1,6 +1,6 @@
 # Sistema de Gestão de Cheques
 
-Um aplicativo web progressivo (PWA) para gerenciamento de cheques e empresas de fomento, com suporte offline e notificações.
+Um aplicativo web progressivo (PWA) para gerenciamento e cálculo de juros de cheques pré-datados, com suporte offline e notificações.
 
 ## 🚀 Funcionalidades
 
@@ -24,8 +24,8 @@ Um aplicativo web progressivo (PWA) para gerenciamento de cheques e empresas de 
 
 1. Clone este repositório
 ```bash
-git clone [URL_DO_REPOSITÓRIO]
-cd [NOME_DO_DIRETÓRIO]
+git clone https://github.com/nelsonnedes/cheques_pre.git
+cd cheques_pre
 ```
 
 2. Configure o Firebase:
@@ -112,4 +112,4 @@ Para suporte, envie um email para [seu-email@exemplo.com]
 
 ## 🔍 Status do Projeto
 
-Em desenvolvimento ativo. Veja a aba [Issues](../../issues) para acompanhar o progresso. 
+Em desenvolvimento ativo. Veja a aba [Issues](../../issues) para acompanhar o progresso.
