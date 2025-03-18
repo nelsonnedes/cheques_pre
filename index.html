@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sistema de Gestão de Cheques</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Gestão Cheques">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Gestão de Cheques</h1>
+            <div class="header-actions">
+                <button id="notificationBtn" class="icon-button">
+                    <span class="material-icons">notifications</span>
+                    <span id="notificationBadge" class="notification-badge hidden">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard">
+            <!-- Summary Cards -->
+            <section class="summary-cards">
+                <div class="card">
+                    <h3>Total de Cheques</h3>
+                    <p id="totalCheques">0</p>
+                </div>
+                <div class="card">
+                    <h3>Valor Total</h3>
+                    <p id="valorTotal">R$ 0,00</p>
+                </div>
+                <div class="card">
+                    <h3>Vencendo Hoje</h3>
+                    <p id="vencendoHoje">0</p>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <h2>Ações Rápidas</h2>
+                <div class="actions-grid">
+                    <a href="incluir_cheque.html" class="action-button">
+                        <span class="material-icons">add_circle</span>
+                        <span>Novo Cheque</span>
+                    </a>
+                    <a href="relatorio.html" class="action-button">
+                        <span class="material-icons">description</span>
+                        <span>Relatórios</span>
+                    </a>
+                    <a href="listar_cheques.html" class="action-button">
+                        <span class="material-icons">list</span>
+                        <span>Listar Cheques</span>
+                    </a>
+                    <a href="config.html" class="action-button">
+                        <span class="material-icons">settings</span>
+                        <span>Configurações</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Recent Cheques -->
+            <section class="recent-cheques">
+                <h2>Próximos Vencimentos</h2>
+                <div id="proximosVencimentos" class="cheques-list">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="active">
+                <span class="material-icons">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="incluir_cheque.html">
+                <span class="material-icons">add_circle</span>
+                <span>Novo</span>
+            </a>
+            <a href="listar_cheques.html">
+                <span class="material-icons">list</span>
+                <span>Cheques</span>
+            </a>
+            <a href="agenda.html">
+                <span class="material-icons">calendar_today</span>
+                <span>Agenda</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-analytics.js" type="module"></script>
+    <script src="js/firebase-config.js" type="module"></script>
+    <script src="js/app.js" type="module"></script>
+    <script src="js/dashboard.js" type="module"></script>
+</body>
+</html> 
