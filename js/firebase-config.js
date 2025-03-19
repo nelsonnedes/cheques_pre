@@ -3,15 +3,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+import { getMessaging } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDWlZqbK3G6QGvLyg2gzYQP6D9ocEY3Ahs",
+    authDomain: "cheques-pre.firebaseapp.com",
+    projectId: "cheques-pre",
+    storageBucket: "cheques-pre.appspot.com",
+    messagingSenderId: "1098835722634",
+    appId: "1:1098835722634:web:c2e3c0d7d3c8f3b9f3c2e1"
 };
 
 // Initialize Firebase
@@ -21,6 +22,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const messaging = getMessaging(app);
 
 // Export initialized services
-export { app, auth, db, storage }; 
+export { app, auth, db, storage, messaging }; 
