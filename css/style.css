@@ -68,8 +68,46 @@ body {
 
 .header-actions {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
+    position: relative;
+}
+
+#connectionStatus {
+    position: fixed;
+    top: 16px;
+    right: 80px; /* Aumentado para dar espaço aos ícones */
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#connectionStatus i {
+    font-size: 8px;
+    margin-right: 4px;
+}
+
+#connectionStatus.online {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+}
+
+#connectionStatus.offline {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+}
+
+#connectionStatus.online i {
+    color: var(--success-text);
+}
+
+#connectionStatus.offline i {
+    color: var(--error-text);
 }
 
 .icon-button {
@@ -81,21 +119,17 @@ body {
     color: var(--text-secondary);
     position: relative;
     transition: background-color 0.2s ease;
-}
-
-.icon-button:hover {
-    background-color: var(--hover-bg);
-    color: var(--text-primary);
-}
-
-.icon-button i {
-    font-size: 20px;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .notification-badge {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: 0;
+    right: 0;
     background-color: #dc3545;
     color: white;
     border-radius: 50%;
@@ -103,6 +137,7 @@ body {
     font-size: 12px;
     min-width: 18px;
     text-align: center;
+    transform: translate(25%, -25%);
 }
 
 .notification-badge.hidden {
