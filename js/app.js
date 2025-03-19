@@ -192,6 +192,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Initialize notification permission
 requestNotificationPermission();
 
+// Initialize chat widget
+import './chat-widget.js';
+
 class AppManager {
     constructor() {
         this.initializeElements();

@@ -1,364 +1,444 @@
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { auth, db } from './firebase-config.js';
+import { collection, query, where, orderBy, limit, startAfter, getDocs, addDoc, updateDoc, deleteDoc, doc, endBefore, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { formatCPFCNPJ, formatPhone } from './utils.js';
 
 class EmpresasManager {
     constructor() {
-        this.db = getFirestore();
-        this.auth = getAuth();
-        
-        // Elementos da UI
-        this.loadingOverlay = document.getElementById('loadingOverlay');
-        this.empresaForm = document.getElementById('empresaForm');
-        this.editForm = document.getElementById('editForm');
-        this.empresasList = document.getElementById('empresasList');
+        this.currentUser = null;
+        this.empresasRef = collection(db, 'empresas');
+        this.lastVisible = null;
+        this.pageSize = 10;
+        this.currentFilters = {
+            status: '',
+            tipo: '',
+            search: ''
+        };
+
+        // Elements
+        this.tableBody = document.getElementById('empresasTableBody');
+        this.emptyState = document.getElementById('emptyState');
         this.searchInput = document.getElementById('searchEmpresa');
-        this.toggleFormBtn = document.getElementById('toggleForm');
-        this.editModal = document.getElementById('editModal');
-        this.deleteModal = document.getElementById('deleteModal');
-        
-        // Estado
+        this.filterStatus = document.getElementById('filterStatus');
+        this.filterTipo = document.getElementById('filterTipo');
+        this.prevPageBtn = document.getElementById('prevPage');
+        this.nextPageBtn = document.getElementById('nextPage');
+        this.pageInfo = document.getElementById('pageInfo');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Toast container
+        this.toastContainer = document.createElement('div');
+        this.toastContainer.className = 'toast-container';
+        document.body.appendChild(this.toastContainer);
+
+        // Modals
+        this.empresaModal = document.getElementById('empresaModal');
+        this.confirmationModal = document.getElementById('confirmationModal');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.empresaForm = document.getElementById('empresaForm');
+        this.confirmationMessage = document.getElementById('confirmationMessage');
+        this.confirmActionBtn = document.getElementById('confirmAction');
+
         this.currentEmpresaId = null;
-        this.empresas = new Map();
-        this.filteredEmpresas = [];
-        
+        this.isEditing = false;
+
         this.init();
     }
 
     async init() {
-        this.showLoading();
-        try {
-            await this.checkAuth();
-            this.setupEventListeners();
-            await this.loadEmpresas();
-            this.copyEstadosToEditForm();
-        } catch (error) {
-            console.error('Erro na inicialização:', error);
-            alert('Erro ao carregar os dados. Por favor, tente novamente.');
-        } finally {
-            this.hideLoading();
-        }
+        this.checkAuth();
+        this.setupEventListeners();
+        await this.loadEmpresas();
     }
 
     checkAuth() {
-        return new Promise((resolve, reject) => {
-            onAuthStateChanged(this.auth, (user) => {
-                if (user) {
-                    document.getElementById('userName').textContent = user.email;
-                    resolve(user);
-                } else {
-                    window.location.href = 'login.html';
-                    reject('Usuário não autenticado');
-                }
-            });
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                this.currentUser = user;
+            } else {
+                window.location.href = 'login.html';
+            }
         });
     }
 
     setupEventListeners() {
-        // Toggle do formulário
-        this.toggleFormBtn.addEventListener('click', () => {
-            this.empresaForm.classList.toggle('hidden');
-            this.toggleFormBtn.innerHTML = this.empresaForm.classList.contains('hidden') 
-                ? '<i class="fas fa-plus"></i> Adicionar Empresa'
-                : '<i class="fas fa-minus"></i> Ocultar Formulário';
+        // Nova Empresa
+        document.getElementById('btnNovaEmpresa').addEventListener('click', () => this.showModal());
+
+        // Form Submit
+        this.empresaForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+
+        // Filtros e Busca
+        this.searchInput.addEventListener('input', () => this.handleFiltersChange());
+        this.filterStatus.addEventListener('change', () => this.handleFiltersChange());
+        this.filterTipo.addEventListener('change', () => this.handleFiltersChange());
+
+        // Paginação
+        this.prevPageBtn.addEventListener('click', () => this.loadPreviousPage());
+        this.nextPageBtn.addEventListener('click', () => this.loadNextPage());
+
+        // Fechar Modais
+        document.querySelectorAll('.close-modal, [data-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', () => this.closeModals());
         });
 
-        // Form principal
-        this.empresaForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleSubmit(e.target);
-        });
-
-        // Busca
-        this.searchInput.addEventListener('input', this.debounce(() => {
-            this.filterEmpresas();
-        }, 300));
-
-        // Modal de edição
-        this.editForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleEdit();
-        });
-
-        // Fechar modais
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.editModal.style.display = 'none';
-                this.deleteModal.style.display = 'none';
-            });
-        });
-
-        // Confirmar exclusão
-        document.getElementById('confirmDelete').addEventListener('click', () => {
-            this.handleDelete();
-        });
-
-        // Fechar modal ao clicar fora
-        window.addEventListener('click', (e) => {
-            if (e.target === this.editModal) {
-                this.editModal.style.display = 'none';
+        // Máscara CNPJ
+        const cnpjInput = document.getElementById('cnpj');
+        cnpjInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 14) {
+                value = value.replace(/(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
             }
-            if (e.target === this.deleteModal) {
-                this.deleteModal.style.display = 'none';
+            e.target.value = value;
+        });
+
+        // Máscara Telefone
+        const telefoneInput = document.getElementById('telefone');
+        telefoneInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                if (value.length > 2) value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                if (value.length > 7) value = value.replace(/(\d{5})(\d)/, '$1-$2');
             }
+            e.target.value = value;
         });
-
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            this.auth.signOut().then(() => {
-                window.location.href = 'login.html';
-            });
-        });
-
-        // Máscaras de input
-        this.setupInputMasks();
     }
 
-    setupInputMasks() {
-        const maskCNPJ = (el) => {
-            el.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 14) {
-                    value = value.replace(/(\d{2})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                    value = value.replace(/(\d{3})(\d)/, '$1/$2');
-                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
-                }
-                e.target.value = value;
-            });
-        };
-
-        const maskPhone = (el) => {
-            el.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 11) {
-                    if (value.length > 2) {
-                        value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
-                    }
-                    if (value.length > 9) {
-                        value = `${value.substring(0, 9)}-${value.substring(9)}`;
-                    }
-                }
-                e.target.value = value;
-            });
-        };
-
-        // Aplicar máscaras
-        maskCNPJ(document.getElementById('cnpj'));
-        maskCNPJ(document.getElementById('editCnpj'));
-        maskPhone(document.getElementById('telefone'));
-        maskPhone(document.getElementById('editTelefone'));
-    }
-
-    async loadEmpresas() {
-        this.showLoading();
+    async loadEmpresas(isNextPage = false) {
         try {
-            const empresasRef = collection(this.db, 'empresas');
-            const q = query(empresasRef, orderBy('nome'));
+            this.showLoading();
+            
+            let q = query(this.empresasRef, orderBy('nome'));
+
+            // Aplicar filtros
+            if (this.currentFilters.status) {
+                const isAtivo = this.currentFilters.status === 'ativo';
+                q = query(q, where('ativo', '==', isAtivo));
+            }
+            if (this.currentFilters.tipo) {
+                q = query(q, where('tipo', '==', this.currentFilters.tipo));
+            }
+
+            // Paginação
+            if (isNextPage && this.lastVisible) {
+                q = query(q, startAfter(this.lastVisible));
+            } else {
+                this.lastVisible = null;
+            }
+            q = query(q, limit(this.pageSize));
+
             const snapshot = await getDocs(q);
             
-            this.empresas.clear();
-            snapshot.forEach(doc => {
-                this.empresas.set(doc.id, {
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            
-            this.filteredEmpresas = Array.from(this.empresas.values());
-            this.renderEmpresas();
-        } catch (error) {
-            console.error('Erro ao carregar empresas:', error);
-            alert('Erro ao carregar empresas. Por favor, tente novamente.');
-        } finally {
-            this.hideLoading();
-        }
-    }
+            if (!isNextPage) {
+                this.tableBody.innerHTML = '';
+            }
 
-    async handleSubmit(form) {
-        this.showLoading();
-        try {
-            const formData = new FormData(form);
-            const empresa = {
-                nome: formData.get('nome'),
-                cnpj: formData.get('cnpj'),
-                telefone: formData.get('telefone'),
-                email: formData.get('email'),
-                endereco: formData.get('endereco'),
-                cidade: formData.get('cidade'),
-                estado: formData.get('estado'),
-                observacoes: formData.get('observacoes'),
-                dataCadastro: new Date(),
-                dataAtualizacao: new Date()
-            };
-
-            await addDoc(collection(this.db, 'empresas'), empresa);
-            form.reset();
-            this.empresaForm.classList.add('hidden');
-            this.toggleFormBtn.innerHTML = '<i class="fas fa-plus"></i> Adicionar Empresa';
-            await this.loadEmpresas();
-            alert('Empresa cadastrada com sucesso!');
-        } catch (error) {
-            console.error('Erro ao cadastrar empresa:', error);
-            alert('Erro ao cadastrar empresa. Por favor, tente novamente.');
-        } finally {
-            this.hideLoading();
-        }
-    }
-
-    async handleEdit() {
-        if (!this.currentEmpresaId) return;
-        
-        this.showLoading();
-        try {
-            const formData = new FormData(this.editForm);
-            const empresa = {
-                nome: formData.get('nome'),
-                cnpj: formData.get('cnpj'),
-                telefone: formData.get('telefone'),
-                email: formData.get('email'),
-                endereco: formData.get('endereco'),
-                cidade: formData.get('cidade'),
-                estado: formData.get('estado'),
-                observacoes: formData.get('observacoes'),
-                dataAtualizacao: new Date()
-            };
-
-            const empresaRef = doc(this.db, 'empresas', this.currentEmpresaId);
-            await updateDoc(empresaRef, empresa);
-            this.editModal.style.display = 'none';
-            await this.loadEmpresas();
-            alert('Empresa atualizada com sucesso!');
-        } catch (error) {
-            console.error('Erro ao atualizar empresa:', error);
-            alert('Erro ao atualizar empresa. Por favor, tente novamente.');
-        } finally {
-            this.hideLoading();
-        }
-    }
-
-    async handleDelete() {
-        if (!this.currentEmpresaId) return;
-        
-        this.showLoading();
-        try {
-            // Verificar se existem cheques vinculados
-            const chequesRef = collection(this.db, 'cheques');
-            const q = query(chequesRef, where('empresaId', '==', this.currentEmpresaId));
-            const snapshot = await getDocs(q);
-            
-            if (!snapshot.empty) {
-                alert('Não é possível excluir esta empresa pois existem cheques vinculados a ela.');
+            if (snapshot.empty && !isNextPage) {
+                this.showEmptyState();
                 return;
             }
 
-            await deleteDoc(doc(this.db, 'empresas', this.currentEmpresaId));
-            this.deleteModal.style.display = 'none';
-            await this.loadEmpresas();
-            alert('Empresa excluída com sucesso!');
+            this.hideEmptyState();
+            
+            snapshot.forEach((doc) => {
+                const empresa = { id: doc.id, ...doc.data() };
+                this.addEmpresaToTable(empresa);
+            });
+
+            // Atualizar paginação
+            this.lastVisible = snapshot.docs[snapshot.docs.length - 1];
+            this.updatePaginationButtons(snapshot);
+
         } catch (error) {
-            console.error('Erro ao excluir empresa:', error);
-            alert('Erro ao excluir empresa. Por favor, tente novamente.');
+            console.error('Erro ao carregar empresas:', error);
+            this.showError('Erro ao carregar empresas. Por favor, tente novamente.');
         } finally {
             this.hideLoading();
         }
     }
 
-    editEmpresa(id) {
-        const empresa = this.empresas.get(id);
-        if (!empresa) return;
-
-        this.currentEmpresaId = id;
-        
-        // Preencher formulário
-        document.getElementById('editNome').value = empresa.nome;
-        document.getElementById('editCnpj').value = empresa.cnpj;
-        document.getElementById('editTelefone').value = empresa.telefone || '';
-        document.getElementById('editEmail').value = empresa.email || '';
-        document.getElementById('editEndereco').value = empresa.endereco || '';
-        document.getElementById('editCidade').value = empresa.cidade || '';
-        document.getElementById('editEstado').value = empresa.estado || '';
-        document.getElementById('editObservacoes').value = empresa.observacoes || '';
-
-        this.editModal.style.display = 'block';
+    addEmpresaToTable(empresa) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${empresa.nome}</td>
+            <td>${empresa.cnpj}</td>
+            <td>${this.formatTipo(empresa.tipo)}</td>
+            <td>${empresa.taxaPadrao}%</td>
+            <td>
+                <span class="status-badge ${empresa.ativo ? 'active' : 'inactive'}">
+                    ${empresa.ativo ? 'Ativa' : 'Inativa'}
+                </span>
+            </td>
+            <td class="actions">
+                <button class="btn-icon" onclick="empresasManager.editEmpresa('${empresa.id}')" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon" onclick="empresasManager.toggleStatus('${empresa.id}', ${!empresa.ativo})" title="${empresa.ativo ? 'Desativar' : 'Ativar'}">
+                    <i class="fas fa-${empresa.ativo ? 'toggle-on' : 'toggle-off'}"></i>
+                </button>
+                <button class="btn-icon delete" onclick="empresasManager.confirmDelete('${empresa.id}', '${empresa.nome}')" title="Excluir">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+        this.tableBody.appendChild(row);
     }
 
-    confirmDelete(id) {
-        const empresa = this.empresas.get(id);
-        if (!empresa) return;
-
-        this.currentEmpresaId = id;
-        document.getElementById('deleteEmpresaNome').textContent = empresa.nome;
-        this.deleteModal.style.display = 'block';
-    }
-
-    filterEmpresas() {
-        const searchTerm = this.searchInput.value.toLowerCase();
-        
-        if (!searchTerm) {
-            this.filteredEmpresas = Array.from(this.empresas.values());
-        } else {
-            this.filteredEmpresas = Array.from(this.empresas.values()).filter(empresa => {
-                return empresa.nome.toLowerCase().includes(searchTerm) ||
-                       empresa.cnpj.toLowerCase().includes(searchTerm) ||
-                       (empresa.cidade && empresa.cidade.toLowerCase().includes(searchTerm));
-            });
-        }
-        
-        this.renderEmpresas();
-    }
-
-    renderEmpresas() {
-        if (this.filteredEmpresas.length === 0) {
-            this.empresasList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-building"></i>
-                    <h3>Nenhuma empresa encontrada</h3>
-                    <p>Tente outros termos na busca ou cadastre uma nova empresa.</p>
-                </div>
-            `;
-            return;
-        }
-
-        const html = this.filteredEmpresas.map(empresa => `
-            <div class="empresa-item">
-                <div class="empresa-info">
-                    <h3>${empresa.nome}</h3>
-                    <p><i class="fas fa-id-card"></i> ${formatCPFCNPJ(empresa.cnpj)}</p>
-                    ${empresa.telefone ? `<p><i class="fas fa-phone"></i> ${formatPhone(empresa.telefone)}</p>` : ''}
-                    ${empresa.email ? `<p><i class="fas fa-envelope"></i> ${empresa.email}</p>` : ''}
-                    ${empresa.cidade && empresa.estado ? `<p><i class="fas fa-map-marker-alt"></i> ${empresa.cidade}/${empresa.estado}</p>` : ''}
-                </div>
-                <div class="empresa-actions">
-                    <button class="btn-icon" onclick="window.empresasManager.editEmpresa('${empresa.id}')">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon" onclick="window.empresasManager.confirmDelete('${empresa.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-
-        this.empresasList.innerHTML = html;
-    }
-
-    copyEstadosToEditForm() {
-        const estados = document.getElementById('estado');
-        const editEstados = document.getElementById('editEstado');
-        editEstados.innerHTML = estados.innerHTML;
-    }
-
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
+    formatTipo(tipo) {
+        const tipos = {
+            fomento: 'Fomento',
+            factoring: 'Factoring',
+            banco: 'Banco',
+            outros: 'Outros'
         };
+        return tipos[tipo] || tipo;
+    }
+
+    async handleFormSubmit(e) {
+        e.preventDefault();
+        
+        try {
+            this.showLoading();
+            
+            const empresaData = {
+                nome: document.getElementById('nomeEmpresa').value,
+                cnpj: document.getElementById('cnpj').value,
+                tipo: document.getElementById('tipoEmpresa').value,
+                taxaPadrao: parseFloat(document.getElementById('taxaPadrao').value),
+                endereco: document.getElementById('endereco').value,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                observacoes: document.getElementById('observacoes').value,
+                ativo: document.getElementById('statusAtivo').checked,
+                updatedAt: new Date(),
+                updatedBy: this.currentUser.uid
+            };
+
+            if (this.isEditing) {
+                await updateDoc(doc(this.empresasRef, this.currentEmpresaId), empresaData);
+            } else {
+                empresaData.createdAt = new Date();
+                empresaData.createdBy = this.currentUser.uid;
+                await addDoc(this.empresasRef, empresaData);
+            }
+
+            this.closeModals();
+            await this.loadEmpresas();
+            this.showSuccess(`Empresa ${this.isEditing ? 'atualizada' : 'cadastrada'} com sucesso!`);
+
+        } catch (error) {
+            console.error('Erro ao salvar empresa:', error);
+            this.showError('Erro ao salvar empresa. Por favor, tente novamente.');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async editEmpresa(empresaId) {
+        try {
+            this.showLoading();
+            
+            const docRef = doc(this.empresasRef, empresaId);
+            const docSnap = await getDocs(docRef);
+            
+            if (docSnap.exists()) {
+                const empresa = docSnap.data();
+                
+                // Preparar modal para edição
+                this.isEditing = true;
+                this.currentEmpresaId = empresaId;
+                this.modalTitle.textContent = 'Editar Empresa';
+                
+                // Preencher formulário
+                document.getElementById('nomeEmpresa').value = empresa.nome;
+                document.getElementById('cnpj').value = empresa.cnpj;
+                document.getElementById('tipoEmpresa').value = empresa.tipo;
+                document.getElementById('taxaPadrao').value = empresa.taxaPadrao;
+                document.getElementById('endereco').value = empresa.endereco || '';
+                document.getElementById('telefone').value = empresa.telefone || '';
+                document.getElementById('email').value = empresa.email || '';
+                document.getElementById('observacoes').value = empresa.observacoes || '';
+                document.getElementById('statusAtivo').checked = empresa.ativo;
+                
+                // Mostrar modal
+                this.empresaModal.style.display = 'block';
+            } else {
+                this.showError('Empresa não encontrada.');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar empresa:', error);
+            this.showError('Erro ao carregar dados da empresa. Por favor, tente novamente.');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async toggleStatus(empresaId, novoStatus) {
+        try {
+            this.showLoading();
+            
+            await updateDoc(doc(this.empresasRef, empresaId), {
+                ativo: novoStatus,
+                updatedAt: new Date(),
+                updatedBy: this.currentUser.uid
+            });
+
+            await this.loadEmpresas();
+            this.showSuccess(`Empresa ${novoStatus ? 'ativada' : 'desativada'} com sucesso!`);
+
+        } catch (error) {
+            console.error('Erro ao alterar status:', error);
+            this.showError('Erro ao alterar status da empresa. Por favor, tente novamente.');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    confirmDelete(empresaId, empresaNome) {
+        this.confirmationMessage.textContent = `Tem certeza que deseja excluir a empresa "${empresaNome}"?`;
+        this.confirmActionBtn.onclick = () => this.deleteEmpresa(empresaId);
+        this.showConfirmationModal();
+    }
+
+    async deleteEmpresa(empresaId) {
+        try {
+            this.showLoading();
+            this.closeModals();
+            
+            await deleteDoc(doc(this.empresasRef, empresaId));
+            
+            await this.loadEmpresas();
+            this.showSuccess('Empresa excluída com sucesso!');
+
+        } catch (error) {
+            console.error('Erro ao excluir empresa:', error);
+            this.showError('Erro ao excluir empresa. Por favor, tente novamente.');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    handleFiltersChange() {
+        this.currentFilters = {
+            status: this.filterStatus.value,
+            tipo: this.filterTipo.value,
+            search: this.searchInput.value.toLowerCase()
+        };
+        this.loadEmpresas();
+    }
+
+    async loadPreviousPage() {
+        try {
+            this.showLoading();
+            
+            // Armazenar documentos da página atual
+            const currentDocs = Array.from(this.tableBody.children).map(row => {
+                return {
+                    id: row.querySelector('.btn-icon').getAttribute('onclick').split("'")[1],
+                    nome: row.children[0].textContent
+                };
+            });
+
+            // Consulta para obter documentos anteriores
+            let q = query(this.empresasRef, orderBy('nome'));
+
+            // Aplicar filtros
+            if (this.currentFilters.status) {
+                const isAtivo = this.currentFilters.status === 'ativo';
+                q = query(q, where('ativo', '==', isAtivo));
+            }
+            if (this.currentFilters.tipo) {
+                q = query(q, where('tipo', '==', this.currentFilters.tipo));
+            }
+
+            // Limitar a consulta ao primeiro documento da página atual
+            if (currentDocs.length > 0) {
+                const firstDoc = await getDoc(doc(this.empresasRef, currentDocs[0].id));
+                q = query(q, endBefore(firstDoc), limitToLast(this.pageSize));
+            }
+
+            const snapshot = await getDocs(q);
+            
+            if (!snapshot.empty) {
+                this.tableBody.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const empresa = { id: doc.id, ...doc.data() };
+                    this.addEmpresaToTable(empresa);
+                });
+
+                // Atualizar lastVisible para paginação
+                this.lastVisible = snapshot.docs[snapshot.docs.length - 1];
+                this.updatePaginationButtons(snapshot);
+            }
+
+        } catch (error) {
+            console.error('Erro ao carregar página anterior:', error);
+            this.showError('Erro ao carregar página anterior. Por favor, tente novamente.');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async loadNextPage() {
+        await this.loadEmpresas(true);
+    }
+
+    updatePaginationButtons(snapshot) {
+        // Habilitar/desabilitar botão próxima página
+        this.nextPageBtn.disabled = snapshot.docs.length < this.pageSize;
+
+        // Habilitar/desabilitar botão página anterior
+        const firstDoc = snapshot.docs[0];
+        if (firstDoc) {
+            const q = query(
+                this.empresasRef,
+                orderBy('nome'),
+                endBefore(firstDoc),
+                limitToLast(1)
+            );
+            
+            getDocs(q).then(prevSnapshot => {
+                this.prevPageBtn.disabled = prevSnapshot.empty;
+            });
+        } else {
+            this.prevPageBtn.disabled = true;
+        }
+
+        // Atualizar informações da página
+        const totalItems = this.tableBody.children.length;
+        this.pageInfo.textContent = `Mostrando ${totalItems} ${totalItems === 1 ? 'empresa' : 'empresas'}`;
+    }
+
+    showModal() {
+        if (!this.isEditing) {
+            this.empresaForm.reset();
+            this.modalTitle.textContent = 'Nova Empresa';
+            document.getElementById('statusAtivo').checked = true;
+        }
+        this.empresaModal.style.display = 'block';
+    }
+
+    showConfirmationModal() {
+        this.confirmationModal.style.display = 'block';
+    }
+
+    closeModals() {
+        this.empresaModal.style.display = 'none';
+        this.confirmationModal.style.display = 'none';
+        this.isEditing = false;
+        this.currentEmpresaId = null;
+    }
+
+    showEmptyState() {
+        this.tableBody.innerHTML = '';
+        this.emptyState.style.display = 'flex';
+    }
+
+    hideEmptyState() {
+        this.emptyState.style.display = 'none';
     }
 
     showLoading() {
@@ -368,7 +448,41 @@ class EmpresasManager {
     hideLoading() {
         this.loadingOverlay.style.display = 'none';
     }
+
+    showSuccess(message) {
+        this.showToast(message, 'success');
+    }
+
+    showError(message) {
+        this.showToast(message, 'error');
+    }
+
+    showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <div class="toast-progress"></div>
+        `;
+        
+        this.toastContainer.appendChild(toast);
+
+        // Animate progress bar
+        const progress = toast.querySelector('.toast-progress');
+        progress.style.width = '100%';
+        setTimeout(() => progress.style.width = '0%', 100);
+
+        // Remove toast after animation
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 }
 
-// Inicialização
-window.empresasManager = new EmpresasManager(); 
+// Inicializar e exportar instância
+const empresasManager = new EmpresasManager();
+window.empresasManager = empresasManager; // Para acesso global 

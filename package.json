@@ -1,5 +1,29 @@
 {
+  "name": "sistema-cheques",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento de cheques",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/chat-manager.test.js",
+    "test:integration": "jest tests/chat-integration.test.js"
+  },
   "dependencies": {
-    "firebase": "^11.4.0"
+    "firebase": "^10.7.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.7",
+    "@babel/preset-env": "^7.23.7",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    }
   }
 }

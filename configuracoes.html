@@ -3,254 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurações - Sistema de Gerenciamento de Cheques</title>
+    <title>Configurações - Sistema de Cheques</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/png" href="img/favicon.png">
 </head>
 <body>
-    <!-- Sidebar -->
-    <nav class="sidebar">
+    <div class="sidebar">
         <div class="sidebar-header">
             <img src="img/logo.png" alt="Logo" class="logo">
-            <h1>GerCheques</h1>
+            <h2>Sistema de Cheques</h2>
         </div>
-        <ul class="nav-links">
-            <li>
-                <a href="dashboard.html">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="novo-cheque.html">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Novo Cheque</span>
-                </a>
-            </li>
-            <li>
-                <a href="listar-cheques.html">
-                    <i class="fas fa-list"></i>
-                    <span>Listar Cheques</span>
-                </a>
-            </li>
-            <li>
-                <a href="empresas.html">
-                    <i class="fas fa-building"></i>
-                    <span>Empresas</span>
-                </a>
-            </li>
-            <li>
-                <a href="agenda.html">
-                    <i class="fas fa-calendar"></i>
-                    <span>Agenda</span>
-                </a>
-            </li>
-            <li>
-                <a href="relatorios.html">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Relatórios</span>
-                </a>
-            </li>
-            <li class="active">
-                <a href="configuracoes.html">
-                    <i class="fas fa-cog"></i>
-                    <span>Configurações</span>
-                </a>
-            </li>
-            <li>
-                <a href="perfil.html">
-                    <i class="fas fa-user"></i>
-                    <span>Perfil</span>
-                </a>
-            </li>
-            <li>
-                <a href="backup.html">
-                    <i class="fas fa-database"></i>
-                    <span>Backup</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+        <nav class="sidebar-nav">
+            <a href="index.html">
+                <i class="fas fa-home"></i>
+                <span>Início</span>
+            </a>
+            <a href="empresas.html">
+                <i class="fas fa-building"></i>
+                <span>Empresas</span>
+            </a>
+            <a href="relatorios.html">
+                <i class="fas fa-chart-bar"></i>
+                <span>Relatórios</span>
+            </a>
+            <a href="configuracoes.html" class="active">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+            <a href="ajuda.html">
+                <i class="fas fa-question-circle"></i>
+                <span>Ajuda</span>
+            </a>
+        </nav>
+    </div>
 
-    <!-- Main Content -->
     <main class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <h1>Configurações</h1>
-            <div class="user-info">
-                <span id="userName">Carregando...</span>
-                <button id="logoutBtn" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Settings Sections -->
         <div class="settings-container">
-            <!-- Notificações -->
-            <section class="settings-section">
+            <div class="settings-header">
+                <h1>Configurações</h1>
+            </div>
+
+            <div class="settings-section">
+                <h2><i class="fas fa-user"></i> Perfil</h2>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <label>Nome</label>
+                        <input type="text" id="userName" class="form-control" placeholder="Seu nome">
+                    </div>
+                    <div class="settings-item">
+                        <label>E-mail</label>
+                        <input type="email" id="userEmail" class="form-control" placeholder="seu@email.com" readonly>
+                    </div>
+                    <div class="settings-item">
+                        <button class="btn btn-primary" id="btnUpdateProfile">
+                            <i class="fas fa-save"></i>
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2><i class="fas fa-lock"></i> Segurança</h2>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <label>Senha Atual</label>
+                        <input type="password" id="currentPassword" class="form-control" placeholder="Digite sua senha atual">
+                    </div>
+                    <div class="settings-item">
+                        <label>Nova Senha</label>
+                        <input type="password" id="newPassword" class="form-control" placeholder="Digite a nova senha">
+                    </div>
+                    <div class="settings-item">
+                        <label>Confirmar Nova Senha</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirme a nova senha">
+                    </div>
+                    <div class="settings-item">
+                        <button class="btn btn-primary" id="btnChangePassword">
+                            <i class="fas fa-key"></i>
+                            Alterar Senha
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <h2><i class="fas fa-bell"></i> Notificações</h2>
                 <div class="settings-group">
                     <div class="settings-item">
-                        <div>
-                            <label for="notifVencimento">Alertas de Vencimento</label>
-                            <p class="description">Receber notificações sobre cheques próximos do vencimento</p>
+                        <label>Notificações por E-mail</label>
+                        <div class="description">Receba alertas sobre cheques próximos ao vencimento</div>
+                        <div class="switch">
+                            <input type="checkbox" id="emailNotifications">
+                            <span class="slider"></span>
                         </div>
-                        <input type="checkbox" id="notifVencimento" checked>
                     </div>
                     <div class="settings-item">
-                        <div>
-                            <label for="diasAntecedencia">Dias de Antecedência</label>
-                            <p class="description">Quantos dias antes do vencimento receber alertas</p>
+                        <label>Notificações Push</label>
+                        <div class="description">Receba notificações no navegador</div>
+                        <div class="switch">
+                            <input type="checkbox" id="pushNotifications">
+                            <span class="slider"></span>
                         </div>
-                        <input type="number" id="diasAntecedencia" value="3" min="1" max="30">
                     </div>
                     <div class="settings-item">
-                        <div>
-                            <label for="notifEmail">Notificações por Email</label>
-                            <p class="description">Receber alertas também por email</p>
-                        </div>
-                        <input type="checkbox" id="notifEmail" checked>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Preferências -->
-            <section class="settings-section">
-                <h2><i class="fas fa-sliders-h"></i> Preferências</h2>
-                <div class="settings-group">
-                    <div class="settings-item">
-                        <div>
-                            <label for="moedaPadrao">Moeda Padrão</label>
-                            <p class="description">Formato de exibição dos valores monetários</p>
-                        </div>
-                        <select id="moedaPadrao">
-                            <option value="BRL">Real (R$)</option>
-                            <option value="USD">Dólar (US$)</option>
-                            <option value="EUR">Euro (€)</option>
-                        </select>
-                    </div>
-                    <div class="settings-item">
-                        <div>
-                            <label for="formatoData">Formato de Data</label>
-                            <p class="description">Como as datas serão exibidas no sistema</p>
-                        </div>
-                        <select id="formatoData">
-                            <option value="dd/mm/yyyy">DD/MM/AAAA</option>
-                            <option value="mm/dd/yyyy">MM/DD/AAAA</option>
-                            <option value="yyyy-mm-dd">AAAA-MM-DD</option>
-                        </select>
-                    </div>
-                    <div class="settings-item">
-                        <div>
-                            <label for="itensPorPagina">Itens por Página</label>
-                            <p class="description">Quantidade de itens exibidos nas listagens</p>
-                        </div>
-                        <select id="itensPorPagina">
-                            <option value="10">10 itens</option>
-                            <option value="25">25 itens</option>
-                            <option value="50">50 itens</option>
-                            <option value="100">100 itens</option>
+                        <label>Antecedência dos Alertas</label>
+                        <select id="alertDays" class="form-control">
+                            <option value="1">1 dia antes</option>
+                            <option value="3">3 dias antes</option>
+                            <option value="5">5 dias antes</option>
+                            <option value="7">7 dias antes</option>
                         </select>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- Segurança -->
-            <section class="settings-section">
-                <h2><i class="fas fa-shield-alt"></i> Segurança</h2>
+            <div class="settings-section">
+                <h2><i class="fas fa-database"></i> Backup</h2>
                 <div class="settings-group">
                     <div class="settings-item">
-                        <div>
-                            <label for="autenticacaoDupla">Autenticação em Duas Etapas</label>
-                            <p class="description">Adiciona uma camada extra de segurança ao login</p>
+                        <label>Backup Automático</label>
+                        <div class="description">Realize backups automáticos dos seus dados</div>
+                        <div class="switch">
+                            <input type="checkbox" id="autoBackup">
+                            <span class="slider"></span>
                         </div>
-                        <input type="checkbox" id="autenticacaoDupla">
                     </div>
                     <div class="settings-item">
-                        <div>
-                            <label for="tempoSessao">Tempo de Sessão</label>
-                            <p class="description">Tempo até o logout automático por inatividade</p>
-                        </div>
-                        <select id="tempoSessao">
-                            <option value="15">15 minutos</option>
-                            <option value="30">30 minutos</option>
-                            <option value="60">1 hora</option>
-                            <option value="120">2 horas</option>
-                        </select>
-                    </div>
-                    <div class="settings-item">
-                        <div>
-                            <label for="historicoLogin">Histórico de Login</label>
-                            <p class="description">Manter registro dos acessos à conta</p>
-                        </div>
-                        <input type="checkbox" id="historicoLogin" checked>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Backup -->
-            <section class="settings-section">
-                <h2><i class="fas fa-database"></i> Backup e Sincronização</h2>
-                <div class="settings-group">
-                    <div class="settings-item">
-                        <div>
-                            <label for="backupAutomatico">Backup Automático</label>
-                            <p class="description">Realizar backup automático dos dados</p>
-                        </div>
-                        <input type="checkbox" id="backupAutomatico" checked>
-                    </div>
-                    <div class="settings-item">
-                        <div>
-                            <label for="frequenciaBackup">Frequência do Backup</label>
-                            <p class="description">Com que frequência realizar o backup automático</p>
-                        </div>
-                        <select id="frequenciaBackup">
+                        <label>Frequência do Backup</label>
+                        <select id="backupFrequency" class="form-control">
                             <option value="daily">Diário</option>
                             <option value="weekly">Semanal</option>
                             <option value="monthly">Mensal</option>
                         </select>
                     </div>
                     <div class="settings-item">
-                        <div>
-                            <label for="sincCloud">Sincronização com a Nuvem</label>
-                            <p class="description">Manter dados sincronizados com a nuvem</p>
-                        </div>
-                        <input type="checkbox" id="sincCloud" checked>
+                        <button class="btn btn-primary" id="btnBackupNow">
+                            <i class="fas fa-download"></i>
+                            Fazer Backup Agora
+                        </button>
                     </div>
                 </div>
-            </section>
-
-            <!-- Ações -->
-            <div class="settings-actions">
-                <button id="salvarConfig" class="btn-primary">
-                    <i class="fas fa-save"></i>
-                    Salvar Configurações
-                </button>
-                <button id="resetarConfig" class="btn-secondary">
-                    <i class="fas fa-undo"></i>
-                    Restaurar Padrões
-                </button>
             </div>
 
-            <!-- Informações do Sistema -->
-            <div class="system-info">
-                <p>Versão do Sistema: 1.0.0</p>
-                <p>Última Atualização: 2024-02-20</p>
-                <p>Suporte: <a href="mailto:suporte@gercheques.com">suporte@gercheques.com</a></p>
+            <div class="settings-section">
+                <h2><i class="fas fa-palette"></i> Aparência</h2>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <label>Tema</label>
+                        <select id="theme" class="form-control">
+                            <option value="light">Claro</option>
+                            <option value="dark">Escuro</option>
+                            <option value="system">Sistema</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <label>Tamanho da Fonte</label>
+                        <select id="fontSize" class="form-control">
+                            <option value="small">Pequena</option>
+                            <option value="medium">Média</option>
+                            <option value="large">Grande</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="loading-spinner"></div>
-            <p>Salvando configurações...</p>
+            <div class="settings-section danger-zone">
+                <h2><i class="fas fa-exclamation-triangle"></i> Zona de Perigo</h2>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <label>Excluir Conta</label>
+                        <div class="description">Esta ação não pode ser desfeita</div>
+                        <button class="btn btn-danger" id="btnDeleteAccount">
+                            <i class="fas fa-trash-alt"></i>
+                            Excluir Minha Conta
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section" id="notifications">
+                <h2>Notificações</h2>
+                <div class="form-group">
+                    <label class="switch-label">
+                        <span>Ativar notificações push</span>
+                        <div class="switch">
+                            <input type="checkbox" id="enableNotifications">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <p class="help-text">Receba alertas sobre cheques próximos ao vencimento e outras atualizações importantes.</p>
+                </div>
+
+                <div id="notificationSettings" class="notification-settings">
+                    <div class="form-group">
+                        <label for="alertDays">Alertar com antecedência de</label>
+                        <select id="alertDays" class="form-control">
+                            <option value="1">1 dia</option>
+                            <option value="3">3 dias</option>
+                            <option value="5" selected>5 dias</option>
+                            <option value="7">7 dias</option>
+                            <option value="10">10 dias</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipos de notificação</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="notifyVencimento" checked>
+                                <span>Vencimento de cheques</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="notifyStatus" checked>
+                                <span>Mudanças de status</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="notifyBackup">
+                                <span>Lembretes de backup</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Horário das notificações</label>
+                        <div class="time-range">
+                            <div class="time-input">
+                                <label for="notifyStartTime">Início</label>
+                                <input type="time" id="notifyStartTime" value="08:00">
+                            </div>
+                            <div class="time-input">
+                                <label for="notifyEndTime">Fim</label>
+                                <input type="time" id="notifyEndTime" value="18:00">
+                            </div>
+                        </div>
+                        <p class="help-text">Notificações serão enviadas apenas neste intervalo de horário.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <button id="testNotification" class="btn btn-secondary">
+                            <i class="fas fa-bell"></i>
+                            Testar Notificação
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Scripts -->
-    <script type="module" src="js/firebase-config.js"></script>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirmação</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button class="btn btn-danger" id="confirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/configuracoes.js"></script>
 </body>
 </html> 

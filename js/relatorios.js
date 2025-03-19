@@ -1,474 +1,487 @@
-import { getFirestore, collection, query, where, getDocs, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { auth, db } from './firebase-config.js';
+import { collection, query, where, orderBy, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { formatCurrency, formatDate } from './utils.js';
+import { ExportManager } from './export-manager.js';
+import { exportManager } from './export-manager.js';
 
 class RelatoriosManager {
     constructor() {
-        this.db = getFirestore();
-        this.auth = getAuth();
+        this.currentUser = null;
+        this.chequesRef = collection(db, 'cheques');
+        this.empresasRef = collection(db, 'empresas');
         
-        // Elementos da UI
-        this.loadingOverlay = document.getElementById('loadingOverlay');
-        this.periodoSelect = document.getElementById('periodoRelatorio');
+        // Elements
+        this.tipoRelatorio = document.getElementById('tipoRelatorio');
         this.dataInicio = document.getElementById('dataInicio');
         this.dataFim = document.getElementById('dataFim');
-        this.empresaSelect = document.getElementById('empresaRelatorio');
-        this.statusSelect = document.getElementById('statusRelatorio');
-        this.gerarRelatorioBtn = document.getElementById('gerarRelatorio');
-        this.exportarPDFBtn = document.getElementById('exportarPDF');
-        this.exportarExcelBtn = document.getElementById('exportarExcel');
-        
+        this.empresasSelect = document.getElementById('empresas');
+        this.statusSelect = document.getElementById('status');
+        this.btnGerarRelatorio = document.getElementById('btnGerarRelatorio');
+        this.btnLimparFiltros = document.getElementById('btnLimparFiltros');
+        this.btnExportarExcel = document.getElementById('btnExportarExcel');
+        this.btnExportarPDF = document.getElementById('btnExportarPDF');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+        this.tableBody = document.getElementById('relatorioTableBody');
+        this.searchInput = document.getElementById('searchTable');
+
         // Charts
         this.statusChart = null;
-        this.valoresChart = null;
         this.empresasChart = null;
         this.evolucaoChart = null;
-        
-        // Dados
-        this.cheques = [];
-        this.empresas = new Map();
-        
-        this.init();
+        this.tipoChart = null;
+
+        // Data
+        this.chequesData = [];
+        this.empresasData = [];
+        this.currentFilters = {
+            tipo: 'geral',
+            dataInicio: null,
+            dataFim: null,
+            empresas: [],
+            status: []
+        };
+
+        this.exportManager = new ExportManager();
+
+        this.initializeElements();
+        this.setupEventListeners();
+        this.loadData();
     }
 
-    async init() {
-        this.showLoading();
-        try {
-            await this.checkAuth();
-            await this.loadEmpresas();
-            this.setupEventListeners();
-            this.setupCharts();
-            await this.gerarRelatorio();
-        } catch (error) {
-            console.error('Erro na inicialização:', error);
-            alert('Erro ao carregar os dados. Por favor, tente novamente.');
-        } finally {
-            this.hideLoading();
-        }
-    }
+    initializeElements() {
+        // Elementos de filtro
+        this.startDateInput = document.getElementById('startDate');
+        this.endDateInput = document.getElementById('endDate');
+        this.statusSelect = document.getElementById('statusFilter');
+        this.empresaSelect = document.getElementById('empresaFilter');
 
-    checkAuth() {
-        return new Promise((resolve, reject) => {
-            onAuthStateChanged(this.auth, (user) => {
-                if (user) {
-                    document.getElementById('userName').textContent = user.email;
-                    resolve(user);
-                } else {
-                    window.location.href = 'login.html';
-                    reject('Usuário não autenticado');
-                }
-            });
-        });
-    }
+        // Botões de exportação
+        this.exportExcelBtn = document.getElementById('exportExcel');
+        this.exportPdfBtn = document.getElementById('exportPdf');
 
-    async loadEmpresas() {
-        const empresasRef = collection(this.db, 'empresas');
-        const snapshot = await getDocs(empresasRef);
-        
-        snapshot.forEach(doc => {
-            this.empresas.set(doc.id, doc.data());
-            const option = document.createElement('option');
-            option.value = doc.id;
-            option.textContent = doc.data().nome;
-            this.empresaSelect.appendChild(option);
-        });
+        // Elementos de feedback
+        this.loadingElement = document.getElementById('loading');
+        this.messageElement = document.getElementById('message');
     }
 
     setupEventListeners() {
-        // Período personalizado
-        this.periodoSelect.addEventListener('change', () => {
-            const dateRangeFields = document.querySelectorAll('.date-range');
-            if (this.periodoSelect.value === 'custom') {
-                dateRangeFields.forEach(field => field.classList.remove('hidden'));
-            } else {
-                dateRangeFields.forEach(field => field.classList.add('hidden'));
-            }
-        });
+        // Filtros
+        this.tipoRelatorio.addEventListener('change', () => this.handleFiltersChange());
+        this.dataInicio.addEventListener('change', () => this.handleFiltersChange());
+        this.dataFim.addEventListener('change', () => this.handleFiltersChange());
+        this.empresasSelect.addEventListener('change', () => this.handleFiltersChange());
+        this.statusSelect.addEventListener('change', () => this.handleFiltersChange());
+        
+        // Botões
+        this.btnGerarRelatorio.addEventListener('click', () => this.gerarRelatorio());
+        this.btnLimparFiltros.addEventListener('click', () => this.limparFiltros());
+        this.btnExportarExcel.addEventListener('click', () => this.exportData('excel'));
+        this.btnExportarPDF.addEventListener('click', () => this.exportData('pdf'));
+        
+        // Busca na tabela
+        this.searchInput.addEventListener('input', () => this.filtrarTabela());
 
-        // Gerar relatório
-        this.gerarRelatorioBtn.addEventListener('click', () => this.gerarRelatorio());
+        // Eventos de filtro
+        this.startDateInput.addEventListener('change', () => this.loadData());
+        this.endDateInput.addEventListener('change', () => this.loadData());
+        this.statusSelect.addEventListener('change', () => this.loadData());
+        this.empresaSelect.addEventListener('change', () => this.loadData());
+    }
 
-        // Exportar
-        this.exportarPDFBtn.addEventListener('click', () => this.exportarPDF());
-        this.exportarExcelBtn.addEventListener('click', () => this.exportarExcel());
+    async loadEmpresas() {
+        try {
+            const snapshot = await getDocs(this.empresasRef);
+            this.empresasData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
 
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            this.auth.signOut().then(() => {
-                window.location.href = 'login.html';
-            });
-        });
+            // Preencher select de empresas
+            this.empresasSelect.innerHTML = this.empresasData
+                .map(empresa => `<option value="${empresa.id}">${empresa.nome}</option>`)
+                .join('');
+        } catch (error) {
+            console.error('Erro ao carregar empresas:', error);
+            this.showError('Erro ao carregar lista de empresas.');
+        }
     }
 
     setupCharts() {
-        // Configuração comum
-        Chart.defaults.color = '#495057';
-        Chart.defaults.font.family = "'Poppins', sans-serif";
-        
+        // Configuração comum para todos os gráficos
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        };
+
         // Gráfico de Status
-        this.statusChart = new Chart(document.getElementById('statusChart'), {
-            type: 'pie',
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        this.statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
             data: {
                 labels: ['Pendente', 'Compensado', 'Devolvido', 'Cancelado'],
                 datasets: [{
                     data: [0, 0, 0, 0],
-                    backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#6c757d']
+                    backgroundColor: [
+                        '#ffc107',
+                        '#28a745',
+                        '#dc3545',
+                        '#6c757d'
+                    ]
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
+            options: commonOptions
         });
 
-        // Gráfico de Valores por Mês
-        this.valoresChart = new Chart(document.getElementById('valoresChart'), {
+        // Gráfico de Empresas
+        const empresasCtx = document.getElementById('empresasChart').getContext('2d');
+        this.empresasChart = new Chart(empresasCtx, {
             type: 'bar',
             data: {
                 labels: [],
                 datasets: [{
                     label: 'Valor Total',
                     data: [],
-                    backgroundColor: '#007bff'
+                    backgroundColor: '#4a90e2'
                 }]
             },
             options: {
-                responsive: true,
+                ...commonOptions,
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: value => formatCurrency(value)
+                            callback: value => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                         }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-
-        // Gráfico de Empresas
-        this.empresasChart = new Chart(document.getElementById('empresasChart'), {
-            type: 'horizontalBar',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Valor Total',
-                    data: [],
-                    backgroundColor: '#20c997'
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: value => formatCurrency(value)
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
                     }
                 }
             }
         });
 
         // Gráfico de Evolução
-        this.evolucaoChart = new Chart(document.getElementById('evolucaoChart'), {
+        const evolucaoCtx = document.getElementById('evolucaoChart').getContext('2d');
+        this.evolucaoChart = new Chart(evolucaoCtx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Quantidade de Cheques',
+                    label: 'Valor Total',
                     data: [],
-                    borderColor: '#6f42c1',
-                    tension: 0.4,
-                    fill: false
+                    borderColor: '#4a90e2',
+                    tension: 0.1
                 }]
             },
             options: {
-                responsive: true,
+                ...commonOptions,
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            callback: value => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                         }
                     }
                 }
             }
         });
+
+        // Gráfico de Tipos
+        const tipoCtx = document.getElementById('tipoChart').getContext('2d');
+        this.tipoChart = new Chart(tipoCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Fomento', 'Factoring', 'Banco', 'Outros'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: [
+                        '#4a90e2',
+                        '#28a745',
+                        '#ffc107',
+                        '#6c757d'
+                    ]
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    handleFiltersChange() {
+        this.currentFilters = {
+            tipo: this.tipoRelatorio.value,
+            dataInicio: this.dataInicio.value ? new Date(this.dataInicio.value) : null,
+            dataFim: this.dataFim.value ? new Date(this.dataFim.value) : null,
+            empresas: Array.from(this.empresasSelect.selectedOptions).map(option => option.value),
+            status: Array.from(this.statusSelect.selectedOptions).map(option => option.value)
+        };
     }
 
     async gerarRelatorio() {
-        this.showLoading();
         try {
-            const { startDate, endDate } = this.getDateRange();
-            const q = this.buildQuery(startDate, endDate);
-            const snapshot = await getDocs(q);
+            this.showLoading(true);
             
-            this.cheques = snapshot.docs.map(doc => ({
+            // Construir query base
+            let q = query(this.chequesRef, orderBy('dataEmissao', 'desc'));
+
+            // Aplicar filtros
+            if (this.currentFilters.dataInicio) {
+                q = query(q, where('dataEmissao', '>=', this.currentFilters.dataInicio));
+            }
+            if (this.currentFilters.dataFim) {
+                q = query(q, where('dataEmissao', '<=', this.currentFilters.dataFim));
+            }
+            if (this.currentFilters.empresas.length > 0) {
+                q = query(q, where('empresaId', 'in', this.currentFilters.empresas));
+            }
+            if (this.currentFilters.status.length > 0) {
+                q = query(q, where('status', 'in', this.currentFilters.status));
+            }
+
+            const snapshot = await getDocs(q);
+            this.chequesData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
 
-            this.updateSummary();
-            this.updateCharts();
-            this.updateTable();
+            // Atualizar resumo
+            this.atualizarResumo();
+            
+            // Atualizar gráficos
+            this.atualizarGraficos();
+            
+            // Atualizar tabela
+            this.atualizarTabela();
+
         } catch (error) {
             console.error('Erro ao gerar relatório:', error);
-            alert('Erro ao gerar relatório. Por favor, tente novamente.');
+            this.showError('Erro ao gerar relatório. Por favor, tente novamente.');
         } finally {
-            this.hideLoading();
+            this.showLoading(false);
         }
     }
 
-    getDateRange() {
-        let startDate, endDate = new Date();
-        
-        if (this.periodoSelect.value === 'custom') {
-            startDate = new Date(this.dataInicio.value);
-            endDate = new Date(this.dataFim.value);
-            endDate.setHours(23, 59, 59);
-        } else {
-            const days = parseInt(this.periodoSelect.value);
-            startDate = new Date();
-            startDate.setDate(startDate.getDate() - days);
-        }
-        
-        return {
-            startDate: Timestamp.fromDate(startDate),
-            endDate: Timestamp.fromDate(endDate)
+    atualizarResumo() {
+        const totalCheques = this.chequesData.length;
+        const valorTotal = this.chequesData.reduce((sum, cheque) => sum + cheque.valor, 0);
+        const chequesPendentes = this.chequesData.filter(cheque => cheque.status === 'pendente').length;
+        const valorPendente = this.chequesData
+            .filter(cheque => cheque.status === 'pendente')
+            .reduce((sum, cheque) => sum + cheque.valor, 0);
+
+        document.getElementById('totalCheques').textContent = totalCheques;
+        document.getElementById('valorTotal').textContent = `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('chequesPendentes').textContent = chequesPendentes;
+        document.getElementById('valorPendente').textContent = `R$ ${valorPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    }
+
+    atualizarGraficos() {
+        // Gráfico de Status
+        const statusCounts = {
+            pendente: this.chequesData.filter(c => c.status === 'pendente').length,
+            compensado: this.chequesData.filter(c => c.status === 'compensado').length,
+            devolvido: this.chequesData.filter(c => c.status === 'devolvido').length,
+            cancelado: this.chequesData.filter(c => c.status === 'cancelado').length
         };
-    }
 
-    buildQuery(startDate, endDate) {
-        let conditions = [
-            where('vencimento', '>=', startDate),
-            where('vencimento', '<=', endDate)
-        ];
-
-        if (this.empresaSelect.value) {
-            conditions.push(where('empresaId', '==', this.empresaSelect.value));
-        }
-
-        if (this.statusSelect.value) {
-            conditions.push(where('status', '==', this.statusSelect.value));
-        }
-
-        return query(collection(this.db, 'cheques'), ...conditions);
-    }
-
-    updateSummary() {
-        const total = this.cheques.length;
-        const valorTotal = this.cheques.reduce((sum, cheque) => sum + cheque.valor, 0);
-        const mediaValor = total > 0 ? valorTotal / total : 0;
-        const compensados = this.cheques.filter(cheque => cheque.status === 'compensado').length;
-        const taxaCompensacao = total > 0 ? (compensados / total) * 100 : 0;
-
-        document.getElementById('totalCheques').textContent = total;
-        document.getElementById('valorTotal').textContent = formatCurrency(valorTotal);
-        document.getElementById('mediaValor').textContent = formatCurrency(mediaValor);
-        document.getElementById('taxaCompensacao').textContent = `${taxaCompensacao.toFixed(1)}%`;
-    }
-
-    updateCharts() {
-        // Atualizar gráfico de status
-        const statusCount = {
-            pendente: 0,
-            compensado: 0,
-            devolvido: 0,
-            cancelado: 0
-        };
-        
-        this.cheques.forEach(cheque => {
-            statusCount[cheque.status]++;
-        });
-
-        this.statusChart.data.datasets[0].data = [
-            statusCount.pendente,
-            statusCount.compensado,
-            statusCount.devolvido,
-            statusCount.cancelado
-        ];
+        this.statusChart.data.datasets[0].data = Object.values(statusCounts);
         this.statusChart.update();
 
-        // Atualizar gráfico de valores por mês
-        const valoresPorMes = new Map();
-        this.cheques.forEach(cheque => {
-            const data = cheque.vencimento.toDate();
-            const mesAno = `${data.getMonth() + 1}/${data.getFullYear()}`;
-            valoresPorMes.set(mesAno, (valoresPorMes.get(mesAno) || 0) + cheque.valor);
-        });
-
-        this.valoresChart.data.labels = Array.from(valoresPorMes.keys());
-        this.valoresChart.data.datasets[0].data = Array.from(valoresPorMes.values());
-        this.valoresChart.update();
-
-        // Atualizar gráfico de empresas
-        const valoresPorEmpresa = new Map();
-        this.cheques.forEach(cheque => {
-            const empresa = this.empresas.get(cheque.empresaId);
+        // Gráfico de Empresas
+        const empresasData = {};
+        this.chequesData.forEach(cheque => {
+            const empresa = this.empresasData.find(e => e.id === cheque.empresaId);
             if (empresa) {
-                valoresPorEmpresa.set(empresa.nome, (valoresPorEmpresa.get(empresa.nome) || 0) + cheque.valor);
+                if (!empresasData[empresa.nome]) {
+                    empresasData[empresa.nome] = 0;
+                }
+                empresasData[empresa.nome] += cheque.valor;
             }
         });
 
-        const empresasOrdenadas = Array.from(valoresPorEmpresa.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
-
-        this.empresasChart.data.labels = empresasOrdenadas.map(([nome]) => nome);
-        this.empresasChart.data.datasets[0].data = empresasOrdenadas.map(([, valor]) => valor);
+        this.empresasChart.data.labels = Object.keys(empresasData);
+        this.empresasChart.data.datasets[0].data = Object.values(empresasData);
         this.empresasChart.update();
 
-        // Atualizar gráfico de evolução
-        const evolucaoPorDia = new Map();
-        this.cheques.forEach(cheque => {
-            const data = formatDate(cheque.vencimento.toDate());
-            evolucaoPorDia.set(data, (evolucaoPorDia.get(data) || 0) + 1);
+        // Gráfico de Evolução
+        const evolucaoData = {};
+        this.chequesData.forEach(cheque => {
+            const mes = new Date(cheque.dataEmissao).toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+            if (!evolucaoData[mes]) {
+                evolucaoData[mes] = 0;
+            }
+            evolucaoData[mes] += cheque.valor;
         });
 
-        this.evolucaoChart.data.labels = Array.from(evolucaoPorDia.keys());
-        this.evolucaoChart.data.datasets[0].data = Array.from(evolucaoPorDia.values());
+        this.evolucaoChart.data.labels = Object.keys(evolucaoData);
+        this.evolucaoChart.data.datasets[0].data = Object.values(evolucaoData);
         this.evolucaoChart.update();
+
+        // Gráfico de Tipos
+        const tipoCounts = {
+            fomento: this.chequesData.filter(c => c.tipo === 'fomento').length,
+            factoring: this.chequesData.filter(c => c.tipo === 'factoring').length,
+            banco: this.chequesData.filter(c => c.tipo === 'banco').length,
+            outros: this.chequesData.filter(c => c.tipo === 'outros').length
+        };
+
+        this.tipoChart.data.datasets[0].data = Object.values(tipoCounts);
+        this.tipoChart.update();
     }
 
-    updateTable() {
-        const tbody = document.getElementById('relatorioTableBody');
-        tbody.innerHTML = '';
-
-        this.cheques.forEach(cheque => {
-            const empresa = this.empresas.get(cheque.empresaId);
-            const tr = document.createElement('tr');
-            
-            tr.innerHTML = `
-                <td>${cheque.numeroCheque}</td>
-                <td>${formatDate(cheque.vencimento.toDate())}</td>
-                <td>${empresa ? empresa.nome : 'N/A'}</td>
-                <td>${cheque.emissor}</td>
-                <td>${formatCurrency(cheque.valor)}</td>
-                <td><span class="status-badge ${cheque.status}">${cheque.status}</span></td>
+    atualizarTabela() {
+        this.tableBody.innerHTML = this.chequesData.map(cheque => {
+            const empresa = this.empresasData.find(e => e.id === cheque.empresaId);
+            return `
+                <tr>
+                    <td>${new Date(cheque.dataEmissao).toLocaleDateString('pt-BR')}</td>
+                    <td>${empresa ? empresa.nome : 'N/A'}</td>
+                    <td>${cheque.numero}</td>
+                    <td>R$ ${cheque.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    <td>
+                        <span class="status-badge ${cheque.status}">
+                            ${this.formatStatus(cheque.status)}
+                        </span>
+                    </td>
+                    <td>${new Date(cheque.dataVencimento).toLocaleDateString('pt-BR')}</td>
+                </tr>
             `;
-            
-            tbody.appendChild(tr);
+        }).join('');
+    }
+
+    formatStatus(status) {
+        const statusMap = {
+            pendente: 'Pendente',
+            compensado: 'Compensado',
+            devolvido: 'Devolvido',
+            cancelado: 'Cancelado'
+        };
+        return statusMap[status] || status;
+    }
+
+    filtrarTabela() {
+        const searchTerm = this.searchInput.value.toLowerCase();
+        const rows = this.tableBody.getElementsByTagName('tr');
+
+        Array.from(rows).forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
         });
     }
 
-    async exportarPDF() {
-        this.showLoading();
-        try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Título
-            doc.setFontSize(18);
-            doc.text('Relatório de Cheques', 105, 15, { align: 'center' });
-            
-            // Período
-            doc.setFontSize(12);
-            const { startDate, endDate } = this.getDateRange();
-            doc.text(`Período: ${formatDate(startDate.toDate())} a ${formatDate(endDate.toDate())}`, 105, 25, { align: 'center' });
-            
-            // Resumo
-            doc.setFontSize(14);
-            doc.text('Resumo', 14, 40);
-            
-            doc.setFontSize(12);
-            doc.text(`Total de Cheques: ${document.getElementById('totalCheques').textContent}`, 14, 50);
-            doc.text(`Valor Total: ${document.getElementById('valorTotal').textContent}`, 14, 60);
-            doc.text(`Média por Cheque: ${document.getElementById('mediaValor').textContent}`, 14, 70);
-            doc.text(`Taxa de Compensação: ${document.getElementById('taxaCompensacao').textContent}`, 14, 80);
-            
-            // Tabela
-            const headers = ['Número', 'Data', 'Empresa', 'Emissor', 'Valor', 'Status'];
-            const data = this.cheques.map(cheque => [
-                cheque.numeroCheque,
-                formatDate(cheque.vencimento.toDate()),
-                this.empresas.get(cheque.empresaId)?.nome || 'N/A',
-                cheque.emissor,
-                formatCurrency(cheque.valor),
-                cheque.status
-            ]);
-            
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                startY: 100,
-                theme: 'grid',
-                styles: {
-                    fontSize: 10,
-                    cellPadding: 2
-                },
-                columnStyles: {
-                    4: { halign: 'right' }
-                }
-            });
-            
-            // Salvar
-            doc.save('relatorio-cheques.pdf');
-        } catch (error) {
-            console.error('Erro ao exportar PDF:', error);
-            alert('Erro ao exportar PDF. Por favor, tente novamente.');
-        } finally {
-            this.hideLoading();
-        }
+    limparFiltros() {
+        this.tipoRelatorio.value = 'geral';
+        this.dataInicio.value = '';
+        this.dataFim.value = '';
+        this.empresasSelect.selectedIndex = -1;
+        this.statusSelect.selectedIndex = -1;
+        this.handleFiltersChange();
+        this.gerarRelatorio();
     }
 
-    async exportarExcel() {
-        this.showLoading();
+    async exportData(type) {
         try {
-            const headers = ['Número', 'Data', 'Empresa', 'Emissor', 'Valor', 'Status'];
-            const data = this.cheques.map(cheque => [
-                cheque.numeroCheque,
-                formatDate(cheque.vencimento.toDate()),
-                this.empresas.get(cheque.empresaId)?.nome || 'N/A',
-                cheque.emissor,
-                cheque.valor,
-                cheque.status
-            ]);
+            this.showLoading(true);
             
-            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Cheques');
+            const filters = this.getFilters();
+            let result;
             
-            // Formatar células
-            const range = XLSX.utils.decode_range(ws['!ref']);
-            for (let row = 1; row <= range.e.r; row++) {
-                const valorCell = XLSX.utils.encode_cell({ r: row, c: 4 });
-                if (ws[valorCell]) {
-                    ws[valorCell].z = '#,##0.00';
-                }
+            if (type === 'excel') {
+                result = await exportManager.exportToExcel('cheques', filters);
+            } else if (type === 'pdf') {
+                result = await exportManager.exportToPDF('cheques', filters);
             }
             
-            XLSX.writeFile(wb, 'relatorio-cheques.xlsx');
+            if (result.success) {
+                this.showMessage(result.message, 'success');
+            } else {
+                this.showMessage(result.message, 'error');
+            }
         } catch (error) {
-            console.error('Erro ao exportar Excel:', error);
-            alert('Erro ao exportar Excel. Por favor, tente novamente.');
+            console.error('Erro na exportação:', error);
+            this.showMessage('Erro ao exportar dados. Tente novamente.', 'error');
         } finally {
-            this.hideLoading();
+            this.showLoading(false);
         }
     }
 
-    showLoading() {
-        this.loadingOverlay.style.display = 'flex';
+    getFilters() {
+        return {
+            startDate: this.startDateInput.value ? new Date(this.startDateInput.value) : null,
+            endDate: this.endDateInput.value ? new Date(this.endDateInput.value) : null,
+            status: this.statusSelect.value || null,
+            empresa: this.empresaSelect.value || null
+        };
     }
 
-    hideLoading() {
-        this.loadingOverlay.style.display = 'none';
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }, 100);
+    }
+
+    showLoading(show) {
+        if (this.loadingElement) {
+            this.loadingElement.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    showMessage(text, type = 'info') {
+        if (this.messageElement) {
+            this.messageElement.textContent = text;
+            this.messageElement.className = `message ${type}`;
+            this.messageElement.style.display = 'block';
+            
+            setTimeout(() => {
+                this.messageElement.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    showError(message) {
+        // Implementar toast de erro
+        console.error('Erro:', message);
+    }
+
+    async loadData() {
+        try {
+            this.showLoading(true);
+            
+            const filters = this.getFilters();
+            await this.updateCharts(filters);
+            await this.updateTables(filters);
+            
+            this.showLoading(false);
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+            this.showMessage('Erro ao carregar dados. Tente novamente.', 'error');
+            this.showLoading(false);
+        }
+    }
+
+    async updateCharts(filters) {
+        // Implementar atualização dos gráficos com os dados filtrados
+        // Esta função será implementada quando adicionarmos os gráficos
+    }
+
+    async updateTables(filters) {
+        // Implementar atualização das tabelas com os dados filtrados
+        // Esta função será implementada quando adicionarmos as tabelas
     }
 }
 
-// Inicialização
-window.relatoriosManager = new RelatoriosManager(); 
+// Inicializar e exportar instância
+const relatoriosManager = new RelatoriosManager();
+window.relatoriosManager = relatoriosManager; // Para acesso global 

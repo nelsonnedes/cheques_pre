@@ -5,127 +5,220 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajuda - Sistema de Cheques</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <h1>Ajuda</h1>
-            <div class="header-actions">
-                <button id="backBtn" class="icon-button" onclick="history.back()">
-                    <span class="material-icons">arrow_back</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="help-content">
-            <section class="help-section">
-                <h2>Como Usar o Sistema</h2>
-                <div class="help-item">
-                    <h3>Dashboard</h3>
-                    <p>O dashboard mostra um resumo geral do seu sistema, incluindo:</p>
-                    <ul>
-                        <li>Total em cheques</li>
-                        <li>Cheques vencendo hoje</li>
-                        <li>Próximos vencimentos</li>
-                        <li>Total de empresas cadastradas</li>
-                    </ul>
-                </div>
-
-                <div class="help-item">
-                    <h3>Gerenciando Cheques</h3>
-                    <p>Para gerenciar seus cheques:</p>
-                    <ul>
-                        <li>Clique em "Novo Cheque" para adicionar um novo</li>
-                        <li>Use a lista de cheques para visualizar todos os registros</li>
-                        <li>Utilize os filtros para encontrar cheques específicos</li>
-                        <li>Edite ou exclua cheques conforme necessário</li>
-                    </ul>
-                </div>
-
-                <div class="help-item">
-                    <h3>Empresas de Fomento</h3>
-                    <p>Gerencie suas empresas de fomento:</p>
-                    <ul>
-                        <li>Adicione novas empresas</li>
-                        <li>Edite informações existentes</li>
-                        <li>Visualize todos os cheques por empresa</li>
-                    </ul>
-                </div>
-
-                <div class="help-item">
-                    <h3>Notificações</h3>
-                    <p>Configure suas notificações para:</p>
-                    <ul>
-                        <li>Cheques vencendo hoje</li>
-                        <li>Próximos vencimentos</li>
-                        <li>Atualizações importantes</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section class="help-section">
-                <h2>Perguntas Frequentes</h2>
-                <div class="faq-item">
-                    <h3>Como faço backup dos meus dados?</h3>
-                    <p>Acesse o menu de configurações e clique em "Backup". Você pode exportar seus dados para um arquivo JSON.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h3>Como restauro meus dados?</h3>
-                    <p>No menu de configurações, use a opção "Restaurar" e selecione seu arquivo de backup.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h3>Como altero minha senha?</h3>
-                    <p>Acesse seu perfil através do menu de configurações e clique em "Alterar Senha".</p>
-                </div>
-
-                <div class="faq-item">
-                    <h3>Como filtro meus cheques?</h3>
-                    <p>Na lista de cheques, use o botão de filtro para acessar todas as opções de filtragem disponíveis.</p>
-                </div>
-            </section>
-
-            <section class="help-section">
-                <h2>Precisa de Mais Ajuda?</h2>
-                <p>Entre em contato com nosso suporte:</p>
-                <div class="contact-options">
-                    <a href="suporte.html" class="contact-button">
-                        <span class="material-icons">support_agent</span>
-                        <span>Suporte Técnico</span>
-                    </a>
-                    <a href="mailto:suporte@sistema.com" class="contact-button">
-                        <span class="material-icons">email</span>
-                        <span>Email</span>
-                    </a>
-                </div>
-            </section>
-        </main>
-
-        <!-- Navigation -->
-        <nav class="bottom-nav">
-            <a href="index.html">
-                <span class="material-icons">dashboard</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="incluir_cheque.html">
-                <span class="material-icons">add_circle</span>
-                <span>Novo</span>
-            </a>
-            <a href="listar_cheques.html">
-                <span class="material-icons">list</span>
-                <span>Cheques</span>
-            </a>
-            <a href="agenda.html">
-                <span class="material-icons">calendar_today</span>
-                <span>Agenda</span>
-            </a>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="img/logo.png" alt="Logo" class="logo">
+            <h1>Sistema de Cheques</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html"><i class="fas fa-home"></i> Início</a>
+            <a href="empresas.html"><i class="fas fa-building"></i> Empresas</a>
+            <a href="relatorios.html"><i class="fas fa-chart-bar"></i> Relatórios</a>
+            <a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="ajuda.html" class="active"><i class="fas fa-question-circle"></i> Ajuda</a>
         </nav>
-    </div>
+    </aside>
 
-    <script src="js/app.js" type="module"></script>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="help-container">
+            <!-- Seção de Pesquisa -->
+            <section class="help-search">
+                <div class="search-box">
+                    <input type="text" id="searchHelp" placeholder="Pesquisar na ajuda...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </section>
+
+            <!-- Guia Rápido -->
+            <section class="help-section" id="quickGuide">
+                <h2>Guia Rápido</h2>
+                <div class="quick-links">
+                    <a href="#empresas" class="quick-link">
+                        <i class="fas fa-building"></i>
+                        <span>Gerenciar Empresas</span>
+                    </a>
+                    <a href="#cheques" class="quick-link">
+                        <i class="fas fa-money-check"></i>
+                        <span>Controle de Cheques</span>
+                    </a>
+                    <a href="#relatorios" class="quick-link">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Relatórios</span>
+                    </a>
+                    <a href="#configuracoes" class="quick-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Configurações</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Empresas -->
+            <section class="help-section" id="empresas">
+                <h2>Gerenciamento de Empresas</h2>
+                <div class="help-content">
+                    <h3>Como cadastrar uma nova empresa?</h3>
+                    <ol>
+                        <li>Acesse a página "Empresas" no menu lateral</li>
+                        <li>Clique no botão "Nova Empresa"</li>
+                        <li>Preencha os dados da empresa (CNPJ, Nome, etc.)</li>
+                        <li>Clique em "Salvar"</li>
+                    </ol>
+
+                    <h3>Como editar uma empresa?</h3>
+                    <ol>
+                        <li>Localize a empresa na lista</li>
+                        <li>Clique no ícone de edição (lápis)</li>
+                        <li>Atualize os dados necessários</li>
+                        <li>Clique em "Salvar"</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Cheques -->
+            <section class="help-section" id="cheques">
+                <h2>Controle de Cheques</h2>
+                <div class="help-content">
+                    <h3>Como registrar um novo cheque?</h3>
+                    <ol>
+                        <li>Selecione a empresa na página inicial</li>
+                        <li>Clique em "Novo Cheque"</li>
+                        <li>Preencha os dados do cheque (número, valor, vencimento)</li>
+                        <li>Selecione o status do cheque</li>
+                        <li>Clique em "Salvar"</li>
+                    </ol>
+
+                    <h3>Como atualizar o status de um cheque?</h3>
+                    <ol>
+                        <li>Localize o cheque na lista</li>
+                        <li>Clique no status atual</li>
+                        <li>Selecione o novo status</li>
+                        <li>Confirme a alteração</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Relatórios -->
+            <section class="help-section" id="relatorios">
+                <h2>Relatórios e Análises</h2>
+                <div class="help-content">
+                    <h3>Como gerar um relatório?</h3>
+                    <ol>
+                        <li>Acesse a página "Relatórios"</li>
+                        <li>Selecione o tipo de relatório</li>
+                        <li>Defina o período desejado</li>
+                        <li>Aplique filtros adicionais (opcional)</li>
+                        <li>Clique em "Gerar Relatório"</li>
+                    </ol>
+
+                    <h3>Como exportar dados?</h3>
+                    <ol>
+                        <li>Gere o relatório desejado</li>
+                        <li>Clique no botão "Exportar"</li>
+                        <li>Selecione o formato (Excel ou PDF)</li>
+                        <li>Aguarde o download</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Configurações -->
+            <section class="help-section" id="configuracoes">
+                <h2>Configurações do Sistema</h2>
+                <div class="help-content">
+                    <h3>Como configurar notificações?</h3>
+                    <ol>
+                        <li>Acesse a página "Configurações"</li>
+                        <li>Vá até a seção "Notificações"</li>
+                        <li>Ative/desative as opções desejadas</li>
+                        <li>Configure os dias de antecedência para alertas</li>
+                        <li>Clique em "Salvar"</li>
+                    </ol>
+
+                    <h3>Como fazer backup dos dados?</h3>
+                    <ol>
+                        <li>Acesse "Configurações"</li>
+                        <li>Vá até a seção "Backup"</li>
+                        <li>Configure a frequência do backup automático</li>
+                        <li>Ou clique em "Fazer Backup Agora"</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section class="help-section" id="faq">
+                <h2>Perguntas Frequentes</h2>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Como recuperar minha senha?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Clique em "Esqueci minha senha" na tela de login e siga as instruções enviadas para seu e-mail.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Como alterar dados da minha conta?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Acesse "Configurações" e vá até a seção "Perfil" para atualizar seus dados.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Como filtrar cheques por status?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Use os filtros disponíveis no topo da lista de cheques para selecionar o status desejado.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>O sistema funciona offline?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Não, o sistema requer conexão com a internet para funcionar corretamente.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Suporte -->
+            <section class="help-section" id="support">
+                <h2>Suporte</h2>
+                <div class="support-content">
+                    <p>Precisa de ajuda adicional? Entre em contato conosco:</p>
+                    <div class="support-options">
+                        <a href="mailto:suporte@sistemadecheques.com" class="support-option">
+                            <i class="fas fa-envelope"></i>
+                            <span>E-mail de Suporte</span>
+                        </a>
+                        <a href="tel:0800123456" class="support-option">
+                            <i class="fas fa-phone"></i>
+                            <span>Central de Atendimento</span>
+                        </a>
+                        <a href="#" class="support-option" id="openChat">
+                            <i class="fas fa-comments"></i>
+                            <span>Chat Online</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/ajuda.js" type="module"></script>
 </body>
 </html> 
