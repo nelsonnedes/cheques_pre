@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte - Sistema de Cheques</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Suporte</h1>
+            <div class="header-actions">
+                <button id="backBtn" class="icon-button" onclick="history.back()">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="support-content">
+            <section class="support-section">
+                <h2>Entre em Contato</h2>
+                <form id="supportForm" class="support-form">
+                    <div class="form-group">
+                        <label for="subject">Assunto</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Selecione um assunto</option>
+                            <option value="duvida">Dúvida</option>
+                            <option value="problema">Problema Técnico</option>
+                            <option value="sugestao">Sugestão</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <textarea id="description" name="description" rows="5" required
+                            placeholder="Descreva em detalhes sua dúvida ou problema..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Prioridade</label>
+                        <select id="priority" name="priority" required>
+                            <option value="baixa">Baixa</option>
+                            <option value="media">Média</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="attachment">Anexo (opcional)</label>
+                        <input type="file" id="attachment" name="attachment">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">send</span>
+                        Enviar
+                    </button>
+                </form>
+            </section>
+
+            <section class="support-section">
+                <h2>Canais de Atendimento</h2>
+                <div class="contact-channels">
+                    <div class="contact-card">
+                        <span class="material-icons">email</span>
+                        <h3>Email</h3>
+                        <p>suporte@sistema.com</p>
+                        <p>Resposta em até 24 horas</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <span class="material-icons">phone</span>
+                        <h3>Telefone</h3>
+                        <p>(00) 0000-0000</p>
+                        <p>Segunda a Sexta, 9h às 18h</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <span class="material-icons">chat</span>
+                        <h3>Chat Online</h3>
+                        <p>Atendimento em tempo real</p>
+                        <button id="startChatBtn" class="btn btn-secondary">
+                            Iniciar Chat
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="support-section">
+                <h2>Status do Sistema</h2>
+                <div class="system-status">
+                    <div class="status-item">
+                        <span class="status-indicator online"></span>
+                        <span>Sistema Principal</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-indicator online"></span>
+                        <span>Banco de Dados</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-indicator online"></span>
+                        <span>API</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-indicator online"></span>
+                        <span>Notificações</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html">
+                <span class="material-icons">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="incluir_cheque.html">
+                <span class="material-icons">add_circle</span>
+                <span>Novo</span>
+            </a>
+            <a href="listar_cheques.html">
+                <span class="material-icons">list</span>
+                <span>Cheques</span>
+            </a>
+            <a href="agenda.html">
+                <span class="material-icons">calendar_today</span>
+                <span>Agenda</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/app.js" type="module"></script>
+    <script src="js/suporte.js" type="module"></script>
+</body>
+</html> 

@@ -25,6 +25,8 @@ yarn.lock
 # OS files
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
 
 # Debug logs
 logs/
@@ -45,6 +47,7 @@ out/
 .vuepress/dist
 **/.vitepress/dist
 **/.vitepress/cache
+*.bundle.js
 
 # Cache
 .cache/
@@ -69,6 +72,8 @@ coverage/
 # Firebase
 .firebase/
 firebase-debug.log
+ui-debug.log
+.runtimeconfig.json
 .firebaserc
 
 # Runtime data
@@ -88,3 +93,7 @@ pids/
 
 # DynamoDB Local
 .dynamodb/
+
+# Temporary files
+*.tmp
+*.temp

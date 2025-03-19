@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Relatórios - Sistema de Cheques</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Relatórios</h1>
+            <div class="header-actions">
+                <button id="shareBtn" class="icon-button">
+                    <span class="material-icons">share</span>
+                </button>
+                <button id="downloadBtn" class="icon-button">
+                    <span class="material-icons">download</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Filtros -->
+            <section class="report-filters">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="periodoInicio">Período Início</label>
+                        <input type="date" id="periodoInicio" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="periodoFim">Período Fim</label>
+                        <input type="date" id="periodoFim" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="empresaFiltro">Empresa</label>
+                        <select id="empresaFiltro" class="form-control">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="aplicarFiltroBtn" class="btn btn-primary">
+                        <span class="material-icons">filter_list</span>
+                        Aplicar Filtro
+                    </button>
+                </div>
+            </section>
+
+            <!-- Resumo -->
+            <section class="report-summary">
+                <div class="summary-cards">
+                    <div class="card">
+                        <h3>Total de Cheques</h3>
+                        <p id="totalCheques">0</p>
+                    </div>
+                    <div class="card">
+                        <h3>Valor Total</h3>
+                        <p id="valorTotal">R$ 0,00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total de Juros</h3>
+                        <p id="totalJuros">R$ 0,00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total de Impostos</h3>
+                        <p id="totalImpostos">R$ 0,00</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráficos -->
+            <section class="report-charts">
+                <div class="chart-container">
+                    <h3>Distribuição por Status</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Valores por Mês</h3>
+                    <canvas id="valoresChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Top Empresas</h3>
+                    <canvas id="empresasChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Tabela Detalhada -->
+            <section class="report-table">
+                <h3>Detalhamento</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Empresa</th>
+                                <th>Valor</th>
+                                <th>Juros</th>
+                                <th>Impostos</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html">
+                <span class="material-icons">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="incluir_cheque.html">
+                <span class="material-icons">add_circle</span>
+                <span>Novo</span>
+            </a>
+            <a href="listar_cheques.html">
+                <span class="material-icons">list</span>
+                <span>Cheques</span>
+            </a>
+            <a href="agenda.html">
+                <span class="material-icons">calendar_today</span>
+                <span>Agenda</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/firebase-config.js" type="module"></script>
+    <script src="js/app.js" type="module"></script>
+    <script src="js/relatorio.js" type="module"></script>
+</body>
+</html> 

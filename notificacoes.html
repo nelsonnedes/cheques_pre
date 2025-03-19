@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Notificações - Sistema de Cheques</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Notificações</h1>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="form-container">
+                <section class="notification-section">
+                    <h2>Configurações de Notificação</h2>
+                    
+                    <!-- General Settings -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notificationToggle">
+                            Ativar notificações
+                        </label>
+                        <p class="help-text">Receba alertas sobre cheques próximos do vencimento</p>
+                    </div>
+
+                    <!-- Sound Settings -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="soundToggle">
+                            Ativar som de notificação
+                        </label>
+                        <div class="sound-preview">
+                            <button id="previewSoundBtn" class="btn btn-secondary">
+                                <span class="material-icons">volume_up</span>
+                                Testar Som
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Timing Settings -->
+                    <div class="form-group">
+                        <label for="notificationDays">Dias de antecedência para notificação</label>
+                        <input type="number" id="notificationDays" class="form-control" min="1" max="30" value="3">
+                        <p class="help-text">Você será notificado este número de dias antes do vencimento</p>
+                    </div>
+
+                    <!-- Notification Types -->
+                    <div class="form-group">
+                        <h3>Tipos de Notificação</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="browserNotifications" checked>
+                                Notificações no navegador
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="emailNotifications">
+                                Notificações por email
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notification Schedule -->
+                    <div class="form-group">
+                        <h3>Horário das Notificações</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="notificationTime">Horário preferido</label>
+                                <input type="time" id="notificationTime" class="form-control" value="09:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone">Fuso horário</label>
+                                <select id="timezone" class="form-control">
+                                    <option value="America/Sao_Paulo">Brasília (GMT-3)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Notification -->
+                    <div class="form-group">
+                        <button id="testNotificationBtn" class="btn btn-primary">
+                            <span class="material-icons">notifications_active</span>
+                            Enviar Notificação de Teste
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Save Button -->
+                <div class="form-actions">
+                    <button id="saveSettingsBtn" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Salvar Configurações
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html">
+                <span class="material-icons">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="incluir_cheque.html">
+                <span class="material-icons">add_circle</span>
+                <span>Novo</span>
+            </a>
+            <a href="listar_cheques.html">
+                <span class="material-icons">list</span>
+                <span>Cheques</span>
+            </a>
+            <a href="agenda.html">
+                <span class="material-icons">calendar_today</span>
+                <span>Agenda</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/firebase-config.js" type="module"></script>
+    <script src="js/app.js" type="module"></script>
+    <script src="js/notifications.js" type="module"></script>
+</body>
+</html> 

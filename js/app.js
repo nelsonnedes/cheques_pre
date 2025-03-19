@@ -1,3 +1,6 @@
+import { auth } from './firebase-config.js';
+import { signOut } from 'firebase/auth';
+
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -21,18 +24,85 @@ export const requestNotificationPermission = async () => {
     }
 };
 
-// Format currency
-export const formatCurrency = (value) => {
+// Format currency to BRL
+export function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL'
     }).format(value);
-};
+}
 
-// Format date
-export const formatDate = (date) => {
+// Format date to Brazilian format
+export function formatDate(date) {
     return new Intl.DateTimeFormat('pt-BR').format(date);
-};
+}
+
+// Calculate total value with interest and taxes
+export function calculateTotal(valor, taxaJuros, taxaImpostos, dataInicial, dataFinal) {
+    const dias = Math.ceil((dataFinal - dataInicial) / (1000 * 60 * 60 * 24));
+    const juros = (valor * (taxaJuros / 100) * dias) / 30; // Monthly interest rate
+    const impostos = valor * (taxaImpostos / 100);
+    return valor + juros + impostos;
+}
+
+// Validate form data
+export function validateFormData(data) {
+    const errors = [];
+
+    if (!data.empresaFomentoId) {
+        errors.push('Selecione uma empresa de fomento');
+    }
+
+    if (!data.valor || data.valor <= 0) {
+        errors.push('Informe um valor válido');
+    }
+
+    if (!data.taxaJuros || data.taxaJuros < 0) {
+        errors.push('Informe uma taxa de juros válida');
+    }
+
+    if (!data.taxaImpostos || data.taxaImpostos < 0) {
+        errors.push('Informe uma taxa de impostos válida');
+    }
+
+    if (!data.dataInicial) {
+        errors.push('Informe a data inicial');
+    }
+
+    if (!data.dataFinal) {
+        errors.push('Informe a data final');
+    }
+
+    if (data.dataInicial && data.dataFinal && new Date(data.dataInicial) >= new Date(data.dataFinal)) {
+        errors.push('A data final deve ser posterior à data inicial');
+    }
+
+    return errors;
+}
+
+// Show error message
+export function showError(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+}
+
+// Show success message
+export function showSuccess(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+}
 
 // Calculate days between dates
 export const daysBetweenDates = (date1, date2) => {
@@ -120,4 +190,137 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // Initialize notification permission
-requestNotificationPermission(); 
+requestNotificationPermission();
+
+class AppManager {
+    constructor() {
+        this.initializeElements();
+        this.setupEventListeners();
+        this.setupServiceWorkerUpdates();
+    }
+
+    initializeElements() {
+        // Elementos do cabeçalho
+        this.notificationsBtn = document.getElementById('notificationsBtn');
+        this.notificationBadge = document.getElementById('notificationBadge');
+        this.configBtn = document.getElementById('configBtn');
+        this.settingsMenu = document.getElementById('settingsMenu');
+        this.logoutBtn = document.getElementById('logoutBtn');
+        this.connectionStatus = document.getElementById('connectionStatus');
+    }
+
+    setupEventListeners() {
+        // Listener para o botão de notificações
+        if (this.notificationsBtn) {
+            this.notificationsBtn.addEventListener('click', () => {
+                window.location.href = 'notificacoes.html';
+            });
+        }
+
+        // Listener para o botão de logout
+        if (this.logoutBtn) {
+            this.logoutBtn.addEventListener('click', () => this.handleLogout());
+        }
+
+        // Listeners para mudanças na conexão
+        window.addEventListener('online', () => this.updateConnectionStatus());
+        window.addEventListener('offline', () => this.updateConnectionStatus());
+
+        // Verificar estado inicial da conexão
+        this.updateConnectionStatus();
+    }
+
+    setupServiceWorkerUpdates() {
+        if ('serviceWorker' in navigator) {
+            // Verificar atualizações ao carregar a página
+            this.checkForUpdates();
+
+            // Verificar atualizações periodicamente
+            setInterval(() => this.checkForUpdates(), 6 * 60 * 60 * 1000); // A cada 6 horas
+        }
+    }
+
+    async handleLogout() {
+        try {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+        }
+    }
+
+    updateConnectionStatus() {
+        if (this.connectionStatus) {
+            const isOnline = navigator.onLine;
+            this.connectionStatus.textContent = isOnline ? 'Online' : 'Offline';
+            this.connectionStatus.className = isOnline ? 'connection-status online' : 'connection-status offline';
+            
+            // Adicionar ícone
+            const icon = isOnline ? 'wifi' : 'wifi-slash';
+            this.connectionStatus.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${isOnline ? 'Online' : 'Offline'}</span>
+            `;
+
+            // Tentar sincronizar dados se estiver online
+            if (isOnline && 'serviceWorker' in navigator && 'SyncManager' in window) {
+                this.syncData();
+            }
+        }
+    }
+
+    async syncData() {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.sync.register('sync-cheques');
+            console.log('Sincronização de cheques registrada');
+        } catch (error) {
+            console.error('Erro ao registrar sincronização:', error);
+        }
+    }
+
+    async checkForUpdates() {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.update();
+            
+            if (registration.waiting) {
+                this.showUpdateNotification();
+            }
+        } catch (error) {
+            console.error('Erro ao verificar atualizações:', error);
+        }
+    }
+
+    showUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = `
+            <p>Uma nova versão está disponível!</p>
+            <button onclick="window.location.reload()">Atualizar Agora</button>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remover a notificação após 10 segundos
+        setTimeout(() => {
+            notification.remove();
+        }, 10000);
+    }
+
+    updateNotificationBadge(count) {
+        if (this.notificationBadge) {
+            if (count > 0) {
+                this.notificationBadge.textContent = count;
+                this.notificationBadge.classList.remove('hidden');
+            } else {
+                this.notificationBadge.classList.add('hidden');
+            }
+        }
+    }
+}
+
+// Inicializar o gerenciador quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', () => {
+    new AppManager();
+}); 

@@ -1,115 +1,133 @@
 # Sistema de Gestão de Cheques
 
-Um aplicativo web progressivo (PWA) para gerenciamento e cálculo de juros de cheques pré-datados, com suporte offline e notificações.
+Sistema web progressivo (PWA) para gestão e controle de cheques pré-datados, desenvolvido com HTML, CSS e JavaScript puro, utilizando Firebase como backend.
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
-- Dashboard com visão geral dos cheques
-- Cadastro e gerenciamento de empresas de fomento
-- Registro e acompanhamento de cheques
-- Cálculo automático de juros e impostos
-- Notificações de vencimentos
-- Exportação de relatórios para PDF
-- Compartilhamento via WhatsApp
-- Funciona offline (PWA)
-- Interface responsiva otimizada para iPhone
+- 📝 Cadastro e autenticação de usuários
+- 💰 Cadastro e gestão de cheques pré-datados
+- 🏢 Cadastro e gestão de empresas de fomento
+- 📅 Agenda de vencimentos
+- 📊 Relatórios e gráficos
+- 🔔 Sistema de notificações
+- 💾 Backup e restauração de dados
+- 📱 Funciona offline (PWA)
+- 🔄 Sincronização automática
+- 🎨 Interface moderna e responsiva
 
-## 📋 Pré-requisitos
+## Tecnologias Utilizadas
 
+- HTML5
+- CSS3
+- JavaScript (ES6+)
+- Firebase
+  - Authentication
+  - Firestore
+  - Storage
+  - Hosting
+- Service Workers
+- IndexedDB
+- PWA
+
+## Pré-requisitos
+
+- Node.js (v14 ou superior)
+- NPM ou Yarn
 - Conta no Firebase
-- Navegador moderno (preferencialmente Safari para iOS)
-- Servidor web para hospedagem (ex: GitHub Pages)
+- Firebase CLI
 
-## 🔧 Configuração
+## Configuração
 
-1. Clone este repositório
+1. Clone o repositório:
 ```bash
-git clone https://github.com/nelsonnedes/cheques_pre.git
-cd cheques_pre
+git clone https://github.com/seu-usuario/sistema-cheques.git
+cd sistema-cheques
 ```
 
-2. Configure o Firebase:
+2. Instale as dependências:
+```bash
+npm install
+# ou
+yarn install
+```
+
+3. Configure o Firebase:
    - Crie um projeto no [Firebase Console](https://console.firebase.google.com)
-   - Ative Authentication, Firestore e Storage
-   - Copie as credenciais do projeto
+   - Ative o Authentication, Firestore e Storage
+   - Copie as configurações do seu projeto para o arquivo `js/firebase-config.js`
 
-3. Atualize o arquivo `js/firebase-config.js` com suas credenciais:
-```javascript
-const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "seu-app.firebaseapp.com",
-    projectId: "seu-project-id",
-    storageBucket: "seu-app.appspot.com",
-    messagingSenderId: "seu-messaging-sender-id",
-    appId: "seu-app-id"
-};
+4. Inicie o servidor de desenvolvimento:
+```bash
+firebase serve
 ```
 
-4. Configure as regras do Firestore:
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
+5. Acesse o sistema em `http://localhost:5000`
+
+## Deploy
+
+1. Faça login no Firebase:
+```bash
+firebase login
 ```
 
-## 📱 Instalação no iPhone
+2. Inicialize o projeto Firebase (se ainda não inicializado):
+```bash
+firebase init
+```
 
-1. Abra o aplicativo no Safari
-2. Toque no ícone de compartilhamento
-3. Selecione "Adicionar à Tela de Início"
-4. Escolha um nome e confirme
+3. Deploy para o Firebase Hosting:
+```bash
+firebase deploy
+```
 
-## 🗂️ Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
-/
-├── index.html          # Página principal (Dashboard)
+sistema-cheques/
 ├── css/
-│   └── style.css      # Estilos globais
+│   └── style.css
 ├── js/
-│   ├── app.js         # Funcionalidades comuns
-│   ├── dashboard.js   # Lógica do dashboard
-│   └── firebase-config.js # Configuração do Firebase
-├── icons/             # Ícones do PWA
-└── sw.js             # Service Worker
+│   ├── app.js
+│   ├── auth.js
+│   ├── dashboard.js
+│   ├── firebase-config.js
+│   ├── register-sw.js
+│   └── settings-menu.js
+├── icons/
+│   └── [ícones do app]
+├── index.html
+├── login.html
+├── offline.html
+├── manifest.json
+├── sw.js
+├── firebase.json
+├── firestore.rules
+├── storage.rules
+└── README.md
 ```
 
-## 🔐 Segurança
+## Segurança
 
-- Autenticação via Firebase
-- Dados criptografados em trânsito
-- Regras de segurança no Firestore
-- Validação de dados no cliente e servidor
+- Autenticação de usuários
+- Regras de segurança no Firestore e Storage
+- HTTPS forçado
+- Headers de segurança configurados
+- Validação de dados
+- Proteção contra XSS e CSRF
+- Backup automático
 
-## 📦 Desenvolvimento
+## Contribuindo
 
-Para desenvolver localmente:
-
-1. Instale um servidor local (ex: Live Server no VS Code)
-2. Execute o servidor
-3. Acesse via `http://localhost:5500`
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT - veja o arquivo [LICENSE.md](LICENSE.md) para detalhes
-
-## ✨ Contribuindo
-
-1. Faça o fork do projeto
-2. Crie sua feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Faça commit das mudanças (`git commit -am 'Adiciona nova feature'`)
+4. Faça push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
-## 🤝 Suporte
+## Licença
 
-Para suporte, envie um email para [seu-email@exemplo.com]
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## 🔍 Status do Projeto
+## Suporte
 
-Em desenvolvimento ativo. Veja a aba [Issues](../../issues) para acompanhar o progresso.
+Para suporte, envie um email para suporte@sistemacheques.com ou abra uma issue no GitHub.

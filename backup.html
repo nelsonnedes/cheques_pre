@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup - Sistema de Gerenciamento de Cheques</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/png" href="img/favicon.png">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="img/logo.png" alt="Logo" class="logo">
+            <h1>GerCheques</h1>
+        </div>
+        <ul class="nav-links">
+            <li>
+                <a href="dashboard.html">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="novo-cheque.html">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Novo Cheque</span>
+                </a>
+            </li>
+            <li>
+                <a href="listar-cheques.html">
+                    <i class="fas fa-list"></i>
+                    <span>Listar Cheques</span>
+                </a>
+            </li>
+            <li>
+                <a href="empresas.html">
+                    <i class="fas fa-building"></i>
+                    <span>Empresas</span>
+                </a>
+            </li>
+            <li>
+                <a href="agenda.html">
+                    <i class="fas fa-calendar"></i>
+                    <span>Agenda</span>
+                </a>
+            </li>
+            <li>
+                <a href="relatorios.html">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Relatórios</span>
+                </a>
+            </li>
+            <li>
+                <a href="configuracoes.html">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+            </li>
+            <li>
+                <a href="perfil.html">
+                    <i class="fas fa-user"></i>
+                    <span>Perfil</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="backup.html">
+                    <i class="fas fa-database"></i>
+                    <span>Backup</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h1>Backup e Restauração</h1>
+            <div class="user-info">
+                <span id="userName">Carregando...</span>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Backup Container -->
+        <div class="backup-container">
+            <!-- Backup Manual -->
+            <section class="backup-section">
+                <h2><i class="fas fa-save"></i> Backup Manual</h2>
+                <div class="backup-actions">
+                    <button id="backupBtn" class="btn-primary">
+                        <i class="fas fa-download"></i> Realizar Backup Agora
+                    </button>
+                    <div class="export-options">
+                        <label>Exportar como:</label>
+                        <button id="exportJson" class="btn-secondary">
+                            <i class="fas fa-file-code"></i> JSON
+                        </button>
+                        <button id="exportCsv" class="btn-secondary">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Backup Automático -->
+            <section class="backup-section">
+                <h2><i class="fas fa-clock"></i> Backup Automático</h2>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div>
+                            <label for="backupAutomatico">Backup Automático</label>
+                            <p class="description">Realizar backup automático dos dados</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="backupAutomatico">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <label for="frequenciaBackup">Frequência</label>
+                            <p class="description">Frequência do backup automático</p>
+                        </div>
+                        <select id="frequenciaBackup" name="frequenciaBackup">
+                            <option value="daily">Diário</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <label for="retencaoBackup">Retenção</label>
+                            <p class="description">Período de retenção dos backups</p>
+                        </div>
+                        <select id="retencaoBackup" name="retencaoBackup">
+                            <option value="30">30 dias</option>
+                            <option value="60">60 dias</option>
+                            <option value="90">90 dias</option>
+                            <option value="180">180 dias</option>
+                            <option value="365">1 ano</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Histórico de Backups -->
+            <section class="backup-section">
+                <h2><i class="fas fa-history"></i> Histórico de Backups</h2>
+                <div class="backup-list">
+                    <div class="backup-list-header">
+                        <div class="backup-info">Data</div>
+                        <div class="backup-info">Tamanho</div>
+                        <div class="backup-info">Status</div>
+                        <div class="backup-actions">Ações</div>
+                    </div>
+                    <div id="backupHistory" class="backup-list-content">
+                        <!-- Backup items will be added here dynamically -->
+                        <div class="backup-item">
+                            <div class="backup-info">Carregando...</div>
+                            <div class="backup-info"></div>
+                            <div class="backup-info"></div>
+                            <div class="backup-actions"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Restauração -->
+            <section class="backup-section">
+                <h2><i class="fas fa-undo"></i> Restauração</h2>
+                <div class="restore-options">
+                    <div class="upload-area" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Arraste um arquivo de backup ou</p>
+                        <label for="backupFile" class="btn-secondary">
+                            Selecione um arquivo
+                        </label>
+                        <input type="file" id="backupFile" accept=".json,.csv" style="display: none;">
+                    </div>
+                    <div class="restore-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>
+                            Atenção: A restauração substituirá todos os dados atuais.
+                            Certifique-se de fazer um backup antes de prosseguir.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>Processando...</p>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Confirmar Ação</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmationMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary close-modal">Cancelar</button>
+                    <button id="confirmAction" class="btn-danger">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/backup.js"></script>
+</body>
+</html> 

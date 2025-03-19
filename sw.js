@@ -1,115 +1,144 @@
-const CACHE_NAME = 'cheques-app-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'cheques-v1';
+const STATIC_CACHE = 'static-v1';
+const DYNAMIC_CACHE = 'dynamic-v1';
+
+// Arquivos para cache estático
+const STATIC_ASSETS = [
     '/',
     '/index.html',
+    '/login.html',
+    '/incluir_cheque.html',
+    '/listar_cheques.html',
+    '/empresas.html',
+    '/agenda.html',
+    '/relatorio.html',
+    '/perfil.html',
+    '/ajuda.html',
+    '/suporte.html',
+    '/backup.html',
     '/css/style.css',
     '/js/app.js',
-    '/js/firebase-config.js',
+    '/js/auth.js',
     '/js/dashboard.js',
+    '/js/firebase-config.js',
+    '/js/settings-menu.js',
     '/manifest.json',
-    'https://fonts.googleapis.com/icon?family=Material+Icons',
-    'https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js',
-    'https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js',
-    'https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2',
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'
 ];
 
-// Install Service Worker
-self.addEventListener('install', (event) => {
+// Instalar o Service Worker
+self.addEventListener('install', event => {
+    console.log('[Service Worker] Installing Service Worker...', event);
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Opened cache');
-                return cache.addAll(ASSETS_TO_CACHE);
+        caches.open(STATIC_CACHE)
+            .then(cache => {
+                console.log('[Service Worker] Precaching App Shell');
+                return cache.addAll(STATIC_ASSETS);
             })
     );
 });
 
-// Activate Service Worker
-self.addEventListener('activate', (event) => {
+// Ativar o Service Worker
+self.addEventListener('activate', event => {
+    console.log('[Service Worker] Activating Service Worker...', event);
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
+        caches.keys()
+            .then(keyList => {
+                return Promise.all(keyList.map(key => {
+                    if (key !== STATIC_CACHE && key !== DYNAMIC_CACHE) {
+                        console.log('[Service Worker] Removing old cache.', key);
+                        return caches.delete(key);
                     }
-                })
-            );
-        })
+                }));
+            })
     );
+    return self.clients.claim();
 });
 
-// Fetch Event Strategy (Cache First, then Network)
-self.addEventListener('fetch', (event) => {
+// Interceptar requisições
+self.addEventListener('fetch', event => {
+    // Ignorar requisições para o Firebase
+    if (event.request.url.includes('firestore.googleapis.com') ||
+        event.request.url.includes('www.googleapis.com') ||
+        event.request.url.includes('firebase-settings.crashlytics.com')) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
-            .then((response) => {
-                // Cache hit - return response
+            .then(response => {
                 if (response) {
                     return response;
                 }
 
-                // Clone the request because it's a one-time use stream
-                const fetchRequest = event.request.clone();
-
-                return fetch(fetchRequest)
-                    .then((response) => {
-                        // Check if we received a valid response
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // Clone the response because it's a one-time use stream
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                // Don't cache if it's an API request
-                                if (!event.request.url.includes('/api/')) {
-                                    cache.put(event.request, responseToCache);
+                return fetch(event.request)
+                    .then(res => {
+                        return caches.open(DYNAMIC_CACHE)
+                            .then(cache => {
+                                // Armazenar em cache apenas requisições GET
+                                if (event.request.method === 'GET') {
+                                    cache.put(event.request.url, res.clone());
                                 }
-                            });
-
-                        return response;
+                                return res;
+                            })
+                    })
+                    .catch(err => {
+                        // Retornar página offline para navegação
+                        if (event.request.headers.get('accept').includes('text/html')) {
+                            return caches.match('/offline.html');
+                        }
                     });
             })
     );
 });
 
-// Handle Push Notifications
-self.addEventListener('push', (event) => {
+// Sincronização em background
+self.addEventListener('sync', event => {
+    console.log('[Service Worker] Background Syncing', event);
+    if (event.tag === 'sync-cheques') {
+        event.waitUntil(
+            // Implementar sincronização de dados
+            console.log('[Service Worker] Syncing cheques...')
+        );
+    }
+});
+
+// Notificações push
+self.addEventListener('push', event => {
+    console.log('[Service Worker] Push Notification received', event);
+
+    let data = { title: 'Novo', content: 'Algo novo aconteceu!' };
+    if (event.data) {
+        data = JSON.parse(event.data.text());
+    }
+
     const options = {
-        body: event.data.text(),
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/badge-72x72.png',
+        body: data.content,
+        icon: 'icons/icon-96x96.png',
+        badge: 'icons/icon-72x72.png',
         vibrate: [100, 50, 100],
         data: {
             dateOfArrival: Date.now(),
             primaryKey: 1
-        },
-        actions: [
-            {
-                action: 'explore',
-                title: 'Ver Detalhes'
-            },
-            {
-                action: 'close',
-                title: 'Fechar'
-            }
-        ]
+        }
     };
 
     event.waitUntil(
-        self.registration.showNotification('Gestão de Cheques', options)
+        self.registration.showNotification(data.title, options)
     );
 });
 
-// Handle Notification Click
+// Notification click handler
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
     if (event.action === 'explore') {
-        // Open the app and navigate to specific page
+        event.waitUntil(
+            clients.openWindow('/listar_cheques.html')
+        );
+    } else {
         event.waitUntil(
             clients.openWindow('/')
         );

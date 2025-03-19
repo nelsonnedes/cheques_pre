@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda - Sistema de Cheques</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Ajuda</h1>
+            <div class="header-actions">
+                <button id="backBtn" class="icon-button" onclick="history.back()">
+                    <span class="material-icons">arrow_back</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="help-content">
+            <section class="help-section">
+                <h2>Como Usar o Sistema</h2>
+                <div class="help-item">
+                    <h3>Dashboard</h3>
+                    <p>O dashboard mostra um resumo geral do seu sistema, incluindo:</p>
+                    <ul>
+                        <li>Total em cheques</li>
+                        <li>Cheques vencendo hoje</li>
+                        <li>Próximos vencimentos</li>
+                        <li>Total de empresas cadastradas</li>
+                    </ul>
+                </div>
+
+                <div class="help-item">
+                    <h3>Gerenciando Cheques</h3>
+                    <p>Para gerenciar seus cheques:</p>
+                    <ul>
+                        <li>Clique em "Novo Cheque" para adicionar um novo</li>
+                        <li>Use a lista de cheques para visualizar todos os registros</li>
+                        <li>Utilize os filtros para encontrar cheques específicos</li>
+                        <li>Edite ou exclua cheques conforme necessário</li>
+                    </ul>
+                </div>
+
+                <div class="help-item">
+                    <h3>Empresas de Fomento</h3>
+                    <p>Gerencie suas empresas de fomento:</p>
+                    <ul>
+                        <li>Adicione novas empresas</li>
+                        <li>Edite informações existentes</li>
+                        <li>Visualize todos os cheques por empresa</li>
+                    </ul>
+                </div>
+
+                <div class="help-item">
+                    <h3>Notificações</h3>
+                    <p>Configure suas notificações para:</p>
+                    <ul>
+                        <li>Cheques vencendo hoje</li>
+                        <li>Próximos vencimentos</li>
+                        <li>Atualizações importantes</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="help-section">
+                <h2>Perguntas Frequentes</h2>
+                <div class="faq-item">
+                    <h3>Como faço backup dos meus dados?</h3>
+                    <p>Acesse o menu de configurações e clique em "Backup". Você pode exportar seus dados para um arquivo JSON.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Como restauro meus dados?</h3>
+                    <p>No menu de configurações, use a opção "Restaurar" e selecione seu arquivo de backup.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Como altero minha senha?</h3>
+                    <p>Acesse seu perfil através do menu de configurações e clique em "Alterar Senha".</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Como filtro meus cheques?</h3>
+                    <p>Na lista de cheques, use o botão de filtro para acessar todas as opções de filtragem disponíveis.</p>
+                </div>
+            </section>
+
+            <section class="help-section">
+                <h2>Precisa de Mais Ajuda?</h2>
+                <p>Entre em contato com nosso suporte:</p>
+                <div class="contact-options">
+                    <a href="suporte.html" class="contact-button">
+                        <span class="material-icons">support_agent</span>
+                        <span>Suporte Técnico</span>
+                    </a>
+                    <a href="mailto:suporte@sistema.com" class="contact-button">
+                        <span class="material-icons">email</span>
+                        <span>Email</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html">
+                <span class="material-icons">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="incluir_cheque.html">
+                <span class="material-icons">add_circle</span>
+                <span>Novo</span>
+            </a>
+            <a href="listar_cheques.html">
+                <span class="material-icons">list</span>
+                <span>Cheques</span>
+            </a>
+            <a href="agenda.html">
+                <span class="material-icons">calendar_today</span>
+                <span>Agenda</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/app.js" type="module"></script>
+</body>
+</html> 

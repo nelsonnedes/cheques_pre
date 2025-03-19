@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Som de Notificação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        .parameters {
+            margin: 1rem 0;
+        }
+        .parameters label {
+            display: block;
+            margin: 0.5rem 0;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Criar Som de Notificação</h1>
+    
+    <div class="parameters">
+        <label>
+            Frequência: <span id="freqValue">440</span>Hz
+            <input type="range" id="frequency" min="220" max="880" value="440">
+        </label>
+        <label>
+            Duração: <span id="durValue">0.5</span>s
+            <input type="range" id="duration" min="0.1" max="1" value="0.5" step="0.1">
+        </label>
+        <label>
+            Volume: <span id="volValue">0.5</span>
+            <input type="range" id="volume" min="0" max="1" value="0.5" step="0.1">
+        </label>
+    </div>
+
+    <div class="controls">
+        <button id="playBtn">Tocar Som</button>
+        <button id="saveBtn">Salvar MP3</button>
+    </div>
+
+    <script>
+        let audioContext;
+        let currentSound;
+
+        // Update value displays
+        ['frequency', 'duration', 'volume'].forEach(param => {
+            const input = document.getElementById(param);
+            const display = document.getElementById(param + 'Value');
+            input.addEventListener('input', () => {
+                display.textContent = input.value;
+            });
+        });
+
+        // Play sound
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const freq = parseFloat(document.getElementById('frequency').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const volume = parseFloat(document.getElementById('volume').value);
+
+            // Stop current sound if playing
+            if (currentSound) {
+                currentSound.stop();
+            }
+
+            // Create new sound
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+
+            currentSound = oscillator;
+        });
+
+        // Save sound
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const freq = parseFloat(document.getElementById('frequency').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const volume = parseFloat(document.getElementById('volume').value);
+
+            // Create audio buffer
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Generate sine wave
+            for (let i = 0; i < buffer.length; i++) {
+                const t = i / sampleRate;
+                const envelope = t < 0.1 ? t / 0.1 : 
+                               t > duration - 0.1 ? (duration - t) / 0.1 : 
+                               1;
+                data[i] = Math.sin(2 * Math.PI * freq * t) * volume * envelope;
+            }
+
+            // Create WAV file
+            const wavFile = createWavFile(buffer);
+            
+            // Download file
+            const blob = new Blob([wavFile], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'notification.wav';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Create WAV file
+        function createWavFile(audioBuffer) {
+            const numChannels = audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+            
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+            
+            const buffer = new ArrayBuffer(44 + audioBuffer.length * blockAlign);
+            const view = new DataView(buffer);
+            
+            // Write WAV header
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + audioBuffer.length * blockAlign, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, audioBuffer.length * blockAlign, true);
+            
+            // Write audio data
+            const offset = 44;
+            const data = audioBuffer.getChannelData(0);
+            for (let i = 0; i < audioBuffer.length; i++) {
+                const sample = Math.max(-1, Math.min(1, data[i]));
+                view.setInt16(offset + i * bytesPerSample, sample * 0x7FFF, true);
+            }
+            
+            return buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+    </script>
+</body>
+</html> 
