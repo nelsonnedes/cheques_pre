@@ -50,46 +50,45 @@ body {
 
 .app-header {
     background-color: var(--card-bg);
-    padding: 16px 20px;
+    padding: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
+    height: 64px;
 }
 
 .app-header h1 {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-primary);
+    margin: 0;
+    padding: 0;
 }
 
 .header-actions {
     display: flex;
-    gap: 16px;
     align-items: center;
-    position: relative;
+    gap: 1rem;
 }
 
+/* Status Indicator */
 #connectionStatus {
-    position: fixed;
-    top: 16px;
-    right: 80px; /* Aumentado para dar espaço aos ícones */
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    z-index: 1000;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
 }
 
 #connectionStatus i {
-    font-size: 8px;
-    margin-right: 4px;
+    font-size: 0.625rem;
 }
 
 #connectionStatus.online {
@@ -102,41 +101,53 @@ body {
     color: var(--error-text);
 }
 
-#connectionStatus.online i {
-    color: var(--success-text);
-}
-
-#connectionStatus.offline i {
-    color: var(--error-text);
-}
-
+/* Icon Buttons */
 .icon-button {
-    background: none;
-    border: none;
-    padding: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: var(--text-secondary);
     position: relative;
-    transition: background-color 0.2s ease;
-    min-width: 36px;
-    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.icon-button i {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* Notification Badge */
 .notification-badge {
     position: absolute;
     top: 0;
     right: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 9px;
     background-color: #dc3545;
     color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-    min-width: 18px;
-    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transform: translate(25%, -25%);
 }
 
@@ -147,14 +158,15 @@ body {
 /* Bottom Navigation */
 .bottom-nav {
     background-color: var(--card-bg);
-    padding: 12px 20px;
+    padding: 0.5rem;
     display: flex;
     justify-content: space-around;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 90;
 }
 
 .bottom-nav a {
@@ -163,23 +175,32 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.8rem;
-    gap: 4px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: color 0.2s ease;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    min-width: 64px;
+    transition: all 0.2s ease;
 }
 
 .bottom-nav a i {
-    font-size: 20px;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.bottom-nav a span {
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .bottom-nav a.active {
     color: var(--primary-color);
+    background-color: var(--hover-bg);
 }
 
 .bottom-nav a:hover {
     color: var(--primary-color);
+    background-color: var(--hover-bg);
 }
 
 /* Utility Classes */
@@ -187,30 +208,29 @@ body {
     display: none !important;
 }
 
-/* Dashboard Styles */
-.dashboard-container {
-    padding: 2rem;
-    max-width: 1400px;
+/* Dashboard Layout */
+.dashboard {
+    padding: 1rem;
+    max-width: 1200px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 /* Summary Cards */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
 }
 
 .card {
     background-color: var(--card-bg);
-    border-radius: 8px;
+    border-radius: 1rem;
     padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
     box-shadow: var(--shadow-sm);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .card:hover {
@@ -218,51 +238,153 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-.card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-}
-
-.card:nth-child(1) .card-icon {
-    background-color: rgba(33, 150, 243, 0.1);
-    color: #2196f3;
-}
-
-.card:nth-child(2) .card-icon {
-    background-color: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-}
-
-.card:nth-child(3) .card-icon {
-    background-color: rgba(244, 67, 54, 0.1);
-    color: #f44336;
-}
-
-.card:nth-child(4) .card-icon {
-    background-color: rgba(76, 175, 80, 0.1);
-    color: #4caf50;
-}
-
-.card-content {
-    flex: 1;
-}
-
-.card-content h3 {
+.card h3 {
     color: var(--text-secondary);
     font-size: 0.875rem;
+    font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
-.card-content p {
+.card p {
     color: var(--text-primary);
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0;
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-top: 2rem;
+}
+
+.quick-actions h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    gap: 0.75rem;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background-color: var(--hover-bg);
+}
+
+.action-button i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.action-button span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Recent Cheques Section */
+.recent-cheques {
+    margin-top: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.btn-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.btn-link:hover {
+    color: var(--primary-dark);
+}
+
+/* Loading and Empty States */
+.loading-state,
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.loading-state i,
+.empty-state i {
+    font-size: 2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-primary i {
+    font-size: 1rem;
+    color: white;
 }
 
 /* Charts Section */
@@ -526,82 +648,11 @@ body {
     }
 }
 
-/* Quick Actions */
-.quick-actions {
-    margin-bottom: 24px;
-}
-
-.quick-actions h2 {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-}
-
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-}
-
-.action-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: var(--card-bg);
-    border-radius: 12px;
-    text-decoration: none;
-    color: var(--text-primary);
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.action-button:hover {
-    transform: translateY(-2px);
-    background-color: var(--hover-bg);
-}
-
-.action-button i {
-    font-size: 24px;
-    margin-bottom: 8px;
-    color: var(--primary-color);
-}
-
-.action-button span {
-    font-size: 0.9rem;
-    text-align: center;
-}
-
 /* Recent Cheques */
 .recent-cheques {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 20px;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.section-header h2 {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-}
-
-.btn-link {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.btn-link:hover {
-    text-decoration: underline;
 }
 
 .cheques-list {
@@ -777,7 +828,7 @@ body {
     }
 
     .actions-grid {
-        grid-template-columns: 1fr;
+        grid-grid-template-columns: 1fr;
     }
 
     .cheque-item {
@@ -930,6 +981,7 @@ body {
 .content {
     flex: 1;
     padding: 1rem;
+    padding-bottom: calc(4rem + 56px); /* Ajuste para o bottom-nav */
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
@@ -2102,4 +2154,64 @@ input:checked + .slider:before {
         height: 50px;
         font-size: 20px;
     }
+}
+
+/* Settings Menu */
+.settings-menu {
+    position: fixed;
+    top: 64px;
+    right: 1rem;
+    background-color: var(--card-bg);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-lg);
+    min-width: 240px;
+    z-index: 1000;
+    transform-origin: top right;
+    transition: all 0.2s ease;
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+.settings-menu.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.settings-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.settings-item i {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    width: 1.125rem;
+    text-align: center;
+}
+
+/* Main Content Adjustments */
+main {
+    flex: 1;
+    padding: 1rem;
+    padding-bottom: calc(4rem + 56px); /* Ajuste para o bottom-nav */
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
 }

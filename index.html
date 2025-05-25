@@ -46,7 +46,7 @@
             <div class="header-actions">
                 <div id="connectionStatus" class="online">
                     <i class="fas fa-circle"></i>
-                    Online
+                    <span>Online</span>
                 </div>
                 <button id="notificationsBtn" class="icon-button" aria-label="Notificações">
                     <i class="fas fa-bell"></i>
@@ -107,7 +107,10 @@
             <section class="recent-cheques">
                 <div class="section-header">
                     <h2>Cheques Recentes</h2>
-                    <a href="listar_cheques.html" class="btn-link">Ver Todos</a>
+                    <a href="listar_cheques.html" class="btn-link">
+                        Ver Todos
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
                 </div>
                 <div id="chequesList" class="cheques-list">
                     <!-- Will be populated by JavaScript -->
@@ -124,7 +127,7 @@
                     <p>Comece cadastrando seu primeiro cheque</p>
                     <a href="incluir_cheque.html" class="btn-primary">
                         <i class="fas fa-plus"></i>
-                        Cadastrar Cheque
+                        <span>Cadastrar Cheque</span>
                     </a>
                 </div>
             </section>
@@ -134,23 +137,23 @@
         <nav class="bottom-nav">
             <a href="index.html" class="active">
                 <i class="fas fa-home"></i>
-                Início
+                <span>Início</span>
             </a>
             <a href="listar_cheques.html">
                 <i class="fas fa-list"></i>
-                Listar
+                <span>Listar</span>
             </a>
             <a href="incluir_cheque.html">
                 <i class="fas fa-plus"></i>
-                Cadastrar
+                <span>Cadastrar</span>
             </a>
             <a href="agenda.html">
                 <i class="fas fa-calendar"></i>
-                Agenda
+                <span>Agenda</span>
             </a>
             <a href="relatorio.html">
                 <i class="fas fa-chart-bar"></i>
-                Relatório
+                <span>Relatório</span>
             </a>
         </nav>
 
@@ -158,31 +161,31 @@
         <div id="settingsMenu" class="settings-menu">
             <a href="perfil.html" class="settings-item">
                 <i class="fas fa-user"></i>
-                Perfil
+                <span>Perfil</span>
             </a>
             <a href="empresas.html" class="settings-item">
                 <i class="fas fa-building"></i>
-                Cadastro de Fomento
+                <span>Cadastro de Fomento</span>
             </a>
             <a href="notificacoes.html" class="settings-item">
                 <i class="fas fa-bell"></i>
-                Notificações
+                <span>Notificações</span>
             </a>
             <a href="ajuda.html" class="settings-item">
                 <i class="fas fa-question-circle"></i>
-                Ajuda
+                <span>Ajuda</span>
             </a>
             <a href="suporte.html" class="settings-item">
                 <i class="fas fa-headset"></i>
-                Suporte
+                <span>Suporte</span>
             </a>
             <a href="backup.html" class="settings-item">
                 <i class="fas fa-database"></i>
-                Backup
+                <span>Backup</span>
             </a>
             <button id="logoutBtn" class="settings-item">
                 <i class="fas fa-sign-out-alt"></i>
-                Sair
+                <span>Sair</span>
             </button>
         </div>
     </div>
