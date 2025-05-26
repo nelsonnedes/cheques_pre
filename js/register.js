@@ -1,21 +1,21 @@
 // Firebase imports
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { 
     getAuth, 
     createUserWithEmailAndPassword, 
     signInWithPopup, 
     GoogleAuthProvider,
     updateProfile 
-} from 'firebase/auth';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyBOqVFJpn_wJGtmLz8wJGtmLz8wJGtmLz8",
-    authDomain: "cheques-pre.firebaseapp.com",
-    projectId: "cheques-pre",
-    storageBucket: "cheques-pre.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef123456789012345678"
+    apiKey: "AIzaSyD-KfA6ZwWJ9E_rl6QjytrDSzWboiWeIos",
+    authDomain: "dbcheques.firebaseapp.com",
+    projectId: "dbcheques",
+    storageBucket: "dbcheques.firebasestorage.app",
+    messagingSenderId: "417151486713",
+    appId: "1:417151486713:web:036af07778be521d447028"
 };
 
 // Initialize Firebase

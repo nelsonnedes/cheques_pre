@@ -196,7 +196,7 @@ function getFirebaseErrorMessage(error) {
 }
 
 // Configurar interface do usuário
-export function setupUserInterface() {
+function setupUserInterface() {
   setupProfileDropdown();
   
   // Configurar notificações
