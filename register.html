@@ -9,21 +9,34 @@
     <link rel="stylesheet" href="css/global.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Estilos específicos para a página de cadastro */
+        /* Reset e configuração base */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Container principal */
         .auth-container {
             min-height: 100vh;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
-            padding: var(--spacing-md);
+            padding: 1rem;
             position: relative;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         .auth-container::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: -50%;
             left: -50%;
             width: 200%;
@@ -36,6 +49,7 @@
                 rgba(255, 255, 255, 0.03) 4px
             );
             animation: movePattern 20s linear infinite;
+            z-index: 0;
         }
 
         @keyframes movePattern {
@@ -45,11 +59,11 @@
 
         .auth-card {
             background: white;
-            border-radius: var(--border-radius-xl);
-            box-shadow: var(--shadow-xl);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             width: 100%;
             max-width: 480px;
-            overflow: hidden;
+            margin: 2rem auto;
             position: relative;
             z-index: 1;
             animation: slideIn 0.6s ease-out;
@@ -67,21 +81,22 @@
         }
 
         .auth-header {
-            padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+            padding: 2rem 2rem 1.5rem;
             text-align: center;
             background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
             border-bottom: 1px solid var(--primary-200);
+            border-radius: 16px 16px 0 0;
         }
 
         .auth-header h1 {
-            margin: 0 0 var(--spacing-sm) 0;
+            margin: 0 0 0.5rem 0;
             color: var(--primary-700);
-            font-size: 1.875rem;
+            font-size: 1.75rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: var(--spacing-sm);
+            gap: 0.75rem;
         }
 
         .auth-header h1 i {
@@ -94,7 +109,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .auth-header p {
@@ -104,16 +119,16 @@
         }
 
         .auth-form {
-            padding: var(--spacing-xl);
+            padding: 2rem;
         }
 
         .form-group {
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 1.25rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: 0.5rem;
             font-weight: 600;
             color: var(--gray-700);
             font-size: 0.9rem;
@@ -121,13 +136,12 @@
 
         .form-group input {
             width: 100%;
-            padding: var(--spacing-md);
+            padding: 0.875rem;
             border: 2px solid var(--gray-300);
-            border-radius: var(--border-radius-md);
+            border-radius: 8px;
             font-size: 1rem;
             transition: all 0.2s ease;
             background: white;
-            box-sizing: border-box;
         }
 
         .form-group input:focus {
@@ -159,13 +173,13 @@
 
         .toggle-password {
             position: absolute;
-            right: var(--spacing-md);
+            right: 0.875rem;
             background: none;
             border: none;
             color: var(--gray-400);
             cursor: pointer;
-            padding: var(--spacing-xs);
-            border-radius: var(--border-radius-sm);
+            padding: 0.5rem;
+            border-radius: 4px;
             transition: color 0.2s ease;
             font-size: 1.1rem;
         }
@@ -174,38 +188,14 @@
             color: var(--gray-600);
         }
 
-        .password-strength {
-            margin-top: var(--spacing-xs);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
-            font-size: 0.8rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .password-strength.weak {
-            background: var(--error-100);
-            color: var(--error-700);
-        }
-
-        .password-strength.medium {
-            background: var(--warning-100);
-            color: var(--warning-700);
-        }
-
-        .password-strength.strong {
-            background: var(--success-100);
-            color: var(--success-700);
-        }
-
         .checkbox-group {
-            margin: var(--spacing-lg) 0;
+            margin: 1.5rem 0;
         }
 
         .checkbox-label {
             display: flex;
             align-items: flex-start;
-            gap: var(--spacing-sm);
+            gap: 0.75rem;
             cursor: pointer;
             font-size: 0.9rem;
             line-height: 1.4;
@@ -220,7 +210,7 @@
             width: 20px;
             height: 20px;
             border: 2px solid var(--gray-300);
-            border-radius: var(--border-radius-sm);
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -253,23 +243,27 @@
 
         .btn-primary {
             width: 100%;
-            padding: var(--spacing-md) var(--spacing-lg);
+            padding: 0.875rem 1.5rem;
             background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
             color: white;
             border: none;
-            border-radius: var(--border-radius-md);
+            border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         .btn-primary:disabled {
@@ -291,15 +285,12 @@
             align-items: center;
             justify-content: center;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
         }
 
         .divider {
             position: relative;
             text-align: center;
-            margin: var(--spacing-xl) 0;
+            margin: 1.5rem 0;
         }
 
         .divider::before {
@@ -314,7 +305,7 @@
 
         .divider span {
             background: white;
-            padding: 0 var(--spacing-md);
+            padding: 0 1rem;
             color: var(--gray-500);
             font-size: 0.9rem;
             font-weight: 500;
@@ -322,18 +313,18 @@
 
         .btn-google {
             width: 100%;
-            padding: var(--spacing-md) var(--spacing-lg);
+            padding: 0.875rem 1.5rem;
             border: 2px solid var(--gray-200);
             background: white;
             color: var(--gray-700);
-            border-radius: var(--border-radius-md);
+            border-radius: 8px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: var(--spacing-sm);
+            gap: 0.75rem;
             font-size: 1rem;
         }
 
@@ -341,7 +332,7 @@
             border-color: var(--gray-300);
             background: var(--gray-50);
             transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
         }
 
         .btn-google i {
@@ -350,10 +341,11 @@
         }
 
         .auth-footer {
-            padding: var(--spacing-lg) var(--spacing-xl);
+            padding: 1.5rem 2rem;
             text-align: center;
             background: var(--gray-50);
             border-top: 1px solid var(--gray-200);
+            border-radius: 0 0 16px 16px;
             font-size: 0.9rem;
         }
 
@@ -375,11 +367,11 @@
         .error-message {
             color: var(--error-500);
             font-size: 0.85rem;
-            margin-top: var(--spacing-xs);
+            margin-top: 0.5rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
+            gap: 0.5rem;
             min-height: 1.2rem;
             opacity: 0;
             transition: opacity 0.2s ease;
@@ -397,11 +389,11 @@
         .success-message {
             color: var(--success-500);
             font-size: 0.85rem;
-            margin-top: var(--spacing-xs);
+            margin-top: 0.5rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: var(--spacing-xs);
+            gap: 0.5rem;
             opacity: 0;
             transition: opacity 0.2s ease;
         }
@@ -415,18 +407,28 @@
             font-size: 0.8rem;
         }
 
-        /* Responsividade */
-        @media (max-width: 640px) {
+        /* Responsividade mobile */
+        @media (max-width: 768px) {
             .auth-container {
-                padding: var(--spacing-sm);
+                padding: 0.5rem;
+                align-items: flex-start;
             }
 
             .auth-card {
+                margin: 0.5rem auto;
                 max-width: 100%;
+                border-radius: 12px;
+            }
+
+            .auth-header {
+                padding: 1.5rem 1.5rem 1rem;
+                border-radius: 12px 12px 0 0;
             }
 
             .auth-header h1 {
                 font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.5rem;
             }
 
             .auth-header h1 i {
@@ -436,11 +438,79 @@
             }
 
             .auth-form {
-                padding: var(--spacing-lg);
+                padding: 1.5rem;
             }
 
             .form-group {
-                margin-bottom: var(--spacing-md);
+                margin-bottom: 1rem;
+            }
+
+            .form-group input {
+                padding: 0.75rem;
+                font-size: 16px; /* Previne zoom no iOS */
+            }
+
+            .auth-footer {
+                padding: 1rem 1.5rem;
+                border-radius: 0 0 12px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 0.25rem;
+            }
+
+            .auth-card {
+                margin: 0.25rem;
+                border-radius: 8px;
+            }
+
+            .auth-header {
+                padding: 1rem;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .auth-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .auth-form {
+                padding: 1rem;
+            }
+
+            .form-group {
+                margin-bottom: 0.875rem;
+            }
+
+            .auth-footer {
+                padding: 1rem;
+                border-radius: 0 0 8px 8px;
+            }
+        }
+
+        /* Altura máxima para evitar scroll excessivo */
+        @media (max-height: 700px) {
+            .auth-container {
+                align-items: flex-start;
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .auth-header {
+                padding: 1rem 2rem 0.75rem;
+            }
+
+            .auth-form {
+                padding: 1.5rem 2rem;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+            }
+
+            .auth-footer {
+                padding: 1rem 2rem;
             }
         }
     </style>
@@ -453,7 +523,7 @@
                     <i class="fas fa-user-plus"></i>
                     Criar Conta
                 </h1>
-                <p>Cadastre-se para acessar o sistema financeiro</p>
+                <p>Cadastre-se para acessar o sistema</p>
             </div>
 
             <form id="register-form" class="auth-form" method="POST" action="#" novalidate>
@@ -478,7 +548,7 @@
                     <label for="telefone">Telefone</label>
                     <input type="tel" id="telefone" name="telefone" required 
                            placeholder="(11) 99999-9999" 
-                           data-mask="phone" autocomplete="tel">
+                           autocomplete="tel">
                     <div class="error-message" id="telefone-error"></div>
                     <div class="success-message" id="telefone-success"></div>
                 </div>
@@ -487,7 +557,7 @@
                     <label for="cpf">CPF</label>
                     <input type="text" id="cpf" name="cpf" required 
                            placeholder="000.000.000-00" 
-                           data-mask="cpf" autocomplete="off">
+                           autocomplete="off">
                     <div class="error-message" id="cpf-error"></div>
                     <div class="success-message" id="cpf-success"></div>
                 </div>
@@ -503,7 +573,6 @@
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
-                    <div class="password-strength" id="password-strength"></div>
                     <div class="error-message" id="password-error"></div>
                     <div class="success-message" id="password-success"></div>
                 </div>
@@ -574,411 +643,6 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD-KfA6ZwWJ9E_rl6QjytrDSzWboiWeIos",
-            authDomain: "dbcheques.firebaseapp.com",
-            projectId: "dbcheques",
-            storageBucket: "dbcheques.firebasestorage.app",
-            messagingSenderId: "417151486713",
-            appId: "1:417151486713:web:036af07778be521d447028"
-        };
-
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-
-        // Elementos do DOM
-        const form = document.getElementById('register-form');
-        const registerBtn = document.getElementById('register-btn');
-        const googleBtn = document.getElementById('google-register');
-        const loadingOverlay = document.getElementById('loading-overlay');
-
-        // Funções utilitárias
-        function showLoading(show) {
-            if (show) {
-                registerBtn.classList.add('loading');
-                registerBtn.disabled = true;
-                loadingOverlay.classList.remove('hidden');
-            } else {
-                registerBtn.classList.remove('loading');
-                registerBtn.disabled = false;
-                loadingOverlay.classList.add('hidden');
-            }
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container') || createToastContainer();
-            
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            
-            const icon = getToastIcon(type);
-            toast.innerHTML = `
-                <div class="toast-content">
-                    <i class="${icon}"></i>
-                    <span>${message}</span>
-                </div>
-                <button onclick="this.parentElement.remove()" class="toast-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, 5000);
-        }
-
-        function createToastContainer() {
-            const container = document.createElement('div');
-            container.id = 'toast-container';
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-            return container;
-        }
-
-        function getToastIcon(type) {
-            const icons = {
-                success: 'fas fa-check-circle',
-                error: 'fas fa-exclamation-circle',
-                warning: 'fas fa-exclamation-triangle',
-                info: 'fas fa-info-circle'
-            };
-            return icons[type] || icons.info;
-        }
-
-        function showError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}-error`);
-            const successElement = document.getElementById(`${fieldId}-success`);
-            
-            if (field) field.classList.add('error');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.classList.add('show');
-            }
-            if (successElement) successElement.classList.remove('show');
-        }
-
-        function showSuccess(fieldId, message = '') {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}-error`);
-            const successElement = document.getElementById(`${fieldId}-success`);
-            
-            if (field) {
-                field.classList.remove('error');
-                field.classList.add('valid');
-            }
-            if (errorElement) errorElement.classList.remove('show');
-            if (successElement && message) {
-                successElement.textContent = message;
-                successElement.classList.add('show');
-            }
-        }
-
-        function clearFieldStatus(fieldId) {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}-error`);
-            const successElement = document.getElementById(`${fieldId}-success`);
-            
-            if (field) {
-                field.classList.remove('error', 'valid');
-            }
-            if (errorElement) errorElement.classList.remove('show');
-            if (successElement) successElement.classList.remove('show');
-        }
-
-        // Validações
-        function validateName(name) {
-            if (name.length < 3) {
-                return 'Nome deve ter pelo menos 3 caracteres';
-            }
-            if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(name)) {
-                return 'Nome deve conter apenas letras';
-            }
-            return null;
-        }
-
-        function validateEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                return 'Digite um e-mail válido';
-            }
-            return null;
-        }
-
-        function validatePhone(phone) {
-            const phoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
-            if (!phoneRegex.test(phone)) {
-                return 'Digite um telefone válido: (11) 99999-9999';
-            }
-            return null;
-        }
-
-        function validateCPF(cpf) {
-            const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
-            if (!cpfRegex.test(cpf)) {
-                return 'Digite um CPF válido: 000.000.000-00';
-            }
-            
-            // Validação básica de CPF
-            const numbers = cpf.replace(/\D/g, '');
-            if (numbers.length !== 11) {
-                return 'CPF deve ter 11 dígitos';
-            }
-            
-            // Verificar se todos os dígitos são iguais
-            if (/^(\d)\1{10}$/.test(numbers)) {
-                return 'CPF inválido';
-            }
-            
-            return null;
-        }
-
-        function validatePassword(password) {
-            if (password.length < 6) {
-                return 'Senha deve ter pelo menos 6 caracteres';
-            }
-            
-            let strength = 0;
-            let feedback = '';
-            
-            if (password.length >= 8) strength++;
-            if (/[a-z]/.test(password)) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/\d/.test(password)) strength++;
-            if (/[^a-zA-Z\d]/.test(password)) strength++;
-            
-            if (strength <= 2) {
-                feedback = 'Senha fraca';
-                document.getElementById('password-strength').className = 'password-strength weak';
-            } else if (strength <= 3) {
-                feedback = 'Senha média';
-                document.getElementById('password-strength').className = 'password-strength medium';
-            } else {
-                feedback = 'Senha forte';
-                document.getElementById('password-strength').className = 'password-strength strong';
-            }
-            
-            document.getElementById('password-strength').textContent = feedback;
-            return null;
-        }
-
-        // Máscaras
-        function applyMask(value, type) {
-            switch (type) {
-                case 'phone':
-                    return value
-                        .replace(/\D/g, '')
-                        .replace(/(\d{2})(\d)/, '($1) $2')
-                        .replace(/(\d{4,5})(\d{4})/, '$1-$2')
-                        .slice(0, 15);
-                        
-                case 'cpf':
-                    return value
-                        .replace(/\D/g, '')
-                        .replace(/(\d{3})(\d)/, '$1.$2')
-                        .replace(/(\d{3})(\d)/, '$1.$2')
-                        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-                        .slice(0, 14);
-                        
-                default:
-                    return value;
-            }
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Aplicar máscaras
-            const maskedInputs = document.querySelectorAll('[data-mask]');
-            maskedInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    const maskType = this.getAttribute('data-mask');
-                    this.value = applyMask(this.value, maskType);
-                });
-            });
-
-            // Toggle password visibility
-            const toggleButtons = document.querySelectorAll('.toggle-password');
-            toggleButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const input = this.parentElement.querySelector('input');
-                    const icon = this.querySelector('i');
-                    
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                    } else {
-                        input.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                    }
-                });
-            });
-
-            // Validação em tempo real
-            const inputs = form.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    validateField(this);
-                });
-                
-                input.addEventListener('input', function() {
-                    if (this.classList.contains('error')) {
-                        validateField(this);
-                    }
-                    
-                    if (this.id === 'password') {
-                        validatePassword(this.value);
-                    }
-                });
-            });
-        });
-
-        function validateField(field) {
-            const value = field.value.trim();
-            const fieldId = field.id;
-            let error = null;
-
-            switch (fieldId) {
-                case 'nome':
-                    error = validateName(value);
-                    break;
-                case 'email':
-                    error = validateEmail(value);
-                    break;
-                case 'telefone':
-                    error = validatePhone(value);
-                    break;
-                case 'cpf':
-                    error = validateCPF(value);
-                    break;
-                case 'password':
-                    error = validatePassword(value);
-                    break;
-                case 'confirm-password':
-                    const password = document.getElementById('password').value;
-                    if (value !== password) {
-                        error = 'As senhas não coincidem';
-                    }
-                    break;
-                case 'terms':
-                    if (!field.checked) {
-                        error = 'Você deve aceitar os termos';
-                    }
-                    break;
-            }
-
-            if (error) {
-                showError(fieldId, error);
-                return false;
-            } else {
-                showSuccess(fieldId);
-                return true;
-            }
-        }
-
-        // Registro com email/senha
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Validar todos os campos
-            const inputs = form.querySelectorAll('input');
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                if (!validateField(input)) {
-                    isValid = false;
-                }
-            });
-            
-            if (!isValid) {
-                showToast('Por favor, corrija os erros no formulário', 'error');
-                return;
-            }
-            
-            const formData = new FormData(form);
-            const userData = {
-                nome: formData.get('nome'),
-                email: formData.get('email'),
-                telefone: formData.get('telefone'),
-                cpf: formData.get('cpf'),
-                password: formData.get('password')
-            };
-            
-            try {
-                showLoading(true);
-                
-                // Criar usuário no Firebase
-                const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-                
-                // Atualizar perfil com nome
-                await updateProfile(userCredential.user, {
-                    displayName: userData.nome
-                });
-                
-                showToast('Conta criada com sucesso! Redirecionando...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Erro no registro:', error);
-                
-                let errorMessage = 'Erro ao criar conta. Tente novamente.';
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'Este e-mail já está sendo usado';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Senha muito fraca';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'E-mail inválido';
-                }
-                
-                showToast(errorMessage, 'error');
-            } finally {
-                showLoading(false);
-            }
-        });
-
-        // Registro com Google
-        googleBtn.addEventListener('click', async function() {
-            try {
-                showLoading(true);
-                
-                const result = await signInWithPopup(auth, googleProvider);
-                
-                showToast('Conta criada com sucesso! Redirecionando...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Erro no registro com Google:', error);
-                
-                let errorMessage = 'Erro ao criar conta com Google';
-                if (error.code === 'auth/account-exists-with-different-credential') {
-                    errorMessage = 'Já existe uma conta com este e-mail';
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    errorMessage = 'Login cancelado pelo usuário';
-                }
-                
-                showToast(errorMessage, 'error');
-            } finally {
-                showLoading(false);
-            }
-        });
-    </script>
+    <script type="module" src="js/register.js"></script>
 </body>
 </html> 
