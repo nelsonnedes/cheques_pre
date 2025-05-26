@@ -14,12 +14,12 @@ let currentUser = null;
 
 // Configuração do Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBqJVqKvOtKvOtKvOtKvOtKvOtKvOtKvOt",
-  authDomain: "sistema-financeiro.firebaseapp.com",
-  projectId: "sistema-financeiro",
-  storageBucket: "sistema-financeiro.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdefghijklmnop"
+  apiKey: "AIzaSyD-KfA6ZwWJ9E_rl6QjytrDSzWboiWeIos",
+  authDomain: "dbcheques.firebaseapp.com",
+  projectId: "dbcheques",
+  storageBucket: "dbcheques.firebasestorage.app",
+  messagingSenderId: "417151486713",
+  appId: "1:417151486713:web:036af07778be521d447028"
 };
 
 // Inicializar Firebase
