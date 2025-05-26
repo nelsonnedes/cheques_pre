@@ -213,58 +213,90 @@ class CompanyManager {
     }
 
     async init() {
+        console.log('Inicializando CompanyManager...');
         this.setupEventListeners();
         this.checkAuth();
     }
 
     checkAuth() {
+        console.log('Verificando autenticação...');
         onAuthStateChanged(auth, (user) => {
+            console.log('Estado de autenticação:', user ? 'Logado' : 'Não logado');
             if (user) {
                 this.currentUser = user;
+                console.log('Usuário logado:', user.email);
                 this.loadCompanies();
             } else {
+                console.log('Usuário não logado, redirecionando...');
                 window.location.href = 'login.html';
             }
         });
     }
 
     setupEventListeners() {
-        // Botão adicionar empresa
-        document.getElementById('btn-add-empresa')?.addEventListener('click', () => {
-            this.openCompanyModal();
-        });
+        console.log('Configurando event listeners...');
+        
+        // Botão Nova Empresa
+        const newCompanyBtn = document.querySelector('[data-action="new-company"]');
+        if (newCompanyBtn) {
+            newCompanyBtn.addEventListener('click', () => {
+                console.log('Botão Nova Empresa clicado');
+                this.openCompanyModal();
+            });
+        }
 
-        // Botão aplicar seleção
-        document.getElementById('btn-apply-selection')?.addEventListener('click', () => {
-            this.applySelection();
-        });
+        // Botão Aplicar Seleção
+        const applySelectionBtn = document.querySelector('[data-action="apply-selection"]');
+        if (applySelectionBtn) {
+            applySelectionBtn.addEventListener('click', () => {
+                console.log('Botão Aplicar Seleção clicado');
+                this.applySelection();
+            });
+        }
 
         // Formulário de empresa
-        document.getElementById('company-form')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveCompany();
-        });
+        const companyForm = document.getElementById('company-form');
+        if (companyForm) {
+            companyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                console.log('Formulário enviado');
+                this.saveCompany();
+            });
+        }
 
-        // Botões do modal
-        document.getElementById('cancel-btn')?.addEventListener('click', () => {
-            this.closeCompanyModal();
-        });
+        // Botão cancelar no modal
+        const cancelBtn = document.querySelector('[data-action="cancel"]');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                console.log('Botão Cancelar clicado');
+                this.closeCompanyModal();
+            });
+        }
 
         // Fechar modal clicando fora
-        document.getElementById('company-modal')?.addEventListener('click', (e) => {
-            if (e.target.id === 'company-modal') {
-                this.closeCompanyModal();
-            }
-        });
+        const modal = document.getElementById('company-modal');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeCompanyModal();
+                }
+            });
+        }
 
         // Auto-formatação do CNPJ
-        document.getElementById('company-cnpj')?.addEventListener('input', (e) => {
-            this.formatCNPJ(e.target);
-        });
+        const cnpjInput = document.getElementById('company-cnpj');
+        if (cnpjInput) {
+            cnpjInput.addEventListener('input', (e) => {
+                this.formatCNPJ(e.target);
+            });
+        }
+
+        console.log('Event listeners configurados');
     }
 
     async loadCompanies() {
         try {
+            console.log('Carregando empresas...');
             this.showLoading(true);
             
             const companiesRef = collection(db, 'empresas');
@@ -276,6 +308,7 @@ class CompanyManager {
 
             // Listener em tempo real
             onSnapshot(q, (snapshot) => {
+                console.log('Empresas recebidas do Firestore:', snapshot.size);
                 this.companies = [];
                 snapshot.forEach((doc) => {
                     this.companies.push({
@@ -289,13 +322,14 @@ class CompanyManager {
 
         } catch (error) {
             console.error('Erro ao carregar empresas:', error);
-            this.showToast('Erro ao carregar empresas', 'error');
+            this.showToast('Erro ao carregar empresas: ' + error.message, 'error');
         } finally {
             this.showLoading(false);
         }
     }
 
     renderCompanies() {
+        console.log('Renderizando empresas:', this.companies.length);
         const container = document.getElementById('companies-grid');
         const emptyState = document.getElementById('empty-state');
 
@@ -414,11 +448,11 @@ class CompanyManager {
         const checkbox = document.getElementById(`checkbox-${companyId}`);
         
         if (this.selectedCompanies.has(companyId)) {
-            card.classList.add('selected');
-            checkbox.checked = true;
+            card?.classList.add('selected');
+            if (checkbox) checkbox.checked = true;
         } else {
-            card.classList.remove('selected');
-            checkbox.checked = false;
+            card?.classList.remove('selected');
+            if (checkbox) checkbox.checked = false;
         }
     }
 
@@ -431,7 +465,7 @@ class CompanyManager {
     }
 
     updateSelectionSummary() {
-        const summaryContainer = document.getElementById('selectionSummary');
+        const summaryContainer = document.getElementById('selection-summary');
         if (!summaryContainer) return;
 
         if (this.selectedCompanies.size === 0) {
@@ -440,43 +474,27 @@ class CompanyManager {
         }
 
         summaryContainer.style.display = 'block';
-        const selectedCompaniesList = document.getElementById('selectedCompaniesList');
+        const selectedCompaniesList = document.getElementById('selected-companies-list');
         
-        const selectedCompaniesData = this.companies.filter(company => 
-            this.selectedCompanies.has(company.id)
-        );
+        if (selectedCompaniesList) {
+            const selectedCompaniesData = this.companies.filter(company => 
+                this.selectedCompanies.has(company.id)
+            );
 
-        selectedCompaniesList.innerHTML = selectedCompaniesData.map(company => `
-            <div class="selected-company-tag">
-                ${company.nome}
-                <button class="remove-tag" onclick="companyManager.removeFromSelection('${company.id}')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `).join('');
+            selectedCompaniesList.innerHTML = selectedCompaniesData.map(company => `
+                <div class="selected-company-tag">
+                    ${company.nome}
+                    <button class="remove-tag" onclick="companyManager.removeFromSelection('${company.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
     }
 
     removeFromSelection(companyId) {
         this.selectedCompanies.delete(companyId);
         this.updateCompanyCardSelection(companyId);
-        this.updateSelectionInfo();
-        this.updateSelectionSummary();
-    }
-
-    selectAllCompanies() {
-        this.companies.forEach(company => {
-            this.selectedCompanies.add(company.id);
-            this.updateCompanyCardSelection(company.id);
-        });
-        this.updateSelectionInfo();
-        this.updateSelectionSummary();
-    }
-
-    clearSelection() {
-        this.selectedCompanies.clear();
-        this.companies.forEach(company => {
-            this.updateCompanyCardSelection(company.id);
-        });
         this.updateSelectionInfo();
         this.updateSelectionSummary();
     }
@@ -503,6 +521,7 @@ class CompanyManager {
     }
 
     openCompanyModal(company = null) {
+        console.log('Abrindo modal de empresa:', company ? 'Editar' : 'Nova');
         const modal = document.getElementById('company-modal');
         const form = document.getElementById('company-form');
         const title = document.getElementById('modal-title');
@@ -528,7 +547,10 @@ class CompanyManager {
     }
 
     closeCompanyModal() {
-        document.getElementById('company-modal').style.display = 'none';
+        const modal = document.getElementById('company-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 
     async saveCompany() {
@@ -536,13 +558,13 @@ class CompanyManager {
             this.showLoading(true);
             
             const formData = new FormData(document.getElementById('company-form'));
-            const companyId = formData.get('companyId');
+            const companyId = document.getElementById('company-id')?.value || '';
             
             const companyData = {
-                nome: formData.get('nome').trim(),
-                cnpj: this.cleanCNPJ(formData.get('cnpj')),
+                nome: formData.get('nome')?.trim() || '',
+                cnpj: this.cleanCNPJ(formData.get('cnpj') || ''),
                 taxaJuros: parseFloat(formData.get('taxaJuros')) || 0,
-                descricao: formData.get('descricao').trim(),
+                descricao: formData.get('descricao')?.trim() || '',
                 userId: this.currentUser.uid,
                 updatedAt: new Date()
             };
@@ -633,36 +655,58 @@ class CompanyManager {
     }
 
     showLoading(show) {
-        const loading = document.getElementById('loadingOverlay');
+        const loading = document.getElementById('loading-overlay');
         if (loading) {
             loading.style.display = show ? 'flex' : 'none';
         }
     }
 
     showToast(message, type = 'info') {
+        console.log(`Toast: ${message} (${type})`);
+        
+        // Criar container se não existir
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+            `;
+            document.body.appendChild(container);
+        }
+
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        `;
         toast.innerHTML = `
             <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
+            <span style="margin-left: 8px;">${message}</span>
         `;
 
-        const container = document.getElementById('toast-container') || document.body;
         container.appendChild(toast);
-
-        // Animar entrada
-        setTimeout(() => toast.classList.add('show'), 100);
 
         // Remover após 3 segundos
         setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => container.removeChild(toast), 300);
+            if (toast.parentElement) {
+                toast.parentElement.removeChild(toast);
+            }
         }, 3000);
     }
 }
 
 // Inicializar quando a página carregar
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM carregado, inicializando CompanyManager...');
     window.companyManager = new CompanyManager();
 });
 

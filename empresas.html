@@ -112,10 +112,10 @@
           <p>Selecione e gerencie as empresas que deseja trabalhar</p>
         </div>
         <div class="page-actions">
-          <button class="btn btn-primary" id="btn-add-empresa">
+          <button class="btn btn-primary" data-action="new-company">
             <i class="fas fa-plus"></i> Nova Empresa
           </button>
-          <button class="btn btn-success" id="btn-apply-selection">
+          <button class="btn btn-success" data-action="apply-selection">
             <i class="fas fa-check"></i> Aplicar Seleção
           </button>
         </div>
@@ -150,7 +150,7 @@
           </div>
           <h3>Nenhuma empresa cadastrada</h3>
           <p>Cadastre sua primeira empresa para começar a usar o sistema</p>
-          <button class="btn btn-primary" id="btn-add-first-company">
+          <button class="btn btn-primary" data-action="new-company">
             <i class="fas fa-plus"></i> Cadastrar Primeira Empresa
           </button>
         </div>
@@ -169,6 +169,7 @@
       </div>
       <div class="modal-body">
         <form id="company-form">
+          <input type="hidden" id="company-id" name="companyId">
           <div class="form-group">
             <label for="company-name">Nome da Empresa *</label>
             <input type="text" id="company-name" name="nome" required>
@@ -191,8 +192,8 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="cancel-btn">Cancelar</button>
-        <button class="btn btn-primary" id="save-btn">Salvar</button>
+        <button class="btn btn-secondary" data-action="cancel">Cancelar</button>
+        <button class="btn btn-primary" type="submit">Salvar</button>
       </div>
     </div>
   </div>
