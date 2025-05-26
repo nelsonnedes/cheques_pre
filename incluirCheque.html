@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incluir Cheque - Sistema de Gestão e Operações Financeiras</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <script type="module" defer src="js/incluirCheque.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <h1 class="app-name">Sistema Financeiro</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-notification" aria-label="Notificações">
+        <i class="fas fa-bell"></i><span class="badge" id="notification-count">3</span>
+      </button>
+      <div class="profile-menu">
+        <button id="profile-btn" aria-label="Menu de perfil">
+          <i class="fas fa-user-circle fa-lg"></i>
+        </button>
+        <div id="profile-dropdown" class="dropdown hidden">
+          <a href="configuracoes.html">Configurações</a>
+          <button id="logout-btn">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <nav>
+      <ul>
+        <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="listarCheques.html" class="active"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+        <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Incluir Novo Cheque</h1>
+      <a href="listarCheques.html" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </a>
+    </div>
+
+    <div class="form-container">
+      <form id="cheque-form" class="cheque-form" novalidate>
+        <!-- Dados Básicos -->
+        <div class="form-section">
+          <h2><i class="fas fa-file-invoice-dollar"></i> Dados do Cheque</h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="numero">Número do Cheque *</label>
+              <input type="text" id="numero" name="numero" required placeholder="Ex: 000001" />
+              <div class="error-message" id="numero-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="banco">Banco *</label>
+              <select id="banco" name="banco" required>
+                <option value="">Selecione o banco</option>
+                <option value="001">001 - Banco do Brasil</option>
+                <option value="033">033 - Santander</option>
+                <option value="104">104 - Caixa Econômica</option>
+                <option value="237">237 - Bradesco</option>
+                <option value="341">341 - Itaú</option>
+                <option value="356">356 - Banco Real</option>
+                <option value="399">399 - HSBC</option>
+                <option value="422">422 - Banco Safra</option>
+                <option value="745">745 - Citibank</option>
+                <option value="outro">Outro</option>
+              </select>
+              <div class="error-message" id="banco-error"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="agencia">Agência</label>
+              <input type="text" id="agencia" name="agencia" placeholder="Ex: 1234-5" />
+            </div>
+            
+            <div class="form-group">
+              <label for="conta">Conta</label>
+              <input type="text" id="conta" name="conta" placeholder="Ex: 12345-6" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados do Emitente -->
+        <div class="form-section">
+          <h2><i class="fas fa-user"></i> Dados do Emitente</h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="emitente">Nome do Emitente *</label>
+              <input type="text" id="emitente" name="emitente" required placeholder="Nome completo ou razão social" />
+              <div class="error-message" id="emitente-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="documento">CPF/CNPJ</label>
+              <input type="text" id="documento" name="documento" placeholder="000.000.000-00" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telefone">Telefone</label>
+              <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" />
+            </div>
+            
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" placeholder="email@exemplo.com" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados Financeiros -->
+        <div class="form-section">
+          <h2><i class="fas fa-dollar-sign"></i> Dados Financeiros</h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="valor">Valor *</label>
+              <input type="text" id="valor" name="valor" required placeholder="R$ 0,00" />
+              <div class="error-message" id="valor-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="dataEmissao">Data de Emissão *</label>
+              <input type="date" id="dataEmissao" name="dataEmissao" required />
+              <div class="error-message" id="dataEmissao-error"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="dataVencimento">Data de Vencimento *</label>
+              <input type="date" id="dataVencimento" name="dataVencimento" required />
+              <div class="error-message" id="dataVencimento-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="status">Status *</label>
+              <select id="status" name="status" required>
+                <option value="pendente">Pendente</option>
+                <option value="compensado">Compensado</option>
+                <option value="devolvido">Devolvido</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados Adicionais -->
+        <div class="form-section">
+          <h2><i class="fas fa-info-circle"></i> Informações Adicionais</h2>
+          
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="observacoes">Observações</label>
+              <textarea id="observacoes" name="observacoes" rows="4" placeholder="Informações adicionais sobre o cheque..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="categoria">Categoria</label>
+              <select id="categoria" name="categoria">
+                <option value="">Selecione uma categoria</option>
+                <option value="fornecedor">Fornecedor</option>
+                <option value="cliente">Cliente</option>
+                <option value="funcionario">Funcionário</option>
+                <option value="servico">Serviço</option>
+                <option value="produto">Produto</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="prioridade">Prioridade</label>
+              <select id="prioridade" name="prioridade">
+                <option value="normal">Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgente">Urgente</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload de Imagem -->
+        <div class="form-section">
+          <h2><i class="fas fa-image"></i> Imagem do Cheque</h2>
+          
+          <div class="upload-area" id="upload-area">
+            <div class="upload-content">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Clique aqui ou arraste uma imagem do cheque</p>
+              <small>Formatos aceitos: JPG, PNG, PDF (máx. 5MB)</small>
+            </div>
+            <input type="file" id="imagem" name="imagem" accept="image/*,.pdf" hidden />
+          </div>
+          
+          <div id="image-preview" class="image-preview hidden">
+            <img id="preview-img" src="" alt="Preview" />
+            <button type="button" id="remove-image" class="btn btn-danger btn-sm">
+              <i class="fas fa-trash"></i> Remover
+            </button>
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="form-actions">
+          <button type="button" id="cancel-btn" class="btn btn-outline">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="button" id="save-draft-btn" class="btn btn-secondary">
+            <i class="fas fa-save"></i> Salvar Rascunho
+          </button>
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            <span class="btn-text">
+              <i class="fas fa-check"></i> Salvar Cheque
+            </span>
+            <div class="loading-spinner hidden"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Modal de Confirmação -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Confirmar Ação</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message">Tem certeza que deseja realizar esta ação?</p>
+      </div>
+      <div class="modal-footer">
+        <button id="confirm-cancel" class="btn btn-outline">Cancelar</button>
+        <button id="confirm-ok" class="btn btn-primary">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <p>Salvando cheque...</p>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2025 Sistema de Gestão e Operações Financeiras</p>
+  </footer>
+</body>
+</html> 

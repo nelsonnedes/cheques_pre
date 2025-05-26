@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listar Cheques - Sistema de Gestão e Operações Financeiras</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <script type="module" defer src="js/listarCheques.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <h1 class="app-name">Sistema Financeiro</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-notification" aria-label="Notificações">
+        <i class="fas fa-bell"></i><span class="badge" id="notification-count">3</span>
+      </button>
+      <div class="profile-menu">
+        <button id="profile-btn" aria-label="Menu de perfil">
+          <i class="fas fa-user-circle fa-lg"></i>
+        </button>
+        <div id="profile-dropdown" class="dropdown hidden">
+          <a href="configuracoes.html">Configurações</a>
+          <button id="logout-btn">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <nav>
+      <ul>
+        <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="listarCheques.html" class="active"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+        <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Gestão de Cheques</h1>
+      <a href="incluirCheque.html" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Novo Cheque
+      </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="filters-container">
+        <div class="filter-group">
+          <label for="search">Buscar:</label>
+          <input type="text" id="search" placeholder="Número, emitente ou observações..." />
+        </div>
+        
+        <div class="filter-group">
+          <label for="status-filter">Status:</label>
+          <select id="status-filter">
+            <option value="">Todos</option>
+            <option value="pendente">Pendente</option>
+            <option value="compensado">Compensado</option>
+            <option value="devolvido">Devolvido</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="date-from">De:</label>
+          <input type="date" id="date-from" />
+        </div>
+        
+        <div class="filter-group">
+          <label for="date-to">Até:</label>
+          <input type="date" id="date-to" />
+        </div>
+        
+        <div class="filter-actions">
+          <button id="apply-filters" class="btn btn-secondary">
+            <i class="fas fa-filter"></i> Filtrar
+          </button>
+          <button id="clear-filters" class="btn btn-outline">
+            <i class="fas fa-times"></i> Limpar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="summary-cards">
+      <div class="card">
+        <h3>Total de Cheques</h3>
+        <p id="total-count">0</p>
+      </div>
+      <div class="card">
+        <h3>Valor Total</h3>
+        <p id="total-value">R$ 0,00</p>
+      </div>
+      <div class="card">
+        <h3>Pendentes</h3>
+        <p id="pending-count">0</p>
+      </div>
+      <div class="card">
+        <h3>Compensados</h3>
+        <p id="cleared-count">0</p>
+      </div>
+    </div>
+
+    <!-- Tabela de Cheques -->
+    <div class="table-section">
+      <div class="table-header">
+        <h2>Lista de Cheques</h2>
+        <div class="table-actions">
+          <button id="export-btn" class="btn btn-outline">
+            <i class="fas fa-download"></i> Exportar
+          </button>
+          <button id="bulk-actions-btn" class="btn btn-outline" disabled>
+            <i class="fas fa-tasks"></i> Ações em Lote
+          </button>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table class="table" id="cheques-table">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" id="select-all" />
+              </th>
+              <th>Número</th>
+              <th>Emitente</th>
+              <th>Valor</th>
+              <th>Data Emissão</th>
+              <th>Vencimento</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="cheques-tbody">
+            <!-- Cheques carregados via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Paginação -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <span id="pagination-info">Mostrando 0 de 0 registros</span>
+        </div>
+        <div class="pagination">
+          <button id="prev-page" class="btn btn-outline" disabled>
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div id="page-numbers"></div>
+          <button id="next-page" class="btn btn-outline" disabled>
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Detalhes -->
+  <div id="details-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detalhes do Cheque</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="details-content">
+        <!-- Conteúdo carregado via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Cheque</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-form">
+          <!-- Formulário carregado via JavaScript -->
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Ações em Lote -->
+  <div id="bulk-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Ações em Lote</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Selecione a ação para <span id="selected-count">0</span> cheque(s):</p>
+        <div class="bulk-actions">
+          <button id="bulk-compensar" class="btn btn-success">
+            <i class="fas fa-check"></i> Marcar como Compensado
+          </button>
+          <button id="bulk-devolver" class="btn btn-warning">
+            <i class="fas fa-undo"></i> Marcar como Devolvido
+          </button>
+          <button id="bulk-delete" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <p>Carregando...</p>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2025 Sistema de Gestão e Operações Financeiras</p>
+  </footer>
+</body>
+</html> 

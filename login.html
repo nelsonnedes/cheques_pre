@@ -3,79 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Sistema Financeiro</title>
+  <title>Login - Sistema de Gestão e Operações Financeiras</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/global.css" />
   <link
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     rel="stylesheet"
   />
-  <script type="module" src="js/masks.js"></script>
-  <script type="module" src="js/auth.js"></script>
-  <script type="module" src="js/login.js"></script>
+  <script type="module" defer src="js/login.js"></script>
 </head>
-<body>
-  <main class="auth-container">
+<body class="auth-page">
+  <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <h1><i class="fas fa-sign-in-alt"></i> Entrar</h1>
-        <p>Acesse o sistema de gestão financeira</p>
+        <h1>Sistema Financeiro</h1>
+        <p>Faça login para acessar sua conta</p>
       </div>
-
-      <form id="login-form" class="auth-form" novalidate>
+      
+      <form id="login-form" class="auth-form">
         <div class="form-group">
           <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" required placeholder="seu@email.com" autocomplete="email" />
-          <div class="error-message" id="email-error"></div>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="Digite seu e-mail"
+          />
         </div>
-
+        
         <div class="form-group">
           <label for="password">Senha</label>
           <div class="password-input">
-            <input type="password" id="password" name="password" required minlength="6" placeholder="Sua senha" autocomplete="current-password" />
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              placeholder="Digite sua senha"
+            />
             <button type="button" class="toggle-password" aria-label="Mostrar/ocultar senha">
               <i class="fas fa-eye"></i>
             </button>
           </div>
-          <div class="error-message" id="password-error"></div>
         </div>
-
-        <div class="form-group checkbox-group">
+        
+        <div class="form-options">
           <label class="checkbox-label">
-            <input type="checkbox" id="remember" name="remember" />
+            <input type="checkbox" id="remember-me" />
             <span class="checkmark"></span>
             Lembrar de mim
           </label>
+          <a href="recover.html" class="forgot-password">Esqueceu a senha?</a>
         </div>
-
-        <button type="submit" class="btn-primary" id="login-btn">
+        
+        <button type="submit" class="btn btn-primary" id="login-btn">
           <span class="btn-text">Entrar</span>
-          <div class="loading-spinner hidden">
-            <i class="fas fa-spinner fa-spin"></i>
-          </div>
-        </button>
-
-        <div class="divider">
-          <span>ou</span>
-        </div>
-
-        <button type="button" id="google-login" class="btn-google">
-          <i class="fab fa-google"></i>
-          Entrar com Google
+          <div class="loading-spinner hidden"></div>
         </button>
       </form>
-
+      
       <div class="auth-footer">
-        <p>
-          <a href="recover.html">Esqueci minha senha</a>
-        </p>
-        <p>
-          Não tem uma conta? <a href="register.html">Criar conta</a>
-        </p>
+        <p>Não tem uma conta? <a href="register.html">Cadastre-se</a></p>
       </div>
     </div>
-  </main>
+  </div>
 
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <p>Carregando...</p>
+  </div>
 </body>
 </html>
