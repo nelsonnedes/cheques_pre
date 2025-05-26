@@ -35,12 +35,12 @@ import {
 
 // Configuração Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDXE1Fx_Jn9SAjiU6pM_XdFGmo4r6R3hSM",
-  authDomain: "dbcheques.firebaseapp.com",
-  projectId: "dbcheques",
-  storageBucket: "dbcheques.appspot.com",
-  messagingSenderId: "950658998147",
-  appId: "1:950658998147:web:66f4e0c0d23e7cbb4a3c09"
+  apiKey: "AIzaSyBpVgHtlDCL1G9Jy6eOGf2EOXJ4DmT5A8c",
+  authDomain: "sistema-financeiro-demo.firebaseapp.com",
+  projectId: "sistema-financeiro-demo",
+  storageBucket: "sistema-financeiro-demo.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef123456789012345678"
 };
 
 // Inicializar Firebase
