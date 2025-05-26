@@ -442,4 +442,7 @@ export async function associarUsuarioEmpresa(empresaId) {
     console.error('Erro ao associar usuário à empresa:', error);
     return { success: false, error: error.message };
   }
-} 
+}
+
+// Exportar signOut diretamente para uso em outros módulos
+export { signOut }; 

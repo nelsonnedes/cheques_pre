@@ -2,6 +2,8 @@
 import { setupUserInterface, checkAuth, getCurrentUser } from './auth.js';
 import { 
   db, 
+  auth,
+  onAuthChange,
   COLLECTIONS, 
   STATUS_CHEQUE, 
   TIPO_OPERACAO, 
@@ -10,9 +12,11 @@ import {
   formatarData, 
   obterEmpresaAtiva,
   associarUsuarioEmpresa,
-  garantirUsuarioNoFirestore
+  garantirUsuarioNoFirestore,
+  signOut
 } from './config.js';
-import { where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { initializeNotifications } from './notifications.js';
+import { where, orderBy, limit, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 const totalChequesElem = document.getElementById('total-cheques');
 const chequesPendentesElem = document.getElementById('cheques-pendentes');
@@ -23,11 +27,6 @@ const recentChequesBody = document.getElementById('recent-cheques-body');
 let chartStatus = null;
 let currentUser = null;
 let empresaAtiva = null;
-
-// Utilitário para formatar moeda pt-BR
-function formatarMoeda(valor) {
-  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
 
 // Recupera empresa ativa do localStorage
 function buscarEmpresaAtiva() {
@@ -130,27 +129,13 @@ function criarCanvasGrafico() {
   return canvas.getContext('2d');
 }
 
-// Verificar autenticação e inicializar
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const isAuthenticated = await checkAuth();
-    if (!isAuthenticated) {
-      window.location.href = '/login.html';
-      return;
-    }
-    await initializeDashboard();
-  } catch (error) {
-    console.error('Erro na verificação de autenticação:', error);
-    window.location.href = '/login.html';
-  }
-});
-
 // Verificar autenticação
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    initializeDashboard();
+    await initializeDashboard();
   } else {
+    console.log('Usuário não autenticado, redirecionando...');
     window.location.href = 'login.html';
   }
 });
@@ -158,8 +143,9 @@ onAuthStateChanged(auth, (user) => {
 // Inicializar dashboard
 async function initializeDashboard() {
   try {
-    currentUser = await getCurrentUser();
+    currentUser = getCurrentUser();
     if (!currentUser) {
+      console.log('Nenhum usuário atual, redirecionando...');
       window.location.href = 'login.html';
       return;
     }
@@ -178,9 +164,14 @@ async function initializeDashboard() {
     const empresaId = empresaAtiva.id || empresaAtiva.cnpj;
     await associarUsuarioEmpresa(empresaId);
 
+    // Inicializar sistemas
     setupEventListeners();
-    loadDashboardData();
+    await loadDashboardData();
     updateUserInfo();
+    
+    // Inicializar notificações
+    await initializeNotifications();
+    
   } catch (error) {
     console.error('Erro ao inicializar dashboard:', error);
     window.location.href = 'login.html';

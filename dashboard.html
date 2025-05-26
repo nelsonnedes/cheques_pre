@@ -32,9 +32,15 @@
       <h1 class="app-name">Sistema Financeiro</h1>
     </div>
     <div class="header-right">
-      <button class="btn-notification" aria-label="Notificações">
-        <i class="fas fa-bell"></i><span class="badge" id="notification-count">3</span>
-      </button>
+      <div class="notification-container">
+        <button class="btn-notification" aria-label="Notificações">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge hidden">0</span>
+        </button>
+        <div class="notification-dropdown hidden">
+          <!-- Conteúdo das notificações será carregado via JavaScript -->
+        </div>
+      </div>
       <div class="profile-menu">
         <button id="profile-btn" aria-label="Menu de perfil">
           <i class="fas fa-user-circle fa-lg"></i>
