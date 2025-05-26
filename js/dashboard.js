@@ -8,7 +8,9 @@ import {
   buscarDocumentos, 
   formatarMoeda, 
   formatarData, 
-  obterEmpresaAtiva 
+  obterEmpresaAtiva,
+  associarUsuarioEmpresa,
+  garantirUsuarioNoFirestore
 } from './config.js';
 import { where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -168,6 +170,13 @@ async function initializeDashboard() {
       window.location.href = 'empresas.html';
       return;
     }
+
+    // Garantir que o usuário existe no Firestore e está associado à empresa
+    await garantirUsuarioNoFirestore(currentUser, empresaAtiva.id || empresaAtiva.cnpj);
+    
+    // Associar usuário à empresa ativa
+    const empresaId = empresaAtiva.id || empresaAtiva.cnpj;
+    await associarUsuarioEmpresa(empresaId);
 
     setupEventListeners();
     loadDashboardData();

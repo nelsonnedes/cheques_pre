@@ -23,7 +23,8 @@ import {
   limit, 
   onSnapshot,
   getDoc,
-  serverTimestamp
+  serverTimestamp,
+  setDoc
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { 
   getStorage,
@@ -81,10 +82,17 @@ export const TIPO_OPERACAO = {
 export async function loginUsuario(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { success: true, user: userCredential.user };
+    const user = userCredential.user;
+    
+    // Garantir que o usuário existe no Firestore
+    const empresaAtiva = obterEmpresaAtiva();
+    const empresaId = empresaAtiva ? (empresaAtiva.id || empresaAtiva.cnpj) : null;
+    await garantirUsuarioNoFirestore(user, empresaId);
+    
+    return { success: true, user };
   } catch (error) {
     console.error('Erro no login:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.code };
   }
 }
 
@@ -356,4 +364,82 @@ export function obterEmpresaAtiva() {
  */
 export function definirEmpresaAtiva(empresa) {
   localStorage.setItem('empresaAtiva', JSON.stringify(empresa));
+}
+
+/**
+ * Garantir que o usuário existe no Firestore
+ */
+export async function garantirUsuarioNoFirestore(user, empresaId = null) {
+  try {
+    const docRef = doc(db, COLLECTIONS.USUARIOS, user.uid);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      // Criar documento do usuário
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        nome: user.displayName || user.email.split('@')[0],
+        criadoEm: new Date(),
+        ativo: true,
+        empresaId: empresaId
+      };
+      
+      await setDoc(docRef, userData);
+      console.log('Usuário criado no Firestore:', userData);
+      return { success: true, data: userData };
+    } else {
+      // Usuário já existe, verificar se precisa atualizar empresaId
+      const userData = docSnap.data();
+      if (empresaId && userData.empresaId !== empresaId) {
+        await updateDoc(docRef, { empresaId: empresaId });
+        userData.empresaId = empresaId;
+        console.log('EmpresaId atualizada para o usuário:', empresaId);
+      }
+      return { success: true, data: userData };
+    }
+  } catch (error) {
+    console.error('Erro ao garantir usuário no Firestore:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Obter dados do usuário do Firestore
+ */
+export async function obterDadosUsuario(userId) {
+  try {
+    const docRef = doc(db, COLLECTIONS.USUARIOS, userId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return { success: true, data: docSnap.data() };
+    } else {
+      return { success: false, error: 'Usuário não encontrado no Firestore' };
+    }
+  } catch (error) {
+    console.error('Erro ao obter dados do usuário:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Associar usuário à empresa ativa
+ */
+export async function associarUsuarioEmpresa(empresaId) {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      throw new Error('Usuário não autenticado');
+    }
+    
+    const docRef = doc(db, COLLECTIONS.USUARIOS, currentUser.uid);
+    await updateDoc(docRef, { empresaId: empresaId });
+    
+    console.log('Usuário associado à empresa:', empresaId);
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao associar usuário à empresa:', error);
+    return { success: false, error: error.message };
+  }
 } 

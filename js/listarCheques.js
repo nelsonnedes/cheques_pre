@@ -10,7 +10,9 @@ import {
   formatarMoeda, 
   formatarData, 
   calcularDiasEntreDatas, 
-  obterEmpresaAtiva 
+  obterEmpresaAtiva,
+  associarUsuarioEmpresa,
+  garantirUsuarioNoFirestore
 } from './config.js';
 import { where, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
@@ -84,8 +86,20 @@ function verificarAutenticacao() {
       return;
     }
     
-    exibirEmpresaAtiva();
-    await carregarCheques();
+    try {
+      // Garantir que o usuário existe no Firestore e está associado à empresa
+      await garantirUsuarioNoFirestore(user, empresaAtiva.id || empresaAtiva.cnpj);
+      
+      // Associar usuário à empresa ativa
+      const empresaId = empresaAtiva.id || empresaAtiva.cnpj;
+      await associarUsuarioEmpresa(empresaId);
+      
+      exibirEmpresaAtiva();
+      await carregarCheques();
+    } catch (error) {
+      console.error('Erro ao configurar usuário:', error);
+      alert('Erro ao configurar acesso. Tente novamente.');
+    }
   });
 }
 
