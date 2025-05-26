@@ -90,5 +90,76 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  
+  <!-- Service Worker Registration -->
+  <script>
+    // Registrar Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('Service Worker registrado com sucesso:', registration.scope);
+          
+          // Verificar atualizações
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Nova versão disponível
+                if (confirm('Nova versão disponível! Deseja atualizar?')) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                }
+              }
+            });
+          });
+          
+        } catch (error) {
+          console.error('Erro ao registrar Service Worker:', error);
+        }
+      });
+    }
+
+    // Detectar quando o app está sendo usado como PWA
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      
+      // Mostrar banner de instalação personalizado
+      const installBanner = document.createElement('div');
+      installBanner.className = 'install-banner';
+      installBanner.innerHTML = `
+        <div class="install-content">
+          <i class="fas fa-download"></i>
+          <span>Instalar Sistema Financeiro</span>
+          <button onclick="installApp(event)" class="install-btn">Instalar</button>
+          <button onclick="dismissInstall()" class="dismiss-btn">×</button>
+        </div>
+      `;
+      
+      document.body.appendChild(installBanner);
+      
+      // Função para instalar
+      window.installApp = async (event) => {
+        event.preventDefault();
+        e.prompt();
+        const { outcome } = await e.userChoice;
+        if (outcome === 'accepted') {
+          console.log('PWA instalado');
+        }
+        installBanner.remove();
+      };
+      
+      // Função para dispensar
+      window.dismissInstall = () => {
+        installBanner.remove();
+      };
+    });
+
+    // Detectar quando está rodando como PWA
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      document.body.classList.add('pwa-mode');
+      console.log('Rodando como PWA');
+    }
+  </script>
 </body>
 </html>

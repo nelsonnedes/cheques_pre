@@ -14,12 +14,12 @@ import {
 
 // Substituir pelas suas configurações Firebase reais
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDXE1Fx_Jn9SAjiU6pM_XdFGmo4r6R3hSM",
+  authDomain: "dbcheques.firebaseapp.com",
+  projectId: "dbcheques",
+  storageBucket: "dbcheques.appspot.com",
+  messagingSenderId: "950658998147",
+  appId: "1:950658998147:web:66f4e0c0d23e7cbb4a3c09"
 };
 
 const app = initializeApp(firebaseConfig);

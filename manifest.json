@@ -1,0 +1,156 @@
+{
+  "name": "Sistema de Gestão e Operações Financeiras",
+  "short_name": "Sistema Financeiro",
+  "description": "Sistema completo para gestão de cheques e operações financeiras multi-empresa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Listar Cheques",
+      "short_name": "Cheques",
+      "description": "Visualizar e gerenciar cheques",
+      "url": "/listar-cheques.html",
+      "icons": [
+        {
+          "src": "icons/shortcut-cheques.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Novo Cheque",
+      "short_name": "Novo",
+      "description": "Cadastrar novo cheque",
+      "url": "/incluir-cheque.html",
+      "icons": [
+        {
+          "src": "icons/shortcut-novo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Relatórios",
+      "short_name": "Relatórios",
+      "description": "Visualizar relatórios financeiros",
+      "url": "/relatorio.html",
+      "icons": [
+        {
+          "src": "icons/shortcut-relatorios.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Empresas",
+      "short_name": "Empresas",
+      "description": "Gerenciar empresas",
+      "url": "/empresas.html",
+      "icons": [
+        {
+          "src": "icons/shortcut-empresas.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Dashboard principal do sistema"
+    },
+    {
+      "src": "screenshots/cheques.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Listagem de cheques"
+    },
+    {
+      "src": "screenshots/relatorios.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Relatórios financeiros"
+    }
+  ],
+  "features": [
+    "Cross Platform",
+    "fast",
+    "simple"
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+financeiro",
+      "url": "/?action=%s"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+} 

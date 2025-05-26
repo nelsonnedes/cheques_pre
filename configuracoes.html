@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Sistema Financeiro</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script type="module" src="js/masks.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/configuracoes.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="app-name">Sistema Financeiro</h1>
+        </div>
+        <div class="header-right">
+            <button class="btn-notification" aria-label="Notificações">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notification-count">0</span>
+            </button>
+            <div class="profile-menu">
+                <button id="profile-btn" aria-label="Menu de perfil">
+                    <i class="fas fa-user-circle fa-lg"></i>
+                </button>
+                <div id="profile-dropdown" class="dropdown hidden">
+                    <a href="configuracoes.html" class="active">Configurações</a>
+                    <button id="logout-btn">Sair</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+                <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
+                <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+                <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <section class="page-header">
+            <h2><i class="fas fa-cog"></i> Configurações</h2>
+        </section>
+
+        <div class="settings-container">
+            <!-- Menu Lateral de Configurações -->
+            <nav class="settings-nav">
+                <ul>
+                    <li><a href="#perfil" class="settings-tab active" data-tab="perfil">
+                        <i class="fas fa-user"></i> Perfil
+                    </a></li>
+                    <li><a href="#seguranca" class="settings-tab" data-tab="seguranca">
+                        <i class="fas fa-shield-alt"></i> Segurança
+                    </a></li>
+                    <li><a href="#notificacoes" class="settings-tab" data-tab="notificacoes">
+                        <i class="fas fa-bell"></i> Notificações
+                    </a></li>
+                    <li><a href="#preferencias" class="settings-tab" data-tab="preferencias">
+                        <i class="fas fa-sliders-h"></i> Preferências
+                    </a></li>
+                    <li><a href="#dados" class="settings-tab" data-tab="dados">
+                        <i class="fas fa-database"></i> Dados
+                    </a></li>
+                </ul>
+            </nav>
+
+            <!-- Conteúdo das Configurações -->
+            <div class="settings-content">
+                <!-- Aba Perfil -->
+                <div class="settings-panel active" id="perfil-panel">
+                    <h3><i class="fas fa-user"></i> Informações do Perfil</h3>
+                    
+                    <form class="settings-form" id="perfil-form" novalidate>
+                        <div class="profile-photo-section">
+                            <div class="photo-container">
+                                <img id="profile-photo" src="https://via.placeholder.com/120" alt="Foto do perfil">
+                                <div class="photo-overlay">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            <div class="photo-actions">
+                                <input type="file" id="photo-input" accept="image/*" hidden>
+                                <button type="button" class="btn-secondary" id="upload-photo">
+                                    <i class="fas fa-upload"></i> Alterar Foto
+                                </button>
+                                <button type="button" class="btn-secondary" id="remove-photo">
+                                    <i class="fas fa-trash"></i> Remover
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nome">Nome Completo</label>
+                                <input type="text" id="nome" name="nome" required 
+                                       placeholder="Seu nome completo">
+                                <div class="error-message" id="nome-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email" name="email" required 
+                                       placeholder="seu@email.com" readonly>
+                                <small class="field-note">Para alterar o e-mail, acesse a aba Segurança</small>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="telefone">Telefone</label>
+                                <input type="tel" id="telefone" name="telefone" 
+                                       placeholder="(11) 99999-9999" data-mask="phone">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cpf">CPF</label>
+                                <input type="text" id="cpf" name="cpf" 
+                                       placeholder="000.000.000-00" data-mask="cpf">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cargo">Cargo/Função</label>
+                            <input type="text" id="cargo" name="cargo" 
+                                   placeholder="Seu cargo na empresa">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Aba Segurança -->
+                <div class="settings-panel" id="seguranca-panel">
+                    <h3><i class="fas fa-shield-alt"></i> Segurança da Conta</h3>
+                    
+                    <!-- Alterar Senha -->
+                    <div class="security-section">
+                        <h4>Alterar Senha</h4>
+                        <form class="settings-form" id="senha-form" novalidate>
+                            <div class="form-group">
+                                <label for="senha-atual">Senha Atual</label>
+                                <div class="password-input">
+                                    <input type="password" id="senha-atual" name="senha-atual" required>
+                                    <button type="button" class="toggle-password">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="error-message" id="senha-atual-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="senha-nova">Nova Senha</label>
+                                <div class="password-input">
+                                    <input type="password" id="senha-nova" name="senha-nova" required minlength="6">
+                                    <button type="button" class="toggle-password">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength" id="password-strength"></div>
+                                <div class="error-message" id="senha-nova-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmar-senha">Confirmar Nova Senha</label>
+                                <div class="password-input">
+                                    <input type="password" id="confirmar-senha" name="confirmar-senha" required>
+                                    <button type="button" class="toggle-password">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="error-message" id="confirmar-senha-error"></div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-key"></i> Alterar Senha
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Autenticação de Dois Fatores -->
+                    <div class="security-section">
+                        <h4>Autenticação de Dois Fatores (2FA)</h4>
+                        <div class="security-option">
+                            <div class="option-info">
+                                <h5>Ativar 2FA</h5>
+                                <p>Adicione uma camada extra de segurança à sua conta</p>
+                            </div>
+                            <div class="option-control">
+                                <label class="switch">
+                                    <input type="checkbox" id="enable-2fa">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sessões Ativas -->
+                    <div class="security-section">
+                        <h4>Sessões Ativas</h4>
+                        <div class="sessions-list" id="sessions-list">
+                            <!-- Sessões carregadas via JS -->
+                        </div>
+                        <button class="btn-danger" id="logout-all">
+                            <i class="fas fa-sign-out-alt"></i> Encerrar Todas as Sessões
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Aba Notificações -->
+                <div class="settings-panel" id="notificacoes-panel">
+                    <h3><i class="fas fa-bell"></i> Preferências de Notificação</h3>
+                    
+                    <form class="settings-form" id="notificacoes-form">
+                        <div class="notification-section">
+                            <h4>E-mail</h4>
+                            <div class="notification-option">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="email-vencimentos" name="email-vencimentos" checked>
+                                    <span class="checkmark"></span>
+                                    Vencimentos de cheques
+                                </label>
+                            </div>
+                            <div class="notification-option">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="email-compensacoes" name="email-compensacoes" checked>
+                                    <span class="checkmark"></span>
+                                    Compensações realizadas
+                                </label>
+                            </div>
+                            <div class="notification-option">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="email-devolucoes" name="email-devolucoes" checked>
+                                    <span class="checkmark"></span>
+                                    Devoluções de cheques
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="notification-section">
+                            <h4>Push (Navegador)</h4>
+                            <div class="notification-option">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="push-enabled" name="push-enabled">
+                                    <span class="checkmark"></span>
+                                    Ativar notificações push
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Salvar Preferências
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Aba Preferências -->
+                <div class="settings-panel" id="preferencias-panel">
+                    <h3><i class="fas fa-sliders-h"></i> Preferências do Sistema</h3>
+                    
+                    <form class="settings-form" id="preferencias-form">
+                        <div class="preference-section">
+                            <h4>Aparência</h4>
+                            <div class="form-group">
+                                <label for="tema">Tema</label>
+                                <select id="tema" name="tema">
+                                    <option value="light">Claro</option>
+                                    <option value="dark">Escuro</option>
+                                    <option value="auto">Automático</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="preference-section">
+                            <h4>Formatação</h4>
+                            <div class="form-group">
+                                <label for="formato-data">Formato de Data</label>
+                                <select id="formato-data" name="formato-data">
+                                    <option value="dd/mm/yyyy">DD/MM/AAAA</option>
+                                    <option value="mm/dd/yyyy">MM/DD/AAAA</option>
+                                    <option value="yyyy-mm-dd">AAAA-MM-DD</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="formato-moeda">Formato de Moeda</label>
+                                <select id="formato-moeda" name="formato-moeda">
+                                    <option value="BRL">Real (R$)</option>
+                                    <option value="USD">Dólar (US$)</option>
+                                    <option value="EUR">Euro (€)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="preference-section">
+                            <h4>Dashboard</h4>
+                            <div class="form-group">
+                                <label for="itens-por-pagina">Itens por página</label>
+                                <select id="itens-por-pagina" name="itens-por-pagina">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Salvar Preferências
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Aba Dados -->
+                <div class="settings-panel" id="dados-panel">
+                    <h3><i class="fas fa-database"></i> Gerenciamento de Dados</h3>
+                    
+                    <div class="data-section">
+                        <h4>Exportar Dados</h4>
+                        <p>Faça o download de todos os seus dados em formato JSON</p>
+                        <button class="btn-secondary" id="export-data">
+                            <i class="fas fa-download"></i> Exportar Dados
+                        </button>
+                    </div>
+
+                    <div class="data-section danger-zone">
+                        <h4>Zona de Perigo</h4>
+                        <div class="danger-actions">
+                            <div class="danger-action">
+                                <div class="action-info">
+                                    <h5>Limpar Cache</h5>
+                                    <p>Remove dados temporários armazenados localmente</p>
+                                </div>
+                                <button class="btn-warning" id="clear-cache">
+                                    <i class="fas fa-broom"></i> Limpar Cache
+                                </button>
+                            </div>
+
+                            <div class="danger-action">
+                                <div class="action-info">
+                                    <h5>Excluir Conta</h5>
+                                    <p>Esta ação é permanente e não pode ser desfeita</p>
+                                </div>
+                                <button class="btn-danger" id="delete-account">
+                                    <i class="fas fa-trash"></i> Excluir Conta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Confirmação -->
+    <div class="modal-overlay hidden" id="confirm-modal">
+        <div class="modal small">
+            <div class="modal-header">
+                <h3 id="confirm-title">Confirmar Ação</h3>
+                <button class="modal-close" id="close-confirm-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <p id="confirm-message">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancel-confirm">Cancelar</button>
+                <button class="btn-danger" id="confirm-action">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+</body>
+</html> 

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda - Sistema Financeiro</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/agenda.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="app-name">Sistema Financeiro</h1>
+        </div>
+        <div class="header-right">
+            <button class="btn-notification" aria-label="Notificações">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notification-count">0</span>
+            </button>
+            <div class="profile-menu">
+                <button id="profile-btn" aria-label="Menu de perfil">
+                    <i class="fas fa-user-circle fa-lg"></i>
+                </button>
+                <div id="profile-dropdown" class="dropdown hidden">
+                    <a href="configuracoes.html">Configurações</a>
+                    <button id="logout-btn">Sair</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+                <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
+                <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="agenda.html" class="active"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+                <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <section class="page-header">
+            <h2><i class="fas fa-calendar-alt"></i> Agenda Financeira</h2>
+            <div class="header-actions">
+                <button class="btn-secondary" id="view-toggle">
+                    <i class="fas fa-list"></i> Lista
+                </button>
+                <button class="btn-primary" id="novo-evento">
+                    <i class="fas fa-plus"></i> Novo Evento
+                </button>
+            </div>
+        </section>
+
+        <!-- Filtros -->
+        <section class="filters-section">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="periodo-agenda">Período</label>
+                    <select id="periodo-agenda" name="periodo-agenda">
+                        <option value="hoje">Hoje</option>
+                        <option value="semana" selected>Esta Semana</option>
+                        <option value="mes">Este Mês</option>
+                        <option value="todos">Todos</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="tipo-evento">Tipo</label>
+                    <select id="tipo-evento" name="tipo-evento">
+                        <option value="">Todos</option>
+                        <option value="vencimento">Vencimento</option>
+                        <option value="cobranca">Cobrança</option>
+                        <option value="reuniao">Reunião</option>
+                        <option value="lembrete">Lembrete</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="status-evento">Status</label>
+                    <select id="status-evento" name="status-evento">
+                        <option value="">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="concluido">Concluído</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+
+                <button class="btn-primary" id="filtrar-eventos">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+        </section>
+
+        <!-- Resumo -->
+        <section class="summary-section">
+            <div class="cards-container">
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Hoje</h3>
+                        <p class="card-value" id="eventos-hoje">0</p>
+                        <span class="card-description">eventos</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Pendentes</h3>
+                        <p class="card-value warning" id="eventos-pendentes">0</p>
+                        <span class="card-description">eventos</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Vencimentos</h3>
+                        <p class="card-value danger" id="vencimentos-proximos">0</p>
+                        <span class="card-description">próximos</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Concluídos</h3>
+                        <p class="card-value success" id="eventos-concluidos">0</p>
+                        <span class="card-description">este mês</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendário/Lista -->
+        <section class="agenda-section">
+            <!-- Visualização de Calendário -->
+            <div class="calendar-view" id="calendar-view">
+                <div class="calendar-header">
+                    <button class="btn-nav" id="prev-month">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="current-month">Janeiro 2025</h3>
+                    <button class="btn-nav" id="next-month">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Dom</div>
+                    <div class="calendar-day-header">Seg</div>
+                    <div class="calendar-day-header">Ter</div>
+                    <div class="calendar-day-header">Qua</div>
+                    <div class="calendar-day-header">Qui</div>
+                    <div class="calendar-day-header">Sex</div>
+                    <div class="calendar-day-header">Sáb</div>
+                    <!-- Dias serão gerados via JS -->
+                </div>
+            </div>
+
+            <!-- Visualização de Lista -->
+            <div class="list-view hidden" id="list-view">
+                <div class="events-list" id="events-list">
+                    <!-- Eventos serão carregados via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Eventos do Dia Selecionado -->
+        <section class="day-events-section">
+            <h3 id="selected-date">Eventos de Hoje</h3>
+            <div class="events-container" id="day-events">
+                <!-- Eventos do dia serão carregados via JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Novo/Editar Evento -->
+    <div class="modal-overlay hidden" id="evento-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Novo Evento</h3>
+                <button class="modal-close" id="close-evento-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form class="modal-form" id="evento-form" novalidate>
+                <div class="form-group">
+                    <label for="evento-titulo">Título *</label>
+                    <input type="text" id="evento-titulo" name="titulo" required 
+                           placeholder="Título do evento">
+                    <div class="error-message" id="titulo-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="evento-descricao">Descrição</label>
+                    <textarea id="evento-descricao" name="descricao" rows="3" 
+                              placeholder="Descrição do evento"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="evento-data">Data *</label>
+                        <input type="date" id="evento-data" name="data" required>
+                        <div class="error-message" id="data-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="evento-hora">Hora</label>
+                        <input type="time" id="evento-hora" name="hora">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="evento-tipo">Tipo *</label>
+                        <select id="evento-tipo" name="tipo" required>
+                            <option value="">Selecione...</option>
+                            <option value="vencimento">Vencimento de Cheque</option>
+                            <option value="cobranca">Cobrança</option>
+                            <option value="reuniao">Reunião</option>
+                            <option value="lembrete">Lembrete</option>
+                        </select>
+                        <div class="error-message" id="tipo-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="evento-prioridade">Prioridade</label>
+                        <select id="evento-prioridade" name="prioridade">
+                            <option value="baixa">Baixa</option>
+                            <option value="media" selected>Média</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="cheque-group" style="display: none;">
+                    <label for="evento-cheque">Cheque Relacionado</label>
+                    <select id="evento-cheque" name="chequeId">
+                        <option value="">Nenhum cheque selecionado</option>
+                    </select>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="evento-notificar" name="notificar" checked>
+                        <span class="checkmark"></span>
+                        Receber notificação
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-evento">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary" id="save-evento">
+                        <span class="btn-text">Salvar</span>
+                        <div class="loading-spinner hidden">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+</body>
+</html> 

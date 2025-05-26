@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte - Sistema Financeiro</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/suporte.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="app-name">Sistema Financeiro</h1>
+        </div>
+        <div class="header-right">
+            <button class="btn-notification" aria-label="Notificações">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notification-count">0</span>
+            </button>
+            <div class="profile-menu">
+                <button id="profile-btn" aria-label="Menu de perfil">
+                    <i class="fas fa-user-circle fa-lg"></i>
+                </button>
+                <div id="profile-dropdown" class="dropdown hidden">
+                    <a href="configuracoes.html">Configurações</a>
+                    <button id="logout-btn">Sair</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+                <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
+                <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+                <li><a href="suporte.html" class="active"><i class="fas fa-headset"></i> Suporte</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <section class="page-header">
+            <h2><i class="fas fa-headset"></i> Central de Suporte</h2>
+        </section>
+
+        <div class="support-container">
+            <!-- Menu de Suporte -->
+            <nav class="support-nav">
+                <ul>
+                    <li><a href="#chat" class="support-tab active" data-tab="chat">
+                        <i class="fas fa-comments"></i> Chat Online
+                    </a></li>
+                    <li><a href="#faq" class="support-tab" data-tab="faq">
+                        <i class="fas fa-question-circle"></i> FAQ
+                    </a></li>
+                    <li><a href="#tickets" class="support-tab" data-tab="tickets">
+                        <i class="fas fa-ticket-alt"></i> Tickets
+                    </a></li>
+                    <li><a href="#documentacao" class="support-tab" data-tab="documentacao">
+                        <i class="fas fa-book"></i> Documentação
+                    </a></li>
+                </ul>
+            </nav>
+
+            <!-- Conteúdo do Suporte -->
+            <div class="support-content">
+                <!-- Aba Chat -->
+                <div class="support-panel active" id="chat-panel">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <div class="chat-info">
+                                <h3><i class="fas fa-comments"></i> Chat com Suporte</h3>
+                                <span class="status online">Online</span>
+                            </div>
+                            <div class="chat-actions">
+                                <button class="btn-secondary" id="minimize-chat">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message bot">
+                                <div class="message-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        Olá! Sou o assistente virtual do Sistema Financeiro. Como posso ajudá-lo hoje?
+                                    </div>
+                                    <div class="message-time">Agora</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-container">
+                            <div class="chat-input">
+                                <input type="text" id="message-input" placeholder="Digite sua mensagem..." maxlength="500">
+                                <button class="btn-send" id="send-message">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="quick-action" data-message="Como cadastrar um cheque?">
+                                    Cadastrar cheque
+                                </button>
+                                <button class="quick-action" data-message="Como gerar relatórios?">
+                                    Gerar relatórios
+                                </button>
+                                <button class="quick-action" data-message="Problemas com login">
+                                    Problemas de login
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba FAQ -->
+                <div class="support-panel" id="faq-panel">
+                    <div class="faq-header">
+                        <h3><i class="fas fa-question-circle"></i> Perguntas Frequentes</h3>
+                        <div class="search-box">
+                            <input type="text" id="faq-search" placeholder="Buscar nas perguntas...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+
+                    <div class="faq-categories">
+                        <button class="category-btn active" data-category="all">Todas</button>
+                        <button class="category-btn" data-category="cheques">Cheques</button>
+                        <button class="category-btn" data-category="empresas">Empresas</button>
+                        <button class="category-btn" data-category="relatorios">Relatórios</button>
+                        <button class="category-btn" data-category="conta">Conta</button>
+                    </div>
+
+                    <div class="faq-list" id="faq-list">
+                        <div class="faq-item" data-category="cheques">
+                            <div class="faq-question">
+                                <h4>Como cadastrar um novo cheque?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Para cadastrar um novo cheque:</p>
+                                <ol>
+                                    <li>Acesse o menu "Cheques" → "Incluir Cheque"</li>
+                                    <li>Preencha todos os campos obrigatórios</li>
+                                    <li>Faça upload da imagem do cheque</li>
+                                    <li>Clique em "Salvar"</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="faq-item" data-category="cheques">
+                            <div class="faq-question">
+                                <h4>O que significa cada status de cheque?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <ul>
+                                    <li><strong>Pendente:</strong> Cheque aguardando processamento</li>
+                                    <li><strong>Compensado:</strong> Cheque processado com sucesso</li>
+                                    <li><strong>Devolvido:</strong> Cheque retornado pelo banco</li>
+                                    <li><strong>Vencido:</strong> Cheque com data de vencimento ultrapassada</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="faq-item" data-category="empresas">
+                            <div class="faq-question">
+                                <h4>Como adicionar uma nova empresa?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Para adicionar uma empresa:</p>
+                                <ol>
+                                    <li>Vá para "Empresas" no menu principal</li>
+                                    <li>Clique em "Nova Empresa"</li>
+                                    <li>Preencha os dados da empresa</li>
+                                    <li>Configure as taxas de juros</li>
+                                    <li>Salve as informações</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="faq-item" data-category="relatorios">
+                            <div class="faq-question">
+                                <h4>Como gerar relatórios personalizados?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Na seção de Relatórios você pode:</p>
+                                <ul>
+                                    <li>Filtrar por período, empresa ou tipo</li>
+                                    <li>Visualizar gráficos interativos</li>
+                                    <li>Exportar dados em Excel ou PDF</li>
+                                    <li>Agendar relatórios automáticos</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="faq-item" data-category="conta">
+                            <div class="faq-question">
+                                <h4>Como alterar minha senha?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Para alterar sua senha:</p>
+                                <ol>
+                                    <li>Acesse "Configurações" → "Segurança"</li>
+                                    <li>Digite sua senha atual</li>
+                                    <li>Digite a nova senha duas vezes</li>
+                                    <li>Clique em "Alterar Senha"</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba Tickets -->
+                <div class="support-panel" id="tickets-panel">
+                    <div class="tickets-header">
+                        <h3><i class="fas fa-ticket-alt"></i> Meus Tickets</h3>
+                        <button class="btn-primary" id="novo-ticket">
+                            <i class="fas fa-plus"></i> Novo Ticket
+                        </button>
+                    </div>
+
+                    <div class="tickets-filters">
+                        <select id="status-filter">
+                            <option value="">Todos os status</option>
+                            <option value="aberto">Aberto</option>
+                            <option value="em-andamento">Em Andamento</option>
+                            <option value="resolvido">Resolvido</option>
+                            <option value="fechado">Fechado</option>
+                        </select>
+
+                        <select id="prioridade-filter">
+                            <option value="">Todas as prioridades</option>
+                            <option value="baixa">Baixa</option>
+                            <option value="media">Média</option>
+                            <option value="alta">Alta</option>
+                            <option value="critica">Crítica</option>
+                        </select>
+                    </div>
+
+                    <div class="tickets-list" id="tickets-list">
+                        <div class="empty-state">
+                            <i class="fas fa-ticket-alt"></i>
+                            <h4>Nenhum ticket encontrado</h4>
+                            <p>Você ainda não possui tickets de suporte.</p>
+                            <button class="btn-primary" id="criar-primeiro-ticket">
+                                Criar meu primeiro ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba Documentação -->
+                <div class="support-panel" id="documentacao-panel">
+                    <div class="docs-header">
+                        <h3><i class="fas fa-book"></i> Documentação</h3>
+                    </div>
+
+                    <div class="docs-grid">
+                        <div class="doc-card">
+                            <div class="doc-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h4>Guia de Início Rápido</h4>
+                            <p>Aprenda os conceitos básicos e configure sua primeira empresa</p>
+                            <a href="#" class="btn-secondary">Ler Guia</a>
+                        </div>
+
+                        <div class="doc-card">
+                            <div class="doc-icon">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <h4>Gestão de Cheques</h4>
+                            <p>Manual completo sobre cadastro, compensação e relatórios</p>
+                            <a href="#" class="btn-secondary">Ver Tutorial</a>
+                        </div>
+
+                        <div class="doc-card">
+                            <div class="doc-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4>Relatórios Avançados</h4>
+                            <p>Como criar e personalizar relatórios financeiros</p>
+                            <a href="#" class="btn-secondary">Explorar</a>
+                        </div>
+
+                        <div class="doc-card">
+                            <div class="doc-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h4>API e Integrações</h4>
+                            <p>Documentação técnica para desenvolvedores</p>
+                            <a href="#" class="btn-secondary">Ver API</a>
+                        </div>
+
+                        <div class="doc-card">
+                            <div class="doc-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4>Segurança</h4>
+                            <p>Boas práticas de segurança e configurações</p>
+                            <a href="#" class="btn-secondary">Aprender</a>
+                        </div>
+
+                        <div class="doc-card">
+                            <div class="doc-icon">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <h4>Vídeo Tutoriais</h4>
+                            <p>Assista aos tutoriais em vídeo passo a passo</p>
+                            <a href="#" class="btn-secondary">Assistir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Novo Ticket -->
+    <div class="modal-overlay hidden" id="ticket-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Novo Ticket de Suporte</h3>
+                <button class="modal-close" id="close-ticket-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form class="modal-form" id="ticket-form" novalidate>
+                <div class="form-group">
+                    <label for="ticket-assunto">Assunto *</label>
+                    <input type="text" id="ticket-assunto" name="assunto" required 
+                           placeholder="Resumo do problema">
+                    <div class="error-message" id="assunto-error"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ticket-categoria">Categoria *</label>
+                        <select id="ticket-categoria" name="categoria" required>
+                            <option value="">Selecione...</option>
+                            <option value="cheques">Gestão de Cheques</option>
+                            <option value="empresas">Empresas</option>
+                            <option value="relatorios">Relatórios</option>
+                            <option value="login">Login/Acesso</option>
+                            <option value="tecnico">Problema Técnico</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                        <div class="error-message" id="categoria-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ticket-prioridade">Prioridade</label>
+                        <select id="ticket-prioridade" name="prioridade">
+                            <option value="baixa">Baixa</option>
+                            <option value="media" selected>Média</option>
+                            <option value="alta">Alta</option>
+                            <option value="critica">Crítica</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket-descricao">Descrição *</label>
+                    <textarea id="ticket-descricao" name="descricao" rows="6" required 
+                              placeholder="Descreva o problema em detalhes..."></textarea>
+                    <div class="error-message" id="descricao-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket-anexos">Anexos</label>
+                    <div class="file-upload-area" id="file-upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Clique ou arraste arquivos aqui</p>
+                        <small>PNG, JPG, PDF até 10MB</small>
+                        <input type="file" id="ticket-anexos" multiple accept=".png,.jpg,.jpeg,.pdf" hidden>
+                    </div>
+                    <div class="uploaded-files" id="uploaded-files"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-ticket">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary" id="submit-ticket">
+                        <span class="btn-text">Enviar Ticket</span>
+                        <div class="loading-spinner hidden">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Widget de Chat Flutuante -->
+    <div class="chat-widget" id="chat-widget">
+        <button class="chat-toggle" id="chat-toggle">
+            <i class="fas fa-comments"></i>
+            <span class="chat-badge" id="chat-badge">1</span>
+        </button>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+</body>
+</html> 
