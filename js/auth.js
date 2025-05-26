@@ -129,6 +129,11 @@ function checkCompanySelection() {
   const restrictedPages = ['dashboard.html', 'listarCheques.html', 'incluirCheque.html', 'relatorio.html', 'agenda.html'];
   const currentPage = window.location.pathname.split('/').pop();
   
+  // Não bloquear a página empresas.html - usuário deve poder cadastrar empresas mesmo sem seleção
+  if (currentPage === 'empresas.html') {
+    return true;
+  }
+  
   // Se estiver em uma página restrita e não houver empresas selecionadas
   if (restrictedPages.includes(currentPage) && selectedCompanies.length === 0) {
     showToast('Você precisa selecionar pelo menos uma empresa para acessar esta funcionalidade', 'warning');

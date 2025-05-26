@@ -484,10 +484,24 @@ class CompanyManager {
 
     async saveCompany() {
         try {
+            console.log('🔄 Iniciando salvamento de empresa...');
+            console.log('👤 Usuário atual:', this.currentUser);
+            
+            if (!this.currentUser) {
+                throw new Error('Usuário não está autenticado');
+            }
+            
             this.showLoading(true);
             
             const formData = new FormData(document.getElementById('company-form'));
             const companyId = document.getElementById('company-id')?.value || '';
+            
+            console.log('📝 Dados do formulário:', {
+                nome: formData.get('nome'),
+                cnpj: formData.get('cnpj'),
+                taxaJuros: formData.get('taxaJuros'),
+                descricao: formData.get('descricao')
+            });
             
             const companyData = {
                 nome: formData.get('nome')?.trim() || '',
@@ -498,29 +512,51 @@ class CompanyManager {
                 updatedAt: new Date()
             };
 
+            console.log('🏢 Dados da empresa processados:', companyData);
+
             // Validações
             const validation = this.validateCompanyData(companyData);
             if (validation.error) {
+                console.error('❌ Erro de validação:', validation.error);
                 throw new Error(validation.error);
             }
 
+            console.log('✅ Validação passou');
+
             if (companyId) {
+                console.log('✏️ Editando empresa existente:', companyId);
                 const companyRef = doc(db, 'empresas', companyId);
                 await updateDoc(companyRef, companyData);
                 this.showToast('Empresa atualizada com sucesso!', 'success');
+                console.log('✅ Empresa atualizada com sucesso');
             } else {
+                console.log('➕ Criando nova empresa...');
                 companyData.createdAt = new Date();
-                await addDoc(collection(db, 'empresas'), companyData);
+                const docRef = await addDoc(collection(db, 'empresas'), companyData);
+                console.log('✅ Nova empresa criada com ID:', docRef.id);
                 this.showToast('Empresa criada com sucesso!', 'success');
             }
 
             this.closeCompanyModal();
 
         } catch (error) {
-            console.error('Erro ao salvar empresa:', error);
-            this.showToast(error.message || 'Erro ao salvar empresa', 'error');
+            console.error('❌ Erro detalhado ao salvar empresa:', error);
+            console.error('Stack trace:', error.stack);
+            
+            let errorMessage = 'Erro ao salvar empresa';
+            
+            if (error.code === 'permission-denied') {
+                errorMessage = 'Você não tem permissão para salvar empresas. Verifique sua autenticação.';
+            } else if (error.code === 'unauthenticated') {
+                errorMessage = 'Usuário não autenticado. Faça login novamente.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            this.showToast(errorMessage, 'error');
         } finally {
             this.showLoading(false);
+            console.log('🔄 Salvamento finalizado');
         }
     }
 

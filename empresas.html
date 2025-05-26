@@ -10,6 +10,20 @@
   
   <!-- CSS específico para página empresas -->
   <style>
+    /* Definir variáveis CSS */
+    :root {
+      --primary-50: #eff6ff;
+      --primary-100: #dbeafe;
+      --primary-200: #bfdbfe;
+      --primary-300: #93c5fd;
+      --primary-500: #3b82f6;
+      --primary-600: #2563eb;
+      --primary-700: #1d4ed8;
+      --primary-800: #1e40af;
+      --gray-200: #e5e7eb;
+      --gray-700: #374151;
+    }
+    
     /* Reset específico para evitar conflitos */
     .main-content {
       margin-left: 280px;
@@ -189,7 +203,7 @@
       margin-right: auto;
     }
     
-    /* Modal - garantir que fique no topo */
+    /* Modal - garantir que fique no topo e sem sobreposições */
     .modal {
       position: fixed;
       top: 0;
@@ -200,39 +214,203 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 10000;
       backdrop-filter: blur(2px);
+      padding: 20px;
+      box-sizing: border-box;
     }
     
     .modal-content {
       background: white;
       border-radius: 12px;
       box-shadow: 0 20px 25px rgba(0, 0, 0, 0.25);
-      max-width: 500px;
-      width: 90%;
+      max-width: 600px;
+      width: 100%;
       max-height: 90vh;
       overflow-y: auto;
       position: relative;
-      z-index: 10000;
+      z-index: 10001;
+      margin: auto;
     }
     
-    /* Loading overlay */
+    .modal-header {
+      padding: 24px 30px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .modal-close:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .modal-body {
+      padding: 24px 30px;
+      max-height: calc(90vh - 140px);
+      overflow-y: auto;
+    }
+    
+    .modal-footer {
+      padding: 16px 30px 24px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    /* Formulário dentro do modal */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #374151;
+      font-size: 14px;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+      background: white;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    /* Botões do modal */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      justify-content: center;
+      min-width: 100px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .btn-primary {
+      background: var(--primary-600);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-700);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+    
+    .btn-secondary:hover {
+      background: #e5e7eb;
+      transform: translateY(-1px);
+    }
+    
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+    
+    /* Loading overlay - garantir que fique acima de tudo */
     .loading-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 10001;
+      z-index: 10002;
       backdrop-filter: blur(2px);
     }
     
     .loading-overlay.hidden {
       display: none !important;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid var(--primary-600);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-overlay p {
+      margin: 0;
+      color: #374151;
+      font-weight: 500;
     }
     
     /* Responsive adjustments */
