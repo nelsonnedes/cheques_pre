@@ -7,6 +7,207 @@
   <link rel="stylesheet" href="css/global.css" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link rel="icon" href="favicon.ico" type="image/x-icon">
+  
+  <!-- CSS específico para página empresas -->
+  <style>
+    /* Reset específico para evitar conflitos */
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      min-height: calc(100vh - 70px);
+      background: #f8fafc;
+      width: calc(100% - 250px);
+      box-sizing: border-box;
+    }
+    
+    /* Corrigir container principal */
+    .main-content .container {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Header da página */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .page-title h1 {
+      margin: 0 0 8px 0;
+      color: #1f2937;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .page-title p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 16px;
+    }
+    
+    .page-actions {
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    
+    /* Selection info - corrigir layout */
+    .selection-info {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 30px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Companies container */
+    .companies-container {
+      margin-top: 0;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Companies grid - layout corrigido */
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+    
+    /* Company cards - evitar sobreposição */
+    .company-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    /* Modal - garantir que fique no topo */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(2px);
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px rgba(0, 0, 0, 0.25);
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      z-index: 10000;
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      backdrop-filter: blur(2px);
+    }
+    
+    .loading-overlay.hidden {
+      display: none !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .page-actions {
+        justify-content: stretch;
+      }
+      
+      .page-actions .btn {
+        flex: 1;
+      }
+      
+      .companies-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .selection-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 20px;
+      }
+      
+      .info-card {
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+    
+    /* Fix z-index issues */
+    .header {
+      position: relative;
+      z-index: 100;
+    }
+    
+    .sidebar {
+      position: fixed;
+      z-index: 90;
+    }
+    
+    /* Toast container - garantir visibilidade */
+    #toast-container {
+      position: fixed;
+      top: 90px;
+      right: 20px;
+      z-index: 10002;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
   <!-- Header -->
@@ -193,7 +394,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-action="cancel">Cancelar</button>
-        <button class="btn btn-primary" type="submit">Salvar</button>
+        <button class="btn btn-primary" type="submit" form="company-form">Salvar</button>
       </div>
     </div>
   </div>

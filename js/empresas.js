@@ -204,27 +204,28 @@ class CompanyManager {
                 this.unsubscribe();
             }
             
-            // Simplificar query para evitar necessidade de índice
+            // Query simplificada sem índice - filtrar no JavaScript
             const companiesRef = collection(db, 'empresas');
-            const q = query(
-                companiesRef, 
-                where('userId', '==', this.currentUser.uid)
-                // Removido orderBy para não requerer índice composto
-            );
-
-            this.unsubscribe = onSnapshot(q, (snapshot) => {
+            
+            this.unsubscribe = onSnapshot(companiesRef, (snapshot) => {
                 console.log('Empresas recebidas do Firestore:', snapshot.size);
                 this.companies = [];
+                
                 snapshot.forEach((doc) => {
-                    this.companies.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
+                    const data = doc.data();
+                    // Filtrar apenas empresas do usuário atual no JavaScript
+                    if (data.userId === this.currentUser.uid) {
+                        this.companies.push({
+                            id: doc.id,
+                            ...data
+                        });
+                    }
                 });
                 
-                // Ordenar no JavaScript em vez do Firestore
+                // Ordenar no JavaScript
                 this.companies.sort((a, b) => a.nome.localeCompare(b.nome));
                 
+                console.log('Empresas filtradas para o usuário:', this.companies.length);
                 this.renderCompanies();
                 this.updateSelectionInfo();
                 this.showLoading(false);
