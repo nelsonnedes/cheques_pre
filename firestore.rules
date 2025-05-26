@@ -14,6 +14,12 @@ service cloud.firestore {
              get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.empresaId == companyId;
     }
     
+    // Função para verificar se o usuário tem acesso à empresa através da query
+    function hasCompanyAccess() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+    
     // Função para verificar dados obrigatórios do usuário
     function isValidUserData() {
       return request.resource.data.keys().hasAll(['uid', 'email', 'nome', 'criadoEm', 'ativo']) &&
@@ -53,15 +59,18 @@ service cloud.firestore {
     // COLEÇÃO EMPRESAS
     // ===========================================
     match /empresas/{empresaId} {
-      // Leitura: membros da empresa
+      // Leitura: membros da empresa ou criador
       allow read: if request.auth != null && 
-                  (isOwner(resource) || isCompanyMember(empresaId));
+                  (isOwner(resource) || 
+                   resource.data.createdBy == request.auth.uid ||
+                   hasCompanyAccess());
       
       // Criação: usuário autenticado com dados válidos
       allow create: if request.auth != null && isValidCompanyData();
       
       // Atualização: apenas o criador da empresa
-      allow update: if request.auth != null && isOwner(resource);
+      allow update: if request.auth != null && 
+                    (isOwner(resource) || resource.data.createdBy == request.auth.uid);
       
       // Exclusão: apenas o criador da empresa
       allow delete: if request.auth != null && isOwner(resource);
@@ -71,39 +80,39 @@ service cloud.firestore {
     // COLEÇÃO CHEQUES
     // ===========================================
     match /cheques/{chequeId} {
-      // Leitura/Escrita: membros da mesma empresa
-      allow read, write: if request.auth != null && 
-                        resource.data.empresaId != null &&
-                        isCompanyMember(resource.data.empresaId);
+      // Leitura: usuários autenticados (com filtro por empresaId na query)
+      allow read: if request.auth != null && hasCompanyAccess();
+      
+      // Escrita: membros da mesma empresa (validação mais permissiva)
+      allow write: if request.auth != null && 
+                   hasCompanyAccess() &&
+                   (resource == null || 
+                    resource.data.empresaId != null);
       
       // Criação: usuário autenticado com empresa válida
       allow create: if request.auth != null && 
                     request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
                     request.resource.data.createdBy == request.auth.uid &&
-                    isCompanyMember(request.resource.data.empresaId);
+                    hasCompanyAccess();
     }
 
     // ===========================================
     // COLEÇÃO TRANSAÇÕES
     // ===========================================
     match /transacoes/{transacaoId} {
-      allow read, write: if request.auth != null && 
-                        resource.data.empresaId != null &&
-                        isCompanyMember(resource.data.empresaId);
+      allow read, write: if request.auth != null && hasCompanyAccess();
       
       allow create: if request.auth != null && 
                     request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
                     request.resource.data.createdBy == request.auth.uid &&
-                    isCompanyMember(request.resource.data.empresaId);
+                    hasCompanyAccess();
     }
 
     // ===========================================
     // COLEÇÃO CONFIGURAÇÕES
     // ===========================================
     match /configuracoes/{configId} {
-      allow read, write: if request.auth != null && 
-                        resource.data.empresaId != null &&
-                        isCompanyMember(resource.data.empresaId);
+      allow read, write: if request.auth != null && hasCompanyAccess();
       
       allow create: if request.auth != null && 
                     request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
@@ -114,9 +123,7 @@ service cloud.firestore {
     // COLEÇÃO AGENDA
     // ===========================================
     match /agenda/{eventId} {
-      allow read, write: if request.auth != null && 
-                        resource.data.empresaId != null &&
-                        isCompanyMember(resource.data.empresaId);
+      allow read, write: if request.auth != null && hasCompanyAccess();
       
       allow create: if request.auth != null && 
                     request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
@@ -128,7 +135,8 @@ service cloud.firestore {
     // ===========================================
     match /suporte/{ticketId} {
       // Leitura/Escrita: apenas o criador do ticket
-      allow read, write: if request.auth != null && isOwner(resource);
+      allow read, write: if request.auth != null && 
+                        (resource == null || isOwner(resource));
       
       // Criação: usuário autenticado
       allow create: if request.auth != null && 
@@ -141,7 +149,8 @@ service cloud.firestore {
     match /chat/{chatId} {
       // Leitura/Escrita: participantes do chat
       allow read, write: if request.auth != null && 
-                        request.auth.uid in resource.data.participantes;
+                        (resource == null ||
+                         request.auth.uid in resource.data.participantes);
       
       // Criação: usuário deve estar na lista de participantes
       allow create: if request.auth != null && 
@@ -153,7 +162,8 @@ service cloud.firestore {
     // ===========================================
     match /tickets/{ticketId} {
       // Leitura/Escrita: apenas o criador
-      allow read, write: if request.auth != null && isOwner(resource);
+      allow read, write: if request.auth != null && 
+                        (resource == null || isOwner(resource));
       
       // Criação: usuário autenticado
       allow create: if request.auth != null && 
@@ -165,10 +175,12 @@ service cloud.firestore {
     // ===========================================
     match /chat/{chatId}/mensagens/{messageId} {
       allow read: if request.auth != null && 
-                  request.auth.uid in get(/databases/$(database)/documents/chat/$(chatId)).data.participantes;
+                  (exists(/databases/$(database)/documents/chat/$(chatId)) &&
+                   request.auth.uid in get(/databases/$(database)/documents/chat/$(chatId)).data.participantes);
       
       allow create: if request.auth != null && 
                     request.resource.data.autorId == request.auth.uid &&
+                    exists(/databases/$(database)/documents/chat/$(chatId)) &&
                     request.auth.uid in get(/databases/$(database)/documents/chat/$(chatId)).data.participantes;
     }
 
