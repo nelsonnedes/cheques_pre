@@ -10,6 +10,46 @@
   
   <!-- CSS específico para página empresas -->
   <style>
+    /* Definir variáveis CSS */
+    :root {
+      --primary-50: #eff6ff;
+      --primary-100: #dbeafe;
+      --primary-200: #bfdbfe;
+      --primary-300: #93c5fd;
+      --primary-500: #3b82f6;
+      --primary-600: #2563eb;
+      --primary-700: #1d4ed8;
+      --primary-800: #1e40af;
+      --gray-200: #e5e7eb;
+      --gray-700: #374151;
+    }
+    
+    /* Reset e correção específica para a página empresas */
+    .empresas-page {
+      box-sizing: border-box;
+    }
+    
+    /* CORREÇÃO CRÍTICA: Sobrescrever o CSS global problemático */
+    .empresas-page .main-content {
+      margin-left: 280px !important;
+      margin-top: 70px !important;
+      padding: 2rem !important;
+      min-height: calc(100vh - 70px) !important;
+      width: calc(100% - 280px) !important;
+      box-sizing: border-box !important;
+      background: #f8f9fa !important;
+      position: relative !important;
+      overflow-x: visible !important;
+    }
+    
+    /* Garantir que o container não tenha conflitos */
+    .empresas-page .main-content .container {
+      max-width: none !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
     /* Reset específico para evitar sobreposições */
     * {
       box-sizing: border-box;
@@ -46,45 +86,6 @@
       z-index: 10003 !important;
     }
     
-    /* Definir variáveis CSS */
-    :root {
-      --primary-50: #eff6ff;
-      --primary-100: #dbeafe;
-      --primary-200: #bfdbfe;
-      --primary-300: #93c5fd;
-      --primary-500: #3b82f6;
-      --primary-600: #2563eb;
-      --primary-700: #1d4ed8;
-      --primary-800: #1e40af;
-      --gray-200: #e5e7eb;
-      --gray-700: #374151;
-    }
-    
-    /* Reset específico para evitar conflitos */
-    .main-content {
-      margin-left: 280px;
-      margin-top: 70px;
-      padding: 2rem;
-      min-height: calc(100vh - 70px);
-      width: calc(100% - 280px);
-      box-sizing: border-box;
-      /* Garantir que o conteúdo principal seja sempre visível */
-      position: relative;
-      z-index: 0;
-      background: #f8f9fa;
-    }
-    
-    /* Corrigir container principal */
-    .main-content .container {
-      max-width: none;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      /* Garantir que o container seja visível */
-      position: relative;
-      z-index: 1;
-    }
-    
     /* Header da página */
     .page-header {
       display: flex;
@@ -93,10 +94,6 @@
       margin-bottom: 30px;
       gap: 20px;
       flex-wrap: wrap;
-      position: relative;
-      z-index: auto;
-      visibility: visible;
-      opacity: 1;
     }
     
     .page-title h1 {
@@ -118,7 +115,7 @@
       flex-shrink: 0;
     }
     
-    /* Selection info - corrigir layout e evitar sobreposição */
+    /* Selection info */
     .selection-info {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-radius: 12px;
@@ -132,11 +129,6 @@
       gap: 20px;
       width: 100%;
       box-sizing: border-box;
-      /* Remover position e z-index problemáticos */
-      position: static;
-      z-index: auto;
-      visibility: visible;
-      opacity: 1;
     }
     
     .info-card {
@@ -181,29 +173,25 @@
       white-space: nowrap;
     }
     
-    /* Companies container - garantir que não seja sobreposto */
+    /* Companies container */
     .companies-container {
       margin-top: 20px;
       width: 100%;
       clear: both;
-      min-height: 400px;
-      background: transparent;
     }
     
-    /* Companies grid - layout corrigido para usar todo o espaço disponível */
+    /* Companies grid */
     .companies-grid {
-      display: grid !important;
+      display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 25px;
       margin-bottom: 30px;
       width: 100%;
-      min-height: 300px;
-      background: transparent;
     }
     
-    /* Company cards - garantir visibilidade total */
+    /* Company cards */
     .company-card {
-      background: white !important;
+      background: white;
       border-radius: 12px;
       padding: 25px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -213,10 +201,6 @@
       width: 100%;
       box-sizing: border-box;
       min-height: 280px;
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      transform: none !important;
     }
     
     .company-card:hover {
@@ -235,10 +219,6 @@
       text-align: center;
       padding: 60px 20px;
       color: #6b7280;
-      position: relative;
-      z-index: auto;
-      visibility: visible;
-      opacity: 1;
     }
     
     .empty-icon {
@@ -727,47 +707,9 @@
       margin-left: 5px;
       z-index: 1000;
     }
-    
-    /* Debug e correção forçada - garantir que área de empresas seja sempre visível */
-    #companies-grid {
-      display: grid !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      background: rgba(255, 255, 255, 0.01) !important;
-      min-height: 300px !important;
-      overflow: visible !important;
-    }
-    
-    #companies-grid .company-card {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      background: white !important;
-      position: relative !important;
-      z-index: 1 !important;
-    }
-    
-    /* Garantir que nenhum elemento pai oculte os cards */
-    .companies-container,
-    .companies-grid {
-      overflow: visible !important;
-      height: auto !important;
-      max-height: none !important;
-    }
-    
-    /* Debug temporário - remover depois de confirmar funcionamento */
-    .company-card {
-      border: 2px solid red !important;
-      background: yellow !important;
-    }
-    
-    .empty-state {
-      background: lightgreen !important;
-      border: 2px solid green !important;
-    }
   </style>
 </head>
-<body>
+<body class="empresas-page">
   <!-- Header -->
   <header class="header">
     <div class="container">
