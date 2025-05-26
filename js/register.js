@@ -225,7 +225,7 @@ async function handleRegister(formData) {
             window.location.href = 'index.html';
         }, 3000);
         
-    } catch (error) {
+  } catch (error) {
         console.error('Registration error:', error);
         
         let errorMessage = 'Erro ao criar conta. Tente novamente.';
