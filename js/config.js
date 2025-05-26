@@ -1,4 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { 
   getAuth,
   signInWithEmailAndPassword,
@@ -8,7 +8,7 @@ import {
   updateProfile,
   updatePassword,
   sendPasswordResetEmail
-} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { 
   getFirestore, 
   collection, 
@@ -25,14 +25,14 @@ import {
   getDoc,
   serverTimestamp,
   setDoc
-} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { 
   getStorage,
   ref,
   uploadBytes,
   getDownloadURL,
   deleteObject
-} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
 // Configuração Firebase
 const firebaseConfig = {
