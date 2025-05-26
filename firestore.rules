@@ -1,21 +1,182 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    match /empresas/{empresaId} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == resource.data.createdBy;
-    }
-
-    match /cheques/{chequeId} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == resource.data.createdBy;
-    }
-
-    match /usuarios/{userId} {
-      allow read, update: if request.auth.uid == userId;
+    
+    // Função para verificar se o usuário é dono do recurso
+    function isOwner(resource) {
+      return request.auth != null && request.auth.uid == resource.data.createdBy;
     }
     
-    // Outras coleções podem ser protegidas similarmente
+    // Função para verificar se o usuário é membro da empresa
+    function isCompanyMember(companyId) {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.empresaId == companyId;
+    }
+    
+    // Função para verificar dados obrigatórios do usuário
+    function isValidUserData() {
+      return request.resource.data.keys().hasAll(['uid', 'email', 'nome', 'criadoEm', 'ativo']) &&
+             request.resource.data.uid == request.auth.uid &&
+             request.resource.data.email == request.auth.token.email;
+    }
+    
+    // Função para verificar dados obrigatórios da empresa
+    function isValidCompanyData() {
+      return request.resource.data.keys().hasAll(['nome', 'createdBy', 'criadoEm', 'ativo']) &&
+             request.resource.data.createdBy == request.auth.uid;
+    }
+
+    // ===========================================
+    // COLEÇÃO USUARIOS
+    // ===========================================
+    match /usuarios/{userId} {
+      // Leitura: apenas o próprio usuário
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Criação: durante registro (dados válidos)
+      allow create: if request.auth != null && 
+                    request.auth.uid == userId && 
+                    isValidUserData();
+      
+      // Atualização: apenas o próprio usuário (mantendo UID e email)
+      allow update: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    request.resource.data.uid == resource.data.uid &&
+                    request.resource.data.email == resource.data.email;
+      
+      // Exclusão: apenas o próprio usuário
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ===========================================
+    // COLEÇÃO EMPRESAS
+    // ===========================================
+    match /empresas/{empresaId} {
+      // Leitura: membros da empresa
+      allow read: if request.auth != null && 
+                  (isOwner(resource) || isCompanyMember(empresaId));
+      
+      // Criação: usuário autenticado com dados válidos
+      allow create: if request.auth != null && isValidCompanyData();
+      
+      // Atualização: apenas o criador da empresa
+      allow update: if request.auth != null && isOwner(resource);
+      
+      // Exclusão: apenas o criador da empresa
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    // ===========================================
+    // COLEÇÃO CHEQUES
+    // ===========================================
+    match /cheques/{chequeId} {
+      // Leitura/Escrita: membros da mesma empresa
+      allow read, write: if request.auth != null && 
+                        resource.data.empresaId != null &&
+                        isCompanyMember(resource.data.empresaId);
+      
+      // Criação: usuário autenticado com empresa válida
+      allow create: if request.auth != null && 
+                    request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
+                    request.resource.data.createdBy == request.auth.uid &&
+                    isCompanyMember(request.resource.data.empresaId);
+    }
+
+    // ===========================================
+    // COLEÇÃO TRANSAÇÕES
+    // ===========================================
+    match /transacoes/{transacaoId} {
+      allow read, write: if request.auth != null && 
+                        resource.data.empresaId != null &&
+                        isCompanyMember(resource.data.empresaId);
+      
+      allow create: if request.auth != null && 
+                    request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
+                    request.resource.data.createdBy == request.auth.uid &&
+                    isCompanyMember(request.resource.data.empresaId);
+    }
+
+    // ===========================================
+    // COLEÇÃO CONFIGURAÇÕES
+    // ===========================================
+    match /configuracoes/{configId} {
+      allow read, write: if request.auth != null && 
+                        resource.data.empresaId != null &&
+                        isCompanyMember(resource.data.empresaId);
+      
+      allow create: if request.auth != null && 
+                    request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
+                    request.resource.data.createdBy == request.auth.uid;
+    }
+
+    // ===========================================
+    // COLEÇÃO AGENDA
+    // ===========================================
+    match /agenda/{eventId} {
+      allow read, write: if request.auth != null && 
+                        resource.data.empresaId != null &&
+                        isCompanyMember(resource.data.empresaId);
+      
+      allow create: if request.auth != null && 
+                    request.resource.data.keys().hasAll(['empresaId', 'createdBy']) &&
+                    request.resource.data.createdBy == request.auth.uid;
+    }
+
+    // ===========================================
+    // COLEÇÃO SUPORTE
+    // ===========================================
+    match /suporte/{ticketId} {
+      // Leitura/Escrita: apenas o criador do ticket
+      allow read, write: if request.auth != null && isOwner(resource);
+      
+      // Criação: usuário autenticado
+      allow create: if request.auth != null && 
+                    request.resource.data.createdBy == request.auth.uid;
+    }
+
+    // ===========================================
+    // COLEÇÃO CHAT
+    // ===========================================
+    match /chat/{chatId} {
+      // Leitura/Escrita: participantes do chat
+      allow read, write: if request.auth != null && 
+                        request.auth.uid in resource.data.participantes;
+      
+      // Criação: usuário deve estar na lista de participantes
+      allow create: if request.auth != null && 
+                    request.auth.uid in request.resource.data.participantes;
+    }
+
+    // ===========================================
+    // COLEÇÃO TICKETS
+    // ===========================================
+    match /tickets/{ticketId} {
+      // Leitura/Escrita: apenas o criador
+      allow read, write: if request.auth != null && isOwner(resource);
+      
+      // Criação: usuário autenticado
+      allow create: if request.auth != null && 
+                    request.resource.data.createdBy == request.auth.uid;
+    }
+
+    // ===========================================
+    // SUBCOLEÇÕES DE CHAT (MENSAGENS)
+    // ===========================================
+    match /chat/{chatId}/mensagens/{messageId} {
+      allow read: if request.auth != null && 
+                  request.auth.uid in get(/databases/$(database)/documents/chat/$(chatId)).data.participantes;
+      
+      allow create: if request.auth != null && 
+                    request.resource.data.autorId == request.auth.uid &&
+                    request.auth.uid in get(/databases/$(database)/documents/chat/$(chatId)).data.participantes;
+    }
+
+    // ===========================================
+    // REGRA PADRÃO - NEGAR TUDO
+    // ===========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
