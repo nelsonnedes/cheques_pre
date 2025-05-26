@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Usuário - Sistema de Cheques</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <!-- Mobile menu button -->
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Logo -->
+            <div class="logo">
+                <i class="fas fa-money-check-alt"></i>
+                <span>ChequesPRE</span>
+            </div>
+
+            <!-- Header actions -->
+            <div class="header-actions">
+                <!-- Notifications -->
+                <div class="notification-container">
+                    <button class="btn-notification" id="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge hidden" id="notification-badge">0</span>
+                    </button>
+                    <div class="notification-dropdown hidden" id="notification-dropdown">
+                        <!-- Conteúdo carregado via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Profile menu -->
+                <div class="profile-menu">
+                    <button class="profile-btn" id="profile-btn">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="user-name">Usuário</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="profile-dropdown hidden" id="profile-dropdown">
+                        <a href="perfil.html" class="dropdown-item active">
+                            <i class="fas fa-user"></i> Meu Perfil
+                        </a>
+                        <a href="configuracoes.html" class="dropdown-item">
+                            <i class="fas fa-cog"></i> Configurações
+                        </a>
+                        <hr class="dropdown-divider">
+                        <button class="dropdown-item" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="listarCheques.html" class="nav-item">
+                <i class="fas fa-list"></i>
+                <span>Listar Cheques</span>
+            </a>
+            <a href="incluirCheque.html" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Incluir Cheque</span>
+            </a>
+            <a href="relatorio.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Relatórios</span>
+            </a>
+            <a href="agenda.html" class="nav-item">
+                <i class="fas fa-calendar"></i>
+                <span>Agenda</span>
+            </a>
+            <a href="perfil.html" class="nav-item active">
+                <i class="fas fa-user"></i>
+                <span>Perfil</span>
+            </a>
+            <a href="configuracoes.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+            <a href="suporte.html" class="nav-item">
+                <i class="fas fa-life-ring"></i>
+                <span>Suporte</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1><i class="fas fa-user"></i> Meu Perfil</h1>
+                    <p>Gerencie suas informações pessoais e configurações de conta</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="save-profile-btn">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <div class="profile-grid">
+                    <!-- Profile Picture Section -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-camera"></i> Foto do Perfil</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="profile-picture-section">
+                                <div class="profile-picture">
+                                    <img id="profile-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik01MCA1MEMyOC45IDUwIDEwIDMxLjEgMTAgMTBTMjguOSAtMzAgNTAgLTMwIDkwIC0xMS4xIDkwIDEwIDcxLjEgNTAgNTAgNTBaTTUwIDYwQzY2LjYgNjAgODAgNzMuNCA4MCA5MFY5MEgxMFY5MEM1MCA3My40IDMzLjQgNjAgNTAgNjBaIiBmaWxsPSIjOUM5Qzk4Ii8+Cjwvc3ZnPg==" alt="Foto do perfil">
+                                    <div class="profile-picture-overlay">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Alterar Foto</span>
+                                    </div>
+                                </div>
+                                <input type="file" id="profile-picture-input" accept="image/*" style="display: none;">
+                                <div class="profile-picture-actions">
+                                    <button class="btn btn-secondary btn-sm" id="change-picture-btn">
+                                        <i class="fas fa-upload"></i> Escolher Arquivo
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" id="remove-picture-btn">
+                                        <i class="fas fa-trash"></i> Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-user-edit"></i> Informações Pessoais</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="profile-form">
+                                <div class="form-group">
+                                    <label for="display-name">Nome Completo *</label>
+                                    <input type="text" id="display-name" name="displayName" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email">E-mail</label>
+                                    <input type="email" id="email" name="email" readonly>
+                                    <small class="form-hint">O e-mail não pode ser alterado</small>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="phone">Telefone</label>
+                                        <input type="tel" id="phone" name="phone" placeholder="(11) 99999-9999">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="birth-date">Data de Nascimento</label>
+                                        <input type="date" id="birth-date" name="birthDate">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="document">CPF</label>
+                                    <input type="text" id="document" name="document" placeholder="000.000.000-00">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bio">Sobre</label>
+                                    <textarea id="bio" name="bio" rows="3" placeholder="Conte um pouco sobre você..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-map-marker-alt"></i> Endereço</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="address-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="zip-code">CEP</label>
+                                        <input type="text" id="zip-code" name="zipCode" placeholder="00000-000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="street">Rua</label>
+                                        <input type="text" id="street" name="street">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="number">Número</label>
+                                        <input type="text" id="number" name="number">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="complement">Complemento</label>
+                                        <input type="text" id="complement" name="complement">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="neighborhood">Bairro</label>
+                                        <input type="text" id="neighborhood" name="neighborhood">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="city">Cidade</label>
+                                        <input type="text" id="city" name="city">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="state">Estado</label>
+                                    <select id="state" name="state">
+                                        <option value="">Selecione o estado</option>
+                                        <option value="AC">Acre</option>
+                                        <option value="AL">Alagoas</option>
+                                        <option value="AP">Amapá</option>
+                                        <option value="AM">Amazonas</option>
+                                        <option value="BA">Bahia</option>
+                                        <option value="CE">Ceará</option>
+                                        <option value="DF">Distrito Federal</option>
+                                        <option value="ES">Espírito Santo</option>
+                                        <option value="GO">Goiás</option>
+                                        <option value="MA">Maranhão</option>
+                                        <option value="MT">Mato Grosso</option>
+                                        <option value="MS">Mato Grosso do Sul</option>
+                                        <option value="MG">Minas Gerais</option>
+                                        <option value="PA">Pará</option>
+                                        <option value="PB">Paraíba</option>
+                                        <option value="PR">Paraná</option>
+                                        <option value="PE">Pernambuco</option>
+                                        <option value="PI">Piauí</option>
+                                        <option value="RJ">Rio de Janeiro</option>
+                                        <option value="RN">Rio Grande do Norte</option>
+                                        <option value="RS">Rio Grande do Sul</option>
+                                        <option value="RO">Rondônia</option>
+                                        <option value="RR">Roraima</option>
+                                        <option value="SC">Santa Catarina</option>
+                                        <option value="SP">São Paulo</option>
+                                        <option value="SE">Sergipe</option>
+                                        <option value="TO">Tocantins</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-shield-alt"></i> Segurança</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="security-section">
+                                <div class="security-item">
+                                    <div class="security-info">
+                                        <h4>Alterar Senha</h4>
+                                        <p>Mantenha sua conta segura com uma senha forte</p>
+                                    </div>
+                                    <button class="btn btn-secondary" id="change-password-btn">
+                                        <i class="fas fa-key"></i> Alterar Senha
+                                    </button>
+                                </div>
+
+                                <div class="security-item">
+                                    <div class="security-info">
+                                        <h4>Autenticação de Dois Fatores</h4>
+                                        <p>Adicione uma camada extra de segurança</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="two-factor-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="security-item">
+                                    <div class="security-info">
+                                        <h4>Sessões Ativas</h4>
+                                        <p>Gerencie onde você está logado</p>
+                                    </div>
+                                    <button class="btn btn-secondary" id="manage-sessions-btn">
+                                        <i class="fas fa-laptop"></i> Gerenciar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Statistics -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Estatísticas da Conta</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="member-since">-</span>
+                                        <span class="stat-label">Membro desde</span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-money-check"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="total-cheques">0</span>
+                                        <span class="stat-label">Total de Cheques</span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="last-activity">-</span>
+                                        <span class="stat-label">Última Atividade</span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="active-company">-</span>
+                                        <span class="stat-label">Empresa Ativa</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para alterar senha -->
+    <div class="modal hidden" id="change-password-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Alterar Senha</h3>
+                <button class="modal-close" id="close-password-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label for="current-password">Senha Atual *</label>
+                        <input type="password" id="current-password" name="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">Nova Senha *</label>
+                        <input type="password" id="new-password" name="newPassword" required minlength="8">
+                        <small class="form-hint">Mínimo de 8 caracteres</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirmar Nova Senha *</label>
+                        <input type="password" id="confirm-password" name="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-password-btn">Cancelar</button>
+                <button class="btn btn-primary" id="confirm-password-btn">Alterar Senha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/perfil.js"></script>
+</body>
+</html> 
