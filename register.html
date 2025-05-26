@@ -3,88 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Sistema Financeiro</title>
+    <title>Cadastro - Sistema de Gestão Financeira</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/global.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script type="module" src="js/masks.js"></script>
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/register.js"></script>
+    <style>
+        /* Estilos específicos para a página de cadastro */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+            padding: var(--spacing-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 255, 0.03) 2px,
+                rgba(255, 255, 255, 0.03) 4px
+            );
+            animation: movePattern 20s linear infinite;
+        }
+
+        @keyframes movePattern {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+            border-bottom: 1px solid var(--primary-200);
+        }
+
+        .auth-header h1 {
+            margin: 0 0 var(--spacing-sm) 0;
+            color: var(--primary-700);
+            font-size: 1.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .auth-header h1 i {
+            background: var(--primary-500);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .auth-header p {
+            margin: 0;
+            color: var(--gray-600);
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            padding: var(--spacing-xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-500);
+            background-color: var(--error-50);
+        }
+
+        .form-group input.valid {
+            border-color: var(--success-500);
+            background-color: var(--success-50);
+        }
+
+        .password-input {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input input {
+            padding-right: 3rem;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: var(--spacing-md);
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            border-radius: var(--border-radius-sm);
+            transition: color 0.2s ease;
+            font-size: 1.1rem;
+        }
+
+        .toggle-password:hover {
+            color: var(--gray-600);
+        }
+
+        .password-strength {
+            margin-top: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .password-strength.weak {
+            background: var(--error-100);
+            color: var(--error-700);
+        }
+
+        .password-strength.medium {
+            background: var(--warning-100);
+            color: var(--warning-700);
+        }
+
+        .password-strength.strong {
+            background: var(--success-100);
+            color: var(--success-700);
+        }
+
+        .checkbox-group {
+            margin: var(--spacing-lg) 0;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--gray-600);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-top: 2px;
+            background: white;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background-color: var(--primary-500);
+            border-color: var(--primary-500);
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checkbox-label a {
+            color: var(--primary-600);
+            text-decoration: none;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary .loading-spinner {
+            display: none;
+        }
+
+        .btn-primary.loading .btn-text {
+            opacity: 0;
+        }
+
+        .btn-primary.loading .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: var(--spacing-xl) 0;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gray-200);
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 var(--spacing-md);
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-google {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 2px solid var(--gray-200);
+            background: white;
+            color: var(--gray-700);
+            border-radius: var(--border-radius-md);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            font-size: 1rem;
+        }
+
+        .btn-google:hover {
+            border-color: var(--gray-300);
+            background: var(--gray-50);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-google i {
+            color: #db4437;
+            font-size: 1.1rem;
+        }
+
+        .auth-footer {
+            padding: var(--spacing-lg) var(--spacing-xl);
+            text-align: center;
+            background: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+            font-size: 0.9rem;
+        }
+
+        .auth-footer p {
+            margin: 0;
+            color: var(--gray-600);
+        }
+
+        .auth-footer a {
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--error-500);
+            font-size: 0.85rem;
+            margin-top: var(--spacing-xs);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            min-height: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .error-message::before {
+            content: '⚠';
+            font-size: 0.8rem;
+        }
+
+        .success-message {
+            color: var(--success-500);
+            font-size: 0.85rem;
+            margin-top: var(--spacing-xs);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+        }
+
+        .success-message::before {
+            content: '✓';
+            font-size: 0.8rem;
+        }
+
+        /* Responsividade */
+        @media (max-width: 640px) {
+            .auth-container {
+                padding: var(--spacing-sm);
+            }
+
+            .auth-card {
+                max-width: 100%;
+            }
+
+            .auth-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .auth-header h1 i {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .auth-form {
+                padding: var(--spacing-lg);
+            }
+
+            .form-group {
+                margin-bottom: var(--spacing-md);
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1><i class="fas fa-user-plus"></i> Criar Conta</h1>
-                <p>Cadastre-se para acessar o sistema</p>
+                <h1>
+                    <i class="fas fa-user-plus"></i>
+                    Criar Conta
+                </h1>
+                <p>Cadastre-se para acessar o sistema financeiro</p>
             </div>
 
             <form id="register-form" class="auth-form" novalidate>
                 <div class="form-group">
                     <label for="nome">Nome Completo</label>
                     <input type="text" id="nome" name="nome" required 
-                           placeholder="Seu nome completo" minlength="3">
+                           placeholder="Digite seu nome completo" 
+                           minlength="3" autocomplete="name">
                     <div class="error-message" id="nome-error"></div>
+                    <div class="success-message" id="nome-success"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="email">E-mail</label>
                     <input type="email" id="email" name="email" required 
-                           placeholder="seu@email.com">
+                           placeholder="seu@email.com" autocomplete="email">
                     <div class="error-message" id="email-error"></div>
+                    <div class="success-message" id="email-success"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="telefone">Telefone</label>
                     <input type="tel" id="telefone" name="telefone" required 
-                           placeholder="(11) 99999-9999" data-mask="phone">
+                           placeholder="(11) 99999-9999" 
+                           data-mask="phone" autocomplete="tel">
                     <div class="error-message" id="telefone-error"></div>
+                    <div class="success-message" id="telefone-success"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="cpf">CPF</label>
                     <input type="text" id="cpf" name="cpf" required 
-                           placeholder="000.000.000-00" data-mask="cpf">
+                           placeholder="000.000.000-00" 
+                           data-mask="cpf" autocomplete="off">
                     <div class="error-message" id="cpf-error"></div>
+                    <div class="success-message" id="cpf-success"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Senha</label>
                     <div class="password-input">
                         <input type="password" id="password" name="password" required 
-                               minlength="6" placeholder="Mínimo 6 caracteres">
-                        <button type="button" class="toggle-password" aria-label="Mostrar/ocultar senha">
+                               minlength="6" placeholder="Mínimo 6 caracteres"
+                               autocomplete="new-password">
+                        <button type="button" class="toggle-password" 
+                                aria-label="Mostrar/ocultar senha" tabindex="-1">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                     <div class="password-strength" id="password-strength"></div>
                     <div class="error-message" id="password-error"></div>
+                    <div class="success-message" id="password-success"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="confirm-password">Confirmar Senha</label>
                     <div class="password-input">
                         <input type="password" id="confirm-password" name="confirm-password" required 
-                               minlength="6" placeholder="Confirme sua senha">
-                        <button type="button" class="toggle-password" aria-label="Mostrar/ocultar senha">
+                               minlength="6" placeholder="Confirme sua senha"
+                               autocomplete="new-password">
+                        <button type="button" class="toggle-password" 
+                                aria-label="Mostrar/ocultar senha" tabindex="-1">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                     <div class="error-message" id="confirm-password-error"></div>
+                    <div class="success-message" id="confirm-password-success"></div>
                 </div>
 
                 <div class="form-group checkbox-group">
                     <label class="checkbox-label">
                         <input type="checkbox" id="terms" name="terms" required>
                         <span class="checkmark"></span>
-                        Aceito os <a href="#" target="_blank">Termos de Uso</a> e 
-                        <a href="#" target="_blank">Política de Privacidade</a>
+                        <span>
+                            Aceito os <a href="#" target="_blank">Termos de Uso</a> e 
+                            <a href="#" target="_blank">Política de Privacidade</a>
+                        </span>
                     </label>
                     <div class="error-message" id="terms-error"></div>
                 </div>
 
                 <button type="submit" class="btn-primary" id="register-btn">
-                    <span class="btn-text">Criar Conta</span>
-                    <div class="loading-spinner hidden">
+                    <span class="btn-text">
+                        <i class="fas fa-user-plus"></i>
+                        Criar Conta
+                    </span>
+                    <div class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
                 </button>
@@ -100,12 +555,429 @@
             </form>
 
             <div class="auth-footer">
-                <p>Já tem uma conta? <a href="login.html">Fazer login</a></p>
+                <p>
+                    Já tem uma conta? 
+                    <a href="login.html">Fazer login</a>
+                </p>
             </div>
         </div>
     </main>
 
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p>Criando sua conta...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqJVqKvOtKvOtKvOtKvOtKvOtKvOtKvOt",
+            authDomain: "sistema-financeiro.firebaseapp.com",
+            projectId: "sistema-financeiro",
+            storageBucket: "sistema-financeiro.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdefghijklmnop"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // Elementos do DOM
+        const form = document.getElementById('register-form');
+        const registerBtn = document.getElementById('register-btn');
+        const googleBtn = document.getElementById('google-register');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // Funções utilitárias
+        function showLoading(show) {
+            if (show) {
+                registerBtn.classList.add('loading');
+                registerBtn.disabled = true;
+                loadingOverlay.classList.remove('hidden');
+            } else {
+                registerBtn.classList.remove('loading');
+                registerBtn.disabled = false;
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container') || createToastContainer();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icon = getToastIcon(type);
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="${icon}"></i>
+                    <span>${message}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="toast-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            return icons[type] || icons.info;
+        }
+
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            const successElement = document.getElementById(`${fieldId}-success`);
+            
+            if (field) field.classList.add('error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('show');
+            }
+            if (successElement) successElement.classList.remove('show');
+        }
+
+        function showSuccess(fieldId, message = '') {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            const successElement = document.getElementById(`${fieldId}-success`);
+            
+            if (field) {
+                field.classList.remove('error');
+                field.classList.add('valid');
+            }
+            if (errorElement) errorElement.classList.remove('show');
+            if (successElement && message) {
+                successElement.textContent = message;
+                successElement.classList.add('show');
+            }
+        }
+
+        function clearFieldStatus(fieldId) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            const successElement = document.getElementById(`${fieldId}-success`);
+            
+            if (field) {
+                field.classList.remove('error', 'valid');
+            }
+            if (errorElement) errorElement.classList.remove('show');
+            if (successElement) successElement.classList.remove('show');
+        }
+
+        // Validações
+        function validateName(name) {
+            if (name.length < 3) {
+                return 'Nome deve ter pelo menos 3 caracteres';
+            }
+            if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(name)) {
+                return 'Nome deve conter apenas letras';
+            }
+            return null;
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return 'Digite um e-mail válido';
+            }
+            return null;
+        }
+
+        function validatePhone(phone) {
+            const phoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
+            if (!phoneRegex.test(phone)) {
+                return 'Digite um telefone válido: (11) 99999-9999';
+            }
+            return null;
+        }
+
+        function validateCPF(cpf) {
+            const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+            if (!cpfRegex.test(cpf)) {
+                return 'Digite um CPF válido: 000.000.000-00';
+            }
+            
+            // Validação básica de CPF
+            const numbers = cpf.replace(/\D/g, '');
+            if (numbers.length !== 11) {
+                return 'CPF deve ter 11 dígitos';
+            }
+            
+            // Verificar se todos os dígitos são iguais
+            if (/^(\d)\1{10}$/.test(numbers)) {
+                return 'CPF inválido';
+            }
+            
+            return null;
+        }
+
+        function validatePassword(password) {
+            if (password.length < 6) {
+                return 'Senha deve ter pelo menos 6 caracteres';
+            }
+            
+            let strength = 0;
+            let feedback = '';
+            
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+            
+            if (strength <= 2) {
+                feedback = 'Senha fraca';
+                document.getElementById('password-strength').className = 'password-strength weak';
+            } else if (strength <= 3) {
+                feedback = 'Senha média';
+                document.getElementById('password-strength').className = 'password-strength medium';
+            } else {
+                feedback = 'Senha forte';
+                document.getElementById('password-strength').className = 'password-strength strong';
+            }
+            
+            document.getElementById('password-strength').textContent = feedback;
+            return null;
+        }
+
+        // Máscaras
+        function applyMask(value, type) {
+            switch (type) {
+                case 'phone':
+                    return value
+                        .replace(/\D/g, '')
+                        .replace(/(\d{2})(\d)/, '($1) $2')
+                        .replace(/(\d{4,5})(\d{4})/, '$1-$2')
+                        .slice(0, 15);
+                        
+                case 'cpf':
+                    return value
+                        .replace(/\D/g, '')
+                        .replace(/(\d{3})(\d)/, '$1.$2')
+                        .replace(/(\d{3})(\d)/, '$1.$2')
+                        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+                        .slice(0, 14);
+                        
+                default:
+                    return value;
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aplicar máscaras
+            const maskedInputs = document.querySelectorAll('[data-mask]');
+            maskedInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const maskType = this.getAttribute('data-mask');
+                    this.value = applyMask(this.value, maskType);
+                });
+            });
+
+            // Toggle password visibility
+            const toggleButtons = document.querySelectorAll('.toggle-password');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.parentElement.querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
+
+            // Validação em tempo real
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('error')) {
+                        validateField(this);
+                    }
+                    
+                    if (this.id === 'password') {
+                        validatePassword(this.value);
+                    }
+                });
+            });
+        });
+
+        function validateField(field) {
+            const value = field.value.trim();
+            const fieldId = field.id;
+            let error = null;
+
+            switch (fieldId) {
+                case 'nome':
+                    error = validateName(value);
+                    break;
+                case 'email':
+                    error = validateEmail(value);
+                    break;
+                case 'telefone':
+                    error = validatePhone(value);
+                    break;
+                case 'cpf':
+                    error = validateCPF(value);
+                    break;
+                case 'password':
+                    error = validatePassword(value);
+                    break;
+                case 'confirm-password':
+                    const password = document.getElementById('password').value;
+                    if (value !== password) {
+                        error = 'As senhas não coincidem';
+                    }
+                    break;
+                case 'terms':
+                    if (!field.checked) {
+                        error = 'Você deve aceitar os termos';
+                    }
+                    break;
+            }
+
+            if (error) {
+                showError(fieldId, error);
+                return false;
+            } else {
+                showSuccess(fieldId);
+                return true;
+            }
+        }
+
+        // Registro com email/senha
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validar todos os campos
+            const inputs = form.querySelectorAll('input');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showToast('Por favor, corrija os erros no formulário', 'error');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const userData = {
+                nome: formData.get('nome'),
+                email: formData.get('email'),
+                telefone: formData.get('telefone'),
+                cpf: formData.get('cpf'),
+                password: formData.get('password')
+            };
+            
+            try {
+                showLoading(true);
+                
+                // Criar usuário no Firebase
+                const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+                
+                // Atualizar perfil com nome
+                await updateProfile(userCredential.user, {
+                    displayName: userData.nome
+                });
+                
+                showToast('Conta criada com sucesso! Redirecionando...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Erro no registro:', error);
+                
+                let errorMessage = 'Erro ao criar conta. Tente novamente.';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Este e-mail já está sendo usado';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Senha muito fraca';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'E-mail inválido';
+                }
+                
+                showToast(errorMessage, 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Registro com Google
+        googleBtn.addEventListener('click', async function() {
+            try {
+                showLoading(true);
+                
+                const result = await signInWithPopup(auth, googleProvider);
+                
+                showToast('Conta criada com sucesso! Redirecionando...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Erro no registro com Google:', error);
+                
+                let errorMessage = 'Erro ao criar conta com Google';
+                if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMessage = 'Já existe uma conta com este e-mail';
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = 'Login cancelado pelo usuário';
+                }
+                
+                showToast(errorMessage, 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+    </script>
 </body>
 </html> 
