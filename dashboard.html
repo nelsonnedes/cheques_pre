@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Gestão e Operações Financeiras - Dashboard</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <script type="module" defer src="js/dashboard.js"></script>
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Carregando...</span>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <h1 class="app-name">Sistema Financeiro</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-notification" aria-label="Notificações">
+        <i class="fas fa-bell"></i><span class="badge" id="notification-count">3</span>
+      </button>
+      <div class="profile-menu">
+        <button id="profile-btn" aria-label="Menu de perfil">
+          <i class="fas fa-user-circle fa-lg"></i>
+          <span id="user-name">Usuário</span>
+        </button>
+        <div id="profile-dropdown" class="dropdown hidden">
+          <a href="configuracoes.html">
+            <i class="fas fa-cog"></i> Configurações
+          </a>
+          <button id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <nav>
+      <ul>
+        <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="listarCheques.html"><i class="fas fa-file-invoice-dollar"></i> <span>Cheques</span></a></li>
+        <li><a href="incluirCheque.html"><i class="fas fa-plus-circle"></i> <span>Novo Cheque</span></a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> <span>Relatórios</span></a></li>
+        <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> <span>Agenda</span></a></li>
+        <li><a href="suporte.html"><i class="fas fa-headset"></i> <span>Suporte</span></a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <section class="dashboard-overview">
+      <h2>Visão Geral</h2>
+      <div class="cards-container">
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+          <div class="card-content">
+            <h3>Total de Cheques</h3>
+            <p id="total-cheques" class="card-value">0</p>
+            <span class="card-subtitle">Todos os cheques</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon warning">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="card-content">
+            <h3>Cheques Pendentes</h3>
+            <p id="cheques-pendentes" class="card-value">0</p>
+            <span class="card-subtitle">Aguardando compensação</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon success">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="card-content">
+            <h3>Cheques Compensados</h3>
+            <p id="cheques-compensados" class="card-value">0</p>
+            <span class="card-subtitle">Já compensados</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon info">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="card-content">
+            <h3>Valor Total</h3>
+            <p id="valor-total" class="card-value">R$ 0,00</p>
+            <span class="card-subtitle">Soma de todos os cheques</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-charts">
+      <div class="chart-container">
+        <h3>Status dos Cheques</h3>
+        <canvas id="statusChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>Cheques por Mês</h3>
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </section>
+
+    <section class="recent-cheques">
+      <div class="section-header">
+        <h2>Cheques Recentes</h2>
+        <a href="listarCheques.html" class="btn btn-outline">Ver Todos</a>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Emitente</th>
+              <th>Valor</th>
+              <th>Vencimento</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="recent-cheques-body">
+            <!-- Cheques carregados via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <h2>Ações Rápidas</h2>
+      <div class="actions-grid">
+        <a href="incluirCheque.html" class="action-card">
+          <i class="fas fa-plus-circle"></i>
+          <span>Novo Cheque</span>
+        </a>
+        <a href="listarCheques.html" class="action-card">
+          <i class="fas fa-search"></i>
+          <span>Buscar Cheques</span>
+        </a>
+        <a href="relatorio.html" class="action-card">
+          <i class="fas fa-chart-line"></i>
+          <span>Relatórios</span>
+        </a>
+        <a href="agenda.html" class="action-card">
+          <i class="fas fa-calendar-plus"></i>
+          <span>Agendar</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 Sistema de Gestão e Operações Financeiras</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</body>
+</html> 

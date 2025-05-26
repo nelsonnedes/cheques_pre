@@ -1,5 +1,8 @@
 /* js/dashboard.js */
 import { setupUserInterface, checkAuth } from './auth.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, collection, query, orderBy, limit, getDocs, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const totalChequesElem = document.getElementById('total-cheques');
 const chequesPendentesElem = document.getElementById('cheques-pendentes');
@@ -7,6 +10,22 @@ const chequesCompensadosElem = document.getElementById('cheques-compensados');
 const recentChequesBody = document.getElementById('recent-cheques-body');
 
 let chartStatus = null;
+let currentUser = null;
+
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBqJVqKvOtKvOtKvOtKvOtKvOtKvOtKvOt",
+  authDomain: "sistema-financeiro.firebaseapp.com",
+  projectId: "sistema-financeiro",
+  storageBucket: "sistema-financeiro.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdefghijklmnop"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Utilitário para formatar moeda pt-BR
 function formatarMoeda(valor) {
@@ -132,5 +151,445 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     console.error('Erro na verificação de autenticação:', error);
     window.location.href = '/login.html';
+  }
+});
+
+// Verificar autenticação
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    initializeDashboard();
+  } else {
+    window.location.href = 'login.html';
+  }
+});
+
+// Inicializar dashboard
+function initializeDashboard() {
+  setupEventListeners();
+  loadDashboardData();
+  updateUserInfo();
+}
+
+// Configurar event listeners
+function setupEventListeners() {
+  // Sidebar toggle para mobile
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('sidebar');
+  
+  if (sidebarToggle && sidebar) {
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    
+    // Criar overlay para mobile
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    overlay.addEventListener('click', closeSidebar);
+    document.body.appendChild(overlay);
+  }
+
+  // Profile dropdown
+  const profileBtn = document.getElementById('profile-btn');
+  const profileDropdown = document.getElementById('profile-dropdown');
+  
+  if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('hidden');
+    });
+    
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', () => {
+      profileDropdown.classList.add('hidden');
+    });
+  }
+
+  // Logout
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+
+  // Fechar sidebar ao clicar em links (mobile)
+  const sidebarLinks = document.querySelectorAll('.sidebar nav a');
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+  });
+}
+
+// Toggle sidebar mobile
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  }
+}
+
+// Fechar sidebar
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  
+  if (sidebar && overlay) {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  }
+}
+
+// Atualizar informações do usuário
+function updateUserInfo() {
+  const userNameElement = document.getElementById('user-name');
+  if (userNameElement && currentUser) {
+    userNameElement.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+  }
+}
+
+// Carregar dados do dashboard
+async function loadDashboardData() {
+  try {
+    showLoading(true);
+    
+    // Carregar estatísticas
+    await loadStatistics();
+    
+    // Carregar cheques recentes
+    await loadRecentCheques();
+    
+    // Carregar gráficos
+    loadCharts();
+    
+  } catch (error) {
+    console.error('Erro ao carregar dados do dashboard:', error);
+    showToast('Erro ao carregar dados do dashboard', 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+// Carregar estatísticas
+async function loadStatistics() {
+  try {
+    const chequesRef = collection(db, 'cheques');
+    const q = query(chequesRef, where('userId', '==', currentUser.uid));
+    const snapshot = await getDocs(q);
+    
+    let totalCheques = 0;
+    let chequesPendentes = 0;
+    let chequesCompensados = 0;
+    let valorTotal = 0;
+    
+    snapshot.forEach((doc) => {
+      const cheque = doc.data();
+      totalCheques++;
+      valorTotal += parseFloat(cheque.valor) || 0;
+      
+      if (cheque.status === 'pendente') {
+        chequesPendentes++;
+      } else if (cheque.status === 'compensado') {
+        chequesCompensados++;
+      }
+    });
+    
+    // Atualizar elementos
+    updateElement('total-cheques', totalCheques);
+    updateElement('cheques-pendentes', chequesPendentes);
+    updateElement('cheques-compensados', chequesCompensados);
+    updateElement('valor-total', formatCurrency(valorTotal));
+    
+  } catch (error) {
+    console.error('Erro ao carregar estatísticas:', error);
+    // Valores padrão em caso de erro
+    updateElement('total-cheques', '0');
+    updateElement('cheques-pendentes', '0');
+    updateElement('cheques-compensados', '0');
+    updateElement('valor-total', 'R$ 0,00');
+  }
+}
+
+// Carregar cheques recentes
+async function loadRecentCheques() {
+  try {
+    const chequesRef = collection(db, 'cheques');
+    const q = query(
+      chequesRef,
+      where('userId', '==', currentUser.uid),
+      orderBy('dataInclusao', 'desc'),
+      limit(5)
+    );
+    const snapshot = await getDocs(q);
+    
+    const tbody = document.getElementById('recent-cheques-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (snapshot.empty) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center">
+            <div class="empty-state">
+              <i class="fas fa-file-invoice-dollar fa-3x"></i>
+              <p>Nenhum cheque encontrado</p>
+              <a href="incluirCheque.html" class="btn btn-primary">Adicionar Primeiro Cheque</a>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    snapshot.forEach((doc) => {
+      const cheque = doc.data();
+      const row = createChequeRow(doc.id, cheque);
+      tbody.appendChild(row);
+    });
+    
+  } catch (error) {
+    console.error('Erro ao carregar cheques recentes:', error);
+    const tbody = document.getElementById('recent-cheques-body');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-error">
+            Erro ao carregar cheques recentes
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
+
+// Criar linha da tabela de cheques
+function createChequeRow(id, cheque) {
+  const row = document.createElement('tr');
+  
+  const statusClass = getStatusClass(cheque.status);
+  const statusText = getStatusText(cheque.status);
+  
+  row.innerHTML = `
+    <td>${cheque.numero || '-'}</td>
+    <td>${cheque.emitente || '-'}</td>
+    <td>${formatCurrency(cheque.valor)}</td>
+    <td>${formatDate(cheque.dataVencimento)}</td>
+    <td><span class="status ${statusClass}">${statusText}</span></td>
+    <td>
+      <div class="action-buttons">
+        <button onclick="viewCheque('${id}')" class="btn-icon" title="Visualizar">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button onclick="editCheque('${id}')" class="btn-icon" title="Editar">
+          <i class="fas fa-edit"></i>
+        </button>
+      </div>
+    </td>
+  `;
+  
+  return row;
+}
+
+// Carregar gráficos
+function loadCharts() {
+  loadStatusChart();
+  loadMonthlyChart();
+}
+
+// Gráfico de status
+function loadStatusChart() {
+  const ctx = document.getElementById('statusChart');
+  if (!ctx) return;
+  
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Pendentes', 'Compensados', 'Vencidos'],
+      datasets: [{
+        data: [12, 8, 3],
+        backgroundColor: [
+          '#ECC94B',
+          '#38A169',
+          '#E53E3E'
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+}
+
+// Gráfico mensal
+function loadMonthlyChart() {
+  const ctx = document.getElementById('monthlyChart');
+  if (!ctx) return;
+  
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+      datasets: [{
+        label: 'Cheques por Mês',
+        data: [12, 19, 8, 15, 22, 18],
+        borderColor: '#3182CE',
+        backgroundColor: 'rgba(49, 130, 206, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+// Funções auxiliares
+function updateElement(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value || 0);
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR');
+}
+
+function getStatusClass(status) {
+  const statusMap = {
+    'pendente': 'warning',
+    'compensado': 'success',
+    'vencido': 'error'
+  };
+  return statusMap[status] || 'info';
+}
+
+function getStatusText(status) {
+  const statusMap = {
+    'pendente': 'Pendente',
+    'compensado': 'Compensado',
+    'vencido': 'Vencido'
+  };
+  return statusMap[status] || 'Desconhecido';
+}
+
+// Ações dos cheques
+window.viewCheque = function(id) {
+  window.location.href = `listarCheques.html?view=${id}`;
+};
+
+window.editCheque = function(id) {
+  window.location.href = `incluirCheque.html?edit=${id}`;
+};
+
+// Logout
+async function handleLogout() {
+  if (confirm('Tem certeza que deseja sair?')) {
+    try {
+      showLoading(true);
+      await signOut(auth);
+      showToast('Logout realizado com sucesso!', 'success');
+      window.location.href = 'login.html';
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      showToast('Erro ao fazer logout', 'error');
+    } finally {
+      showLoading(false);
+    }
+  }
+}
+
+// Sistema de toast
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container') || createToastContainer();
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  
+  const icon = getToastIcon(type);
+  toast.innerHTML = `
+    <i class="${icon}"></i>
+    <span>${message}</span>
+    <button onclick="this.parentElement.remove()" class="toast-close">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Auto remove após 5 segundos
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.remove();
+    }
+  }, 5000);
+}
+
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toast-container';
+  container.className = 'toast-container';
+  document.body.appendChild(container);
+  return container;
+}
+
+function getToastIcon(type) {
+  const icons = {
+    success: 'fas fa-check-circle',
+    error: 'fas fa-exclamation-circle',
+    warning: 'fas fa-exclamation-triangle',
+    info: 'fas fa-info-circle'
+  };
+  return icons[type] || icons.info;
+}
+
+// Loading overlay
+function showLoading(show) {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    if (show) {
+      overlay.classList.remove('hidden');
+    } else {
+      overlay.classList.add('hidden');
+    }
+  }
+}
+
+// Inicializar quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', () => {
+  // Verificar se já está autenticado
+  if (currentUser) {
+    initializeDashboard();
   }
 });
