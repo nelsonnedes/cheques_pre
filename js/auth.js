@@ -224,7 +224,7 @@ export function setupLoginForm() {
       if (result.success) {
         showToast('Login realizado com sucesso!', 'success');
         setTimeout(() => {
-          window.location.href = '/empresas.html';
+          window.location.href = './empresas.html';
         }, 1000);
       } else {
         showToast('Erro no login: ' + getFirebaseErrorMessage(result.error), 'error');
