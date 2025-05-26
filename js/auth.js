@@ -161,21 +161,19 @@ function updateMenuRestrictions() {
     const menuItem = document.querySelector(`a[href="${page}"]`);
     if (menuItem) {
       if (selectedCompanies.length === 0) {
-        menuItem.style.opacity = '0.5';
-        menuItem.style.pointerEvents = 'none';
+        // Usar classes CSS ao invés de estilos inline
+        menuItem.classList.add('menu-restricted');
         menuItem.title = 'Selecione uma empresa primeiro';
         
-        // Adicionar ícone de bloqueio
+        // Adicionar ícone de bloqueio apenas se não existir
         if (!menuItem.querySelector('.lock-icon')) {
           const lockIcon = document.createElement('i');
           lockIcon.className = 'fas fa-lock lock-icon';
-          lockIcon.style.marginLeft = '8px';
-          lockIcon.style.color = '#dc2626';
           menuItem.appendChild(lockIcon);
         }
       } else {
-        menuItem.style.opacity = '1';
-        menuItem.style.pointerEvents = 'auto';
+        // Remover restrições
+        menuItem.classList.remove('menu-restricted');
         menuItem.title = '';
         
         // Remover ícone de bloqueio
@@ -266,10 +264,15 @@ function setupUserInterface() {
   
   // Verificar seleção de empresas
   checkCompanySelection();
-  updateMenuRestrictions();
   
-  // Atualizar restrições quando localStorage muda
-  window.addEventListener('storage', updateMenuRestrictions);
+  // Só aplicar restrições de menu se não estiver na página empresas
+  const currentPage = window.location.pathname.split('/').pop();
+  if (currentPage !== 'empresas.html') {
+    updateMenuRestrictions();
+    
+    // Atualizar restrições quando localStorage muda
+    window.addEventListener('storage', updateMenuRestrictions);
+  }
   
   // Configurar notificações
   const notificationBtn = document.querySelector('.btn-notification');

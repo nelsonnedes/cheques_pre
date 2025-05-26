@@ -1055,7 +1055,7 @@ body {
   .app-name {
     font-size: 1rem;
   }
-  
+
   .main-content {
     padding: 0.5rem;
   }
@@ -4004,4 +4004,46 @@ input:checked + .slider:before {
     gap: 1rem;
     align-items: stretch;
   }
+}
+
+/* Estilos para menus restritos - sistema de autenticação */
+.nav-item.menu-restricted {
+  opacity: 0.5;
+  pointer-events: none;
+  position: relative;
+}
+
+.nav-item .lock-icon {
+  margin-left: auto;
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+/* Tooltip para menus bloqueados */
+.nav-item.menu-restricted[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-left: 10px;
+}
+
+.nav-item.menu-restricted[title]:hover::before {
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1f2937;
+  margin-left: 5px;
+  z-index: 1000;
 }

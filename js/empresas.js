@@ -260,8 +260,8 @@ class CompanyManager {
         if (this.companies.length === 0) {
             container.style.display = 'none';
             if (emptyState) emptyState.style.display = 'block';
-            return;
-        }
+    return;
+  }
 
         container.style.display = 'grid';
         if (emptyState) emptyState.style.display = 'none';
@@ -407,8 +407,8 @@ class CompanyManager {
     applySelection() {
         if (this.selectedCompanies.size === 0) {
             this.showToast('Selecione pelo menos uma empresa', 'warning');
-            return;
-        }
+    return;
+  }
 
         const selectedCompaniesData = Array.from(this.selectedCompanies).map(id => {
             const company = this.companies.find(c => c.id === id);
@@ -442,7 +442,7 @@ class CompanyManager {
         if (company) {
             if (title) title.textContent = 'Editar Empresa';
             this.fillFormFields(company);
-        } else {
+  } else {
             if (title) title.textContent = 'Nova Empresa';
             if (form) form.reset();
             const companyIdField = document.getElementById('company-id');
@@ -529,7 +529,7 @@ class CompanyManager {
                 await updateDoc(companyRef, companyData);
                 this.showToast('Empresa atualizada com sucesso!', 'success');
                 console.log('✅ Empresa atualizada com sucesso');
-            } else {
+  } else {
                 console.log('➕ Criando nova empresa...');
                 companyData.createdAt = new Date();
                 const docRef = await addDoc(collection(db, 'empresas'), companyData);

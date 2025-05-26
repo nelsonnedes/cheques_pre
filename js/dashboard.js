@@ -269,8 +269,8 @@ async function loadRecentCheques(selectedCompanies) {
 
 // Criar linha da tabela de cheques
 function createChequeRow(id, cheque) {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
     <td>${cheque.numero || '-'}</td>
     <td>${cheque.emitente || '-'}</td>
     <td>${formatCurrency(cheque.valor || 0)}</td>
@@ -323,12 +323,12 @@ function loadStatusChart() {
     chartStatus.destroy();
   }
 
-  chartStatus = new Chart(ctx, {
-    type: 'doughnut',
-    data: data,
-    options: {
-      responsive: true,
-      plugins: {
+    chartStatus = new Chart(ctx, {
+      type: 'doughnut',
+      data: data,
+      options: {
+        responsive: true,
+        plugins: {
         legend: {
           position: 'bottom'
         }
@@ -371,10 +371,10 @@ function loadMonthlyChart() {
       scales: {
         y: {
           beginAtZero: true
+          }
         }
       }
-    }
-  });
+    });
 }
 
 // Funções utilitárias

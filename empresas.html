@@ -427,6 +427,28 @@
         font-size: 12px;
       }
     }
+    
+    /* Garantir que o sistema de autenticação não interfira nesta página */
+    .main-content,
+    .companies-container,
+    .companies-grid,
+    .company-card,
+    .selection-info {
+      position: relative !important;
+      z-index: auto !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+    
+    /* Neutralizar qualquer interferência de estilos de menu restrito no conteúdo principal */
+    .main-content * {
+      position: static;
+    }
+    
+    .main-content .modal,
+    .main-content .loading-overlay {
+      position: fixed !important;
+    }
   </style>
 </head>
 <body>
