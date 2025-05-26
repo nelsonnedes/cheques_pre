@@ -1,5 +1,5 @@
 // Sistema de Autenticação Universal
-import { 
+import {
   auth, 
   db, 
   loginUsuario, 
@@ -239,5 +239,7 @@ export {
   handleLogout,
   setupUserInterface,
   hideLoading,
-  showLoading
+  showLoading,
+  checkAuth,
+  getCurrentUser
 }; 
