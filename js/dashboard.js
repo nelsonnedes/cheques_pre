@@ -1,31 +1,26 @@
 /* js/dashboard.js */
-import { setupUserInterface, checkAuth } from './auth.js';
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, collection, query, orderBy, limit, getDocs, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { setupUserInterface, checkAuth, getCurrentUser } from './auth.js';
+import { 
+  db, 
+  COLLECTIONS, 
+  STATUS_CHEQUE, 
+  TIPO_OPERACAO, 
+  buscarDocumentos, 
+  formatarMoeda, 
+  formatarData, 
+  obterEmpresaAtiva 
+} from './config.js';
+import { where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const totalChequesElem = document.getElementById('total-cheques');
 const chequesPendentesElem = document.getElementById('cheques-pendentes');
 const chequesCompensadosElem = document.getElementById('cheques-compensados');
+const valorTotalElem = document.getElementById('valor-total');
 const recentChequesBody = document.getElementById('recent-cheques-body');
 
 let chartStatus = null;
 let currentUser = null;
-
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD-KfA6ZwWJ9E_rl6QjytrDSzWboiWeIos",
-  authDomain: "dbcheques.firebaseapp.com",
-  projectId: "dbcheques",
-  storageBucket: "dbcheques.firebasestorage.app",
-  messagingSenderId: "417151486713",
-  appId: "1:417151486713:web:036af07778be521d447028"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let empresaAtiva = null;
 
 // Utilitário para formatar moeda pt-BR
 function formatarMoeda(valor) {
@@ -133,12 +128,6 @@ function criarCanvasGrafico() {
   return canvas.getContext('2d');
 }
 
-// Inicializa eventos da página
-function initDashboard() {
-  atualizarDashboard();
-  setupUserInterface();
-}
-
 // Verificar autenticação e inicializar
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -147,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = '/login.html';
       return;
     }
-    initDashboard();
+    await initializeDashboard();
   } catch (error) {
     console.error('Erro na verificação de autenticação:', error);
     window.location.href = '/login.html';
@@ -165,10 +154,28 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // Inicializar dashboard
-function initializeDashboard() {
-  setupEventListeners();
-  loadDashboardData();
-  updateUserInfo();
+async function initializeDashboard() {
+  try {
+    currentUser = await getCurrentUser();
+    if (!currentUser) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    empresaAtiva = obterEmpresaAtiva();
+    if (!empresaAtiva) {
+      console.warn('Nenhuma empresa ativa. Redirecionando para seleção de empresa.');
+      window.location.href = 'empresas.html';
+      return;
+    }
+
+    setupEventListeners();
+    loadDashboardData();
+    updateUserInfo();
+  } catch (error) {
+    console.error('Erro ao inicializar dashboard:', error);
+    window.location.href = 'login.html';
+  }
 }
 
 // Configurar event listeners
@@ -190,13 +197,13 @@ function setupEventListeners() {
   // Profile dropdown
   const profileBtn = document.getElementById('profile-btn');
   const profileDropdown = document.getElementById('profile-dropdown');
-  
+
   if (profileBtn && profileDropdown) {
     profileBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      profileDropdown.classList.toggle('hidden');
-    });
-    
+    profileDropdown.classList.toggle('hidden');
+  });
+
     // Fechar dropdown ao clicar fora
     document.addEventListener('click', () => {
       profileDropdown.classList.add('hidden');
@@ -275,32 +282,44 @@ async function loadDashboardData() {
 // Carregar estatísticas
 async function loadStatistics() {
   try {
-    const chequesRef = collection(db, 'cheques');
-    const q = query(chequesRef, where('userId', '==', currentUser.uid));
-    const snapshot = await getDocs(q);
+    if (!empresaAtiva) {
+      console.warn('Nenhuma empresa ativa selecionada');
+      return;
+    }
+
+    const filtros = [
+      where('empresaId', '==', empresaAtiva.id || empresaAtiva.cnpj)
+    ];
     
-    let totalCheques = 0;
-    let chequesPendentes = 0;
-    let chequesCompensados = 0;
-    let valorTotal = 0;
+    const resultado = await buscarDocumentos(COLLECTIONS.CHEQUES, filtros);
     
-    snapshot.forEach((doc) => {
-      const cheque = doc.data();
-      totalCheques++;
-      valorTotal += parseFloat(cheque.valor) || 0;
+    if (resultado.success) {
+      const cheques = resultado.data;
       
-      if (cheque.status === 'pendente') {
-        chequesPendentes++;
-      } else if (cheque.status === 'compensado') {
-        chequesCompensados++;
-      }
-    });
-    
-    // Atualizar elementos
-    updateElement('total-cheques', totalCheques);
-    updateElement('cheques-pendentes', chequesPendentes);
-    updateElement('cheques-compensados', chequesCompensados);
-    updateElement('valor-total', formatCurrency(valorTotal));
+      let totalCheques = cheques.length;
+      let chequesPendentes = 0;
+      let chequesCompensados = 0;
+      let valorTotal = 0;
+      
+      cheques.forEach((cheque) => {
+        valorTotal += parseFloat(cheque.valor) || 0;
+        
+        if (cheque.status === STATUS_CHEQUE.PENDENTE) {
+          chequesPendentes++;
+        } else if (cheque.status === STATUS_CHEQUE.COMPENSADO) {
+          chequesCompensados++;
+        }
+      });
+      
+      // Atualizar elementos
+      updateElement('total-cheques', totalCheques);
+      updateElement('cheques-pendentes', chequesPendentes);
+      updateElement('cheques-compensados', chequesCompensados);
+      updateElement('valor-total', formatarMoeda(valorTotal));
+    } else {
+      console.error('Erro ao carregar estatísticas:', resultado.error);
+      throw new Error(resultado.error);
+    }
     
   } catch (error) {
     console.error('Erro ao carregar estatísticas:', error);
@@ -315,28 +334,32 @@ async function loadStatistics() {
 // Carregar cheques recentes
 async function loadRecentCheques() {
   try {
-    const chequesRef = collection(db, 'cheques');
-    const q = query(
-      chequesRef,
-      where('userId', '==', currentUser.uid),
-      orderBy('dataInclusao', 'desc'),
+    if (!empresaAtiva) {
+      console.warn('Nenhuma empresa ativa selecionada');
+      return;
+    }
+
+    const filtros = [
+      where('empresaId', '==', empresaAtiva.id || empresaAtiva.cnpj),
+      orderBy('criadoEm', 'desc'),
       limit(5)
-    );
-    const snapshot = await getDocs(q);
+    ];
+    
+    const resultado = await buscarDocumentos(COLLECTIONS.CHEQUES, filtros);
     
     const tbody = document.getElementById('recent-cheques-body');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
-    if (snapshot.empty) {
+    if (!resultado.success || !resultado.data || resultado.data.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="6" class="text-center">
             <div class="empty-state">
               <i class="fas fa-file-invoice-dollar fa-3x"></i>
               <p>Nenhum cheque encontrado</p>
-              <a href="incluirCheque.html" class="btn btn-primary">Adicionar Primeiro Cheque</a>
+              <a href="incluir-cheque.html" class="btn btn-primary">Adicionar Primeiro Cheque</a>
             </div>
           </td>
         </tr>
@@ -344,9 +367,8 @@ async function loadRecentCheques() {
       return;
     }
     
-    snapshot.forEach((doc) => {
-      const cheque = doc.data();
-      const row = createChequeRow(doc.id, cheque);
+    resultado.data.forEach((cheque) => {
+      const row = createChequeRow(cheque.id, cheque);
       tbody.appendChild(row);
     });
     
@@ -375,8 +397,8 @@ function createChequeRow(id, cheque) {
   row.innerHTML = `
     <td>${cheque.numero || '-'}</td>
     <td>${cheque.emitente || '-'}</td>
-    <td>${formatCurrency(cheque.valor)}</td>
-    <td>${formatDate(cheque.dataVencimento)}</td>
+    <td>${formatarMoeda(cheque.valor)}</td>
+    <td>${formatarData(cheque.vencimento)}</td>
     <td><span class="status ${statusClass}">${statusText}</span></td>
     <td>
       <div class="action-buttons">
@@ -488,20 +510,22 @@ function formatDate(dateString) {
 
 function getStatusClass(status) {
   const statusMap = {
-    'pendente': 'warning',
-    'compensado': 'success',
-    'vencido': 'error'
+    [STATUS_CHEQUE.PENDENTE]: 'warning',
+    [STATUS_CHEQUE.COMPENSADO]: 'success',
+    [STATUS_CHEQUE.DEVOLVIDO]: 'error',
+    [STATUS_CHEQUE.PARCIAL]: 'info'
   };
   return statusMap[status] || 'info';
 }
 
 function getStatusText(status) {
   const statusMap = {
-    'pendente': 'Pendente',
-    'compensado': 'Compensado',
-    'vencido': 'Vencido'
+    [STATUS_CHEQUE.PENDENTE]: 'Pendente',
+    [STATUS_CHEQUE.COMPENSADO]: 'Compensado',
+    [STATUS_CHEQUE.DEVOLVIDO]: 'Devolvido',
+    [STATUS_CHEQUE.PARCIAL]: 'Parcial'
   };
-  return statusMap[status] || 'Desconhecido';
+  return statusMap[status] || status;
 }
 
 // Ações dos cheques
