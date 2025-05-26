@@ -1,0 +1,359 @@
+/* Estilos Modernos para Ícones Lucide */
+
+/* Estilos base para todos os ícones Lucide */
+.lucide {
+    display: inline-block;
+    vertical-align: middle;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* Tamanhos responsivos */
+.lucide-xs { width: 14px; height: 14px; }
+.lucide-sm { width: 16px; height: 16px; }
+.lucide-md { width: 20px; height: 20px; }
+.lucide-lg { width: 24px; height: 24px; }
+.lucide-xl { width: 28px; height: 28px; }
+.lucide-2xl { width: 32px; height: 32px; }
+.lucide-3xl { width: 48px; height: 48px; }
+
+/* Estilos contextuais */
+.lucide-button {
+    margin-right: 0.5rem;
+    width: 18px;
+    height: 18px;
+}
+
+.lucide-nav {
+    margin-right: 0.75rem;
+    width: 20px;
+    height: 20px;
+}
+
+.lucide-header {
+    width: 24px;
+    height: 24px;
+}
+
+/* Estados interativos */
+.lucide:hover {
+    transform: scale(1.05);
+    stroke-width: 2.5;
+}
+
+button:hover .lucide,
+a:hover .lucide {
+    transform: translateY(-1px);
+}
+
+button:active .lucide,
+a:active .lucide {
+    transform: translateY(0);
+}
+
+/* Animações para ícones específicos */
+.lucide-loader-2 {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.lucide-bell {
+    animation: ring 2s ease-in-out infinite;
+    animation-delay: 2s;
+}
+
+@keyframes ring {
+    0%, 100% { transform: rotate(0deg); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-15deg); }
+    30% { transform: rotate(10deg); }
+    40% { transform: rotate(-10deg); }
+    50% { transform: rotate(5deg); }
+    60% { transform: rotate(-5deg); }
+    70% { transform: rotate(0deg); }
+}
+
+.lucide-check-circle {
+    color: var(--success-500);
+    animation: checkPulse 0.6s ease-out;
+}
+
+@keyframes checkPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.lucide-alert-circle,
+.lucide-alert-triangle {
+    color: var(--error-500);
+    animation: alertPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes alertPulse {
+    from {
+        opacity: 0.7;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.lucide-info {
+    color: var(--primary-500);
+}
+
+/* Ícones em botões */
+.btn-primary .lucide {
+    stroke: currentColor;
+    margin-right: 0.5rem;
+}
+
+.btn-secondary .lucide {
+    stroke: currentColor;
+    margin-right: 0.5rem;
+}
+
+.btn-google .lucide {
+    margin-right: 0.5rem;
+    color: #db4437;
+}
+
+/* Ícones de navegação */
+.nav-item .lucide {
+    margin-right: 0.75rem;
+    stroke-width: 2;
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover .lucide {
+    stroke-width: 2.5;
+    transform: translateX(2px);
+}
+
+.nav-item.active .lucide {
+    stroke-width: 2.5;
+    color: var(--primary-500);
+}
+
+/* Ícones em formulários */
+.form-group .lucide {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.form-group .lucide:hover {
+    color: var(--gray-600);
+    background: var(--gray-100);
+}
+
+/* Ícones de estado */
+.status-icon .lucide {
+    border-radius: 50%;
+    padding: 0.25rem;
+}
+
+.status-success .lucide {
+    background: var(--success-100);
+    color: var(--success-600);
+}
+
+.status-error .lucide {
+    background: var(--error-100);
+    color: var(--error-600);
+}
+
+.status-warning .lucide {
+    background: var(--warning-100);
+    color: var(--warning-600);
+}
+
+.status-info .lucide {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+/* Ícones em cards */
+.card-icon .lucide {
+    width: 48px;
+    height: 48px;
+    stroke-width: 1.5;
+    background: var(--primary-50);
+    border-radius: 12px;
+    padding: 12px;
+    color: var(--primary-600);
+    margin-bottom: 1rem;
+}
+
+/* Ícones flutuantes */
+.floating-icon .lucide {
+    background: white;
+    border-radius: 50%;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.floating-icon:hover .lucide {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Ícones responsivos */
+@media (max-width: 768px) {
+    .lucide-nav {
+        width: 18px;
+        height: 18px;
+        margin-right: 0.5rem;
+    }
+    
+    .lucide-header {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .card-icon .lucide {
+        width: 40px;
+        height: 40px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lucide-nav {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.25rem;
+    }
+    
+    .lucide-header {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .card-icon .lucide {
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+    }
+}
+
+/* Suporte para dark mode */
+@media (prefers-color-scheme: dark) {
+    .lucide {
+        stroke: #e5e7eb;
+    }
+    
+    .floating-icon .lucide {
+        background: #1f2937;
+        color: #e5e7eb;
+    }
+    
+    .form-group .lucide {
+        color: #9ca3af;
+    }
+    
+    .form-group .lucide:hover {
+        color: #d1d5db;
+        background: #374151;
+    }
+}
+
+/* Acessibilidade */
+.lucide[role="button"] {
+    cursor: pointer;
+}
+
+.lucide[aria-hidden="true"] {
+    pointer-events: none;
+}
+
+/* Otimização de performance */
+.lucide {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* Estilos especiais para ícones decorativos */
+.lucide-decorative {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Ícones com gradiente */
+.lucide-gradient {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ícones com sombra */
+.lucide-shadow {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Ícones pulsantes */
+.lucide-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Ícones com bounce */
+.lucide-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+        animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+        transform: translate3d(0, -30px, 0);
+    }
+    70% {
+        animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+        transform: translate3d(0, -15px, 0);
+    }
+    90% {
+        transform: translate3d(0, -4px, 0);
+    }
+} 
