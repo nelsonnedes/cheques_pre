@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Exportar funções úteis
 export {
+  auth,
   currentUser,
   userProfile,
   handleLogout,
@@ -241,5 +242,6 @@ export {
   hideLoading,
   showLoading,
   checkAuth,
-  getCurrentUser
+  getCurrentUser,
+  onAuthChange
 }; 

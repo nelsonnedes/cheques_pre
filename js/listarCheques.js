@@ -1,4 +1,4 @@
-import { auth, monitorarEstadoAuth } from './auth.js';
+import { auth, onAuthChange } from './auth.js';
 import { 
   db, 
   COLLECTIONS, 
@@ -70,7 +70,7 @@ function inicializar() {
  * Verificar autenticação
  */
 function verificarAutenticacao() {
-  monitorarEstadoAuth(async (user) => {
+  onAuthChange(async (user) => {
     if (!user) {
       alert('Você precisa estar logado para acessar esta página.');
       window.location.href = 'login.html';
