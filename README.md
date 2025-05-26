@@ -1,133 +1,69 @@
-# Sistema de Gestão de Cheques
+# Sistema de Gestão e Operações Financeiras
 
-Sistema web progressivo (PWA) para gestão e controle de cheques pré-datados, desenvolvido com HTML, CSS e JavaScript puro, utilizando Firebase como backend.
+## Visão Geral
 
-## Funcionalidades
+Este projeto é um Sistema de Gestão e Operações Financeiras construído com HTML puro, JavaScript modularizado (ES Modules) e CSS minimalista, visando alta performance, responsividade e usabilidade tanto em desktop quanto em mobile (PWA).
 
-- 📝 Cadastro e autenticação de usuários
-- 💰 Cadastro e gestão de cheques pré-datados
-- 🏢 Cadastro e gestão de empresas de fomento
-- 📅 Agenda de vencimentos
-- 📊 Relatórios e gráficos
-- 🔔 Sistema de notificações
-- 💾 Backup e restauração de dados
-- 📱 Funciona offline (PWA)
-- 🔄 Sincronização automática
-- 🎨 Interface moderna e responsiva
+Funcionalidades principais:
 
-## Tecnologias Utilizadas
+- Autenticação segura com Firebase Auth (email+senha e Google OAuth)
+- Gestão multi-empresa: cada usuário pode cadastrar várias empresas e gerenciar cheques e operações específicas por empresa.
+- Controle detalhado de cheques com geração, edição, baixa parcial, cálculo automático de juros.
+- Dashboard com métricas e gráficos de status dos cheques.
+- Páginas: login, registro, recuperação senha, listar/incluir/editar cheques, gestão de empresas, relatórios, agenda, suporte.
+- Proteção de rotas para dados sensíveis usando Firebase onAuthStateChanged.
+- PWA com manifest.json e service-worker.js para instalação e offline básico.
 
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- Firebase
-  - Authentication
-  - Firestore
-  - Storage
-  - Hosting
-- Service Workers
-- IndexedDB
-- PWA
+## Requisitos
 
-## Pré-requisitos
+- Node.js e npm para servidor local (opcional, pode usar qualquer servidor estático)
+- Conta Firebase ativa com projeto configurado (Firestore, Auth, Storage)
 
-- Node.js (v14 ou superior)
-- NPM ou Yarn
-- Conta no Firebase
-- Firebase CLI
+## Setup
 
-## Configuração
+1. Clone este repositório.
+2. Configure o Firebase:
+   - Crie um projeto no Firebase Console.
+   - Ative Authentication (email/senha e Google).
+   - Crie Firestore Database com regras de segurança.
+   - Configure Storage para upload de imagens.
+   - Copie as credenciais do firebaseConfig e cole no arquivo `js/auth.js`.
+3. (Opcional) Use servidor local para rodar, por exemplo:
 
-1. Clone o repositório:
-```bash
-git clone https://github.com/seu-usuario/sistema-cheques.git
-cd sistema-cheques
+```sh
+npx http-server .
 ```
 
-2. Instale as dependências:
-```bash
-npm install
-# ou
-yarn install
-```
+## Uso
 
-3. Configure o Firebase:
-   - Crie um projeto no [Firebase Console](https://console.firebase.google.com)
-   - Ative o Authentication, Firestore e Storage
-   - Copie as configurações do seu projeto para o arquivo `js/firebase-config.js`
+- Acesse `login.html` para entrar.
+- Registre-se em `register.html` se não tiver conta.
+- Após login, selecione/registre sua empresa em `empresas.html`.
+- Gerencie cheques em `listar-cheques.html` e `incluir-cheque.html`.
+- Use o dashboard para visão geral dos status de cheques.
 
-4. Inicie o servidor de desenvolvimento:
-```bash
-firebase serve
-```
+## Scripts
 
-5. Acesse o sistema em `http://localhost:5000`
+- Todos os scripts estão modularizados em `/js` e importados como módulos ES.
+- Use `js/auth.js` para autenticação.
+- Use `js/routeGuard.js` para proteção de rotas.
 
 ## Deploy
 
-1. Faça login no Firebase:
-```bash
-firebase login
-```
-
-2. Inicialize o projeto Firebase (se ainda não inicializado):
-```bash
-firebase init
-```
-
-3. Deploy para o Firebase Hosting:
-```bash
-firebase deploy
-```
-
-## Estrutura do Projeto
-
-```
-sistema-cheques/
-├── css/
-│   └── style.css
-├── js/
-│   ├── app.js
-│   ├── auth.js
-│   ├── dashboard.js
-│   ├── firebase-config.js
-│   ├── register-sw.js
-│   └── settings-menu.js
-├── icons/
-│   └── [ícones do app]
-├── index.html
-├── login.html
-├── offline.html
-├── manifest.json
-├── sw.js
-├── firebase.json
-├── firestore.rules
-├── storage.rules
-└── README.md
-```
+- Hospede em servidor HTTPS para que Firebase Auth funcione corretamente.
+- Otimize imagens e recursos.
+- Configure `manifest.json` e `service-worker.js` para PWA.
 
 ## Segurança
 
-- Autenticação de usuários
-- Regras de segurança no Firestore e Storage
-- HTTPS forçado
-- Headers de segurança configurados
-- Validação de dados
-- Proteção contra XSS e CSRF
-- Backup automático
+- Valide dados tanto no frontend quanto regras Firestore Realtime Database.
+- Proteja rotas com autenticação Firebase.
+- Nunca exponha chaves sensíveis publicamente.
 
-## Contribuindo
+## Contato
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Faça commit das mudanças (`git commit -am 'Adiciona nova feature'`)
-4. Faça push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
+Para suporte, use a página `suporte.html` implementada no projeto.
 
-## Licença
+---
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## Suporte
-
-Para suporte, envie um email para suporte@sistemacheques.com ou abra uma issue no GitHub.
+Este projeto foi desenvolvido seguindo boas práticas, para oferecer uma solução leve, responsiva, segura e sustentável para gestão financeira multiempresa.

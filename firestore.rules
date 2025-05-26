@@ -1,87 +1,21 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Funções auxiliares
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    function isValidCheque() {
-      let requiredFields = [
-        'numero',
-        'valor',
-        'dataVencimento',
-        'empresa',
-        'status'
-      ];
-      
-      return request.resource.data.keys().hasAll(requiredFields)
-        && request.resource.data.numero is string
-        && request.resource.data.valor is number
-        && request.resource.data.valor > 0
-        && request.resource.data.dataVencimento is timestamp
-        && request.resource.data.empresa is string
-        && request.resource.data.status in ['pendente', 'pago', 'vencido', 'cancelado'];
-    }
-    
-    function isValidEmpresa() {
-      let requiredFields = [
-        'nome',
-        'cnpj',
-        'telefone',
-        'email'
-      ];
-      
-      return request.resource.data.keys().hasAll(requiredFields)
-        && request.resource.data.nome is string
-        && request.resource.data.cnpj is string
-        && request.resource.data.telefone is string
-        && request.resource.data.email is string;
-    }
-    
-    // Regras para a coleção de usuários
-    match /users/{userId} {
-      allow read: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isAuthenticated() && isOwner(userId);
-      allow delete: if false; // Não permitir exclusão de usuários
-    }
-    
-    // Regras para a coleção de cheques
-    match /cheques/{chequeId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() 
-        && isOwner(request.resource.data.userId)
-        && isValidCheque();
-      allow update: if isAuthenticated() 
-        && isOwner(resource.data.userId)
-        && isValidCheque();
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
-    }
-    
-    // Regras para a coleção de empresas
+
     match /empresas/{empresaId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() 
-        && isOwner(request.resource.data.userId)
-        && isValidEmpresa();
-      allow update: if isAuthenticated() 
-        && isOwner(resource.data.userId)
-        && isValidEmpresa();
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      allow read, write: if request.auth != null
+        && request.auth.uid == resource.data.createdBy;
+    }
+
+    match /cheques/{chequeId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == resource.data.createdBy;
+    }
+
+    match /usuarios/{userId} {
+      allow read, update: if request.auth.uid == userId;
     }
     
-    // Regras para a coleção de notificações
-    match /notificacoes/{notificacaoId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update: if isAuthenticated() && isOwner(resource.data.userId);
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
-    }
+    // Outras coleções podem ser protegidas similarmente
   }
-} 
+}

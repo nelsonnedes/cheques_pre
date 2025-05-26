@@ -1,193 +1,40 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema de Gerenciamento de Cheques</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/png" href="img/favicon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Sistema Financeiro</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <script type="module" src="js/masks.js"></script>
+  <script type="module" src="js/login.js"></script>
 </head>
-<body class="auth-page">
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <img src="img/logo.png" alt="Logo" class="logo">
-                <h1>GerCheques</h1>
-            </div>
+<body>
+  <main class="login-container">
+    <form id="login-form" class="form" novalidate>
+      <h2>Login</h2>
 
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
-                <h2>Login</h2>
-                <div class="form-group">
-                    <label for="loginEmail">
-                        <i class="fas fa-envelope"></i>
-                        Email
-                    </label>
-                    <input type="email" id="loginEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">
-                        <i class="fas fa-lock"></i>
-                        Senha
-                    </label>
-                    <div class="password-input">
-                        <input type="password" id="loginPassword" name="password" required>
-                        <button type="button" class="toggle-password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" id="rememberMe">
-                        <span>Lembrar-me</span>
-                    </label>
-                    <a href="#" class="forgot-password" id="forgotPasswordLink">
-                        Esqueceu a senha?
-                    </a>
-                </div>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Entrar
-                </button>
-                <div class="auth-separator">
-                    <span>ou</span>
-                </div>
-                <button type="button" class="btn-google" id="googleLogin">
-                    <img src="img/google-icon.png" alt="Google">
-                    Entrar com Google
-                </button>
-                <p class="auth-switch">
-                    Não tem uma conta? 
-                    <a href="#" id="showRegister">Registre-se</a>
-                </p>
-            </form>
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" required placeholder="seu@email.com" />
 
-            <!-- Register Form -->
-            <form id="registerForm" class="auth-form">
-                <h2>Criar Conta</h2>
-                <div class="form-group">
-                    <label for="registerName">
-                        <i class="fas fa-user"></i>
-                        Nome
-                    </label>
-                    <input type="text" id="registerName" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerEmail">
-                        <i class="fas fa-envelope"></i>
-                        Email
-                    </label>
-                    <input type="email" id="registerEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerPassword">
-                        <i class="fas fa-lock"></i>
-                        Senha
-                    </label>
-                    <div class="password-input">
-                        <input type="password" id="registerPassword" name="password" required>
-                        <button type="button" class="toggle-password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="confirmPassword">
-                        <i class="fas fa-lock"></i>
-                        Confirmar Senha
-                    </label>
-                    <div class="password-input">
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
-                        <button type="button" class="toggle-password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="terms">
-                        <input type="checkbox" id="termsAccept" required>
-                        <span>
-                            Li e aceito os 
-                            <a href="#" id="showTerms">termos de uso</a>
-                        </span>
-                    </label>
-                </div>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-user-plus"></i>
-                    Criar Conta
-                </button>
-                <p class="auth-switch">
-                    Já tem uma conta? 
-                    <a href="#" id="showLogin">Faça login</a>
-                </p>
-            </form>
+      <label for="password">Senha</label>
+      <input type="password" id="password" name="password" required minlength="6" placeholder="Senha" />
 
-            <!-- Reset Password Form -->
-            <form id="resetForm" class="auth-form">
-                <h2>Recuperar Senha</h2>
-                <p class="form-description">
-                    Digite seu email para receber instruções de recuperação de senha.
-                </p>
-                <div class="form-group">
-                    <label for="resetEmail">
-                        <i class="fas fa-envelope"></i>
-                        Email
-                    </label>
-                    <input type="email" id="resetEmail" name="email" required>
-                </div>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-paper-plane"></i>
-                    Enviar Instruções
-                </button>
-                <p class="auth-switch">
-                    Lembrou sua senha? 
-                    <a href="#" id="backToLogin">Voltar ao login</a>
-                </p>
-            </form>
-        </div>
-    </div>
+      <button type="submit">Entrar</button>
 
-    <!-- Terms Modal -->
-    <div id="termsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Termos de Uso</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="terms-content">
-                    <h3>1. Aceitação dos Termos</h3>
-                    <p>Ao acessar e usar o Sistema de Gerenciamento de Cheques, você concorda com estes termos de uso.</p>
+      <div class="form-links">
+        <a href="register.html">Registrar-se</a> | <a href="recover.html">Esqueci a senha</a>
+      </div>
 
-                    <h3>2. Uso do Serviço</h3>
-                    <p>O serviço deve ser usado apenas para fins legais e de acordo com estes termos.</p>
+      <button id="google-login" type="button" class="btn-google">
+        <i class="fab fa-google"></i> Entrar com Google
+      </button>
 
-                    <h3>3. Privacidade</h3>
-                    <p>Suas informações pessoais são protegidas de acordo com nossa política de privacidade.</p>
-
-                    <h3>4. Segurança</h3>
-                    <p>Você é responsável por manter a segurança de sua conta e senha.</p>
-
-                    <h3>5. Limitação de Responsabilidade</h3>
-                    <p>O serviço é fornecido "como está" e não nos responsabilizamos por perdas ou danos.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary close-modal">Entendi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Processando...</p>
-    </div>
-
-    <!-- Scripts -->
-    <script type="module" src="js/firebase-config.js"></script>
-    <script type="module" src="js/login.js"></script>
+      <div id="login-error" class="error-message" aria-live="polite"></div>
+    </form>
+  </main>
 </body>
-</html> 
+</html>

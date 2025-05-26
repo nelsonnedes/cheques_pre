@@ -1,240 +1,94 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4a90e2">
-    <title>Dashboard - Sistema de Cheques</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Gestão Cheques">
-    <link rel="icon" type="image/png" sizes="192x192" href="/images/icon-192x192.png">
-    <link rel="apple-touch-icon" href="/images/icon-192x192.png">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        #connectionStatus {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            z-index: 1000;
-        }
-
-        #connectionStatus.online {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-        }
-
-        #connectionStatus.offline {
-            background-color: var(--error-bg);
-            color: var(--error-text);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Gestão e Operações Financeiras - Dashboard</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <script defer src="js/dashboard.js"></script>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <h1>Dashboard</h1>
-            <div class="header-actions">
-                <div id="connectionStatus" class="online">
-                    <i class="fas fa-circle"></i>
-                    <span>Online</span>
-                </div>
-                <button id="notificationsBtn" class="icon-button" aria-label="Notificações">
-                    <i class="fas fa-bell"></i>
-                    <span id="notificationBadge" class="notification-badge hidden">0</span>
-                </button>
-                <button id="configBtn" class="icon-button" aria-label="Configurações">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="dashboard">
-            <!-- Summary Cards -->
-            <section class="summary-cards">
-                <div class="card">
-                    <h3>Total em Cheques</h3>
-                    <p id="totalCheques">R$ 0,00</p>
-                </div>
-                <div class="card">
-                    <h3>Cheques Pendentes</h3>
-                    <p id="chequesPendentes">0</p>
-                </div>
-                <div class="card">
-                    <h3>Vencendo Hoje</h3>
-                    <p id="chequesHoje">0</p>
-                </div>
-                <div class="card">
-                    <h3>Vencidos</h3>
-                    <p id="chequesVencidos">0</p>
-                </div>
-            </section>
-
-            <!-- Quick Actions -->
-            <section class="quick-actions">
-                <h2>Ações Rápidas</h2>
-                <div class="actions-grid">
-                    <a href="incluir_cheque.html" class="action-button">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Novo Cheque</span>
-                    </a>
-                    <a href="empresas.html" class="action-button">
-                        <i class="fas fa-building"></i>
-                        <span>Empresas</span>
-                    </a>
-                    <a href="relatorio.html" class="action-button">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Relatórios</span>
-                    </a>
-                    <a href="agenda.html" class="action-button">
-                        <i class="fas fa-calendar"></i>
-                        <span>Agenda</span>
-                    </a>
-                </div>
-            </section>
-
-            <!-- Recent Cheques -->
-            <section class="recent-cheques">
-                <div class="section-header">
-                    <h2>Cheques Recentes</h2>
-                    <a href="listar_cheques.html" class="btn-link">
-                        Ver Todos
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-                <div id="chequesList" class="cheques-list">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-                <!-- Loading State -->
-                <div id="loadingState" class="loading-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Carregando cheques...</p>
-                </div>
-                <!-- Empty State -->
-                <div id="emptyState" class="empty-state hidden">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <h3>Nenhum cheque cadastrado</h3>
-                    <p>Comece cadastrando seu primeiro cheque</p>
-                    <a href="incluir_cheque.html" class="btn-primary">
-                        <i class="fas fa-plus"></i>
-                        <span>Cadastrar Cheque</span>
-                    </a>
-                </div>
-            </section>
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <a href="index.html" class="active">
-                <i class="fas fa-home"></i>
-                <span>Início</span>
-            </a>
-            <a href="listar_cheques.html">
-                <i class="fas fa-list"></i>
-                <span>Listar</span>
-            </a>
-            <a href="incluir_cheque.html">
-                <i class="fas fa-plus"></i>
-                <span>Cadastrar</span>
-            </a>
-            <a href="agenda.html">
-                <i class="fas fa-calendar"></i>
-                <span>Agenda</span>
-            </a>
-            <a href="relatorio.html">
-                <i class="fas fa-chart-bar"></i>
-                <span>Relatório</span>
-            </a>
-        </nav>
-
-        <!-- Settings Menu -->
-        <div id="settingsMenu" class="settings-menu">
-            <a href="perfil.html" class="settings-item">
-                <i class="fas fa-user"></i>
-                <span>Perfil</span>
-            </a>
-            <a href="empresas.html" class="settings-item">
-                <i class="fas fa-building"></i>
-                <span>Cadastro de Fomento</span>
-            </a>
-            <a href="notificacoes.html" class="settings-item">
-                <i class="fas fa-bell"></i>
-                <span>Notificações</span>
-            </a>
-            <a href="ajuda.html" class="settings-item">
-                <i class="fas fa-question-circle"></i>
-                <span>Ajuda</span>
-            </a>
-            <a href="suporte.html" class="settings-item">
-                <i class="fas fa-headset"></i>
-                <span>Suporte</span>
-            </a>
-            <a href="backup.html" class="settings-item">
-                <i class="fas fa-database"></i>
-                <span>Backup</span>
-            </a>
-            <button id="logoutBtn" class="settings-item">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Sair</span>
-            </button>
-        </div>
+  <header class="header">
+    <div class="header-left">
+      <h1 class="app-name">Sistema Financeiro</h1>
     </div>
+    <div class="header-right">
+      <button class="btn-notification" aria-label="Notificações">
+        <i class="fas fa-bell"></i><span class="badge" id="notification-count">3</span>
+      </button>
+      <div class="profile-menu">
+        <button id="profile-btn" aria-label="Menu de perfil">
+          <i class="fas fa-user-circle fa-lg"></i>
+        </button>
+        <div id="profile-dropdown" class="dropdown hidden">
+          <a href="perfil.html">Perfil</a>
+          <a href="configuracoes.html">Configurações</a>
+          <button id="logout-btn">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-analytics.js" type="module"></script>
-    <script src="js/firebase-config.js" type="module"></script>
-    <script src="js/app.js" type="module"></script>
-    <script type="module" src="js/settings-menu.js"></script>
-    <script type="module" src="js/dashboard.js"></script>
-    <script src="js/register-sw.js"></script>
-    <script type="module" src="js/chat-widget.js"></script>
-    <script>
-        // Registro do Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/js/service-worker.js')
-                    .then((registration) => {
-                        console.log('Service Worker registrado com sucesso:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.error('Erro ao registrar Service Worker:', error);
-                    });
-            });
-        }
+  <aside class="sidebar">
+    <nav>
+      <ul>
+        <li><a href="index.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+        <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+        <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+        <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
+      </ul>
+    </nav>
+  </aside>
 
-        // Prompt de instalação do PWA
-        let deferredPrompt;
-        const installButton = document.getElementById('installButton');
+  <main class="main-content">
+    <section class="dashboard-overview">
+      <h2>Visão Geral</h2>
+      <div class="cards-container">
+        <div class="card">
+          <h3>Total de Cheques</h3>
+          <p id="total-cheques">0</p>
+        </div>
+        <div class="card">
+          <h3>Cheques Pendentes</h3>
+          <p id="cheques-pendentes">0</p>
+        </div>
+        <div class="card">
+          <h3>Cheques Compensados</h3>
+          <p id="cheques-compensados">0</p>
+        </div>
+      </div>
+    </section>
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installButton.style.display = 'block';
+    <section class="recent-cheques">
+      <h2>Cheques Recentes</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Emitente</th>
+            <th>Valor</th>
+            <th>Vencimento</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="recent-cheques-body">
+          <!-- Cheques carregados via JS -->
+        </tbody>
+      </table>
+    </section>
+  </main>
 
-            installButton.addEventListener('click', () => {
-                installButton.style.display = 'none';
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Usuário aceitou a instalação do PWA');
-                    }
-                    deferredPrompt = null;
-                });
-            });
-        });
-    </script>
+  <footer class="footer">
+    <p>&copy; 2025 Sistema de Gestão e Operações Financeiras</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </body>
-</html> 
+</html>

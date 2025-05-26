@@ -1,0 +1,247 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+body, html {
+  height: 100%;
+  background: #f5f5f5;
+}
+
+/* Layout geral */
+body {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 250px 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  min-height: 100vh;
+}
+
+.header {
+  grid-area: header;
+  background-color: #004d99;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.2);
+}
+
+.header-left h1.app-name {
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-notification {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background: #e60000;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0 5px;
+  border-radius: 10px;
+}
+
+.profile-menu {
+  position: relative;
+}
+
+.profile-menu button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+#profile-dropdown {
+  position: absolute;
+  right: 0;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1100;
+}
+
+#profile-dropdown.hidden {
+  display: none;
+}
+
+#profile-dropdown a, #profile-dropdown button {
+  padding: 10px;
+  color: #333;
+  text-align: left;
+  font-size: 0.9rem;
+  border: none;
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#profile-dropdown a:hover, #profile-dropdown button:hover {
+  background-color: #eee;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background-color: #022f66;
+  padding-top: 60px;
+  position: fixed;
+  height: 100vh;
+  width: 250px;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar nav ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sidebar nav ul li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  padding: 14px 20px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  border-left: 4px solid transparent;
+  text-decoration: none;
+}
+
+.sidebar nav ul li a:hover, .sidebar nav ul li a.active {
+  background-color: #054aaf;
+  border-left: 4px solid #ffc107;
+}
+
+.main-content {
+  grid-area: main;
+  margin-left: 250px;
+  padding: 70px 20px 20px;
+  overflow-y: auto;
+  background: white;
+  min-height: calc(100vh - 60px - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.footer {
+  grid-area: footer;
+  background-color: #004d99;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+/* Cards usados no dashboard */
+.cards-container {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.card {
+  background-color: #e9f1ff;
+  flex: 1 1 150px;
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgb(0 77 153 / 0.15);
+  text-align: center;
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.card p {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #054aaf;
+}
+
+/* Tabela estilizada */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table thead {
+  background-color: #022f66;
+  color: white;
+}
+
+.table th, .table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+.table tbody tr:hover {
+  background-color: #dbe9ff;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main"
+      "footer";
+  }
+
+  .header {
+    position: fixed;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 60px 10px 20px;
+  }
+
+  /* Bottom-navigation para mobile (futuro) */
+}
