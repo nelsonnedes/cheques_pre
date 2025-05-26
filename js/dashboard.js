@@ -16,7 +16,8 @@ import {
   signOut
 } from './config.js';
 import { initializeNotifications } from './notifications.js';
-import { where, orderBy, limit, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 
 const totalChequesElem = document.getElementById('total-cheques');
 const chequesPendentesElem = document.getElementById('cheques-pendentes');
