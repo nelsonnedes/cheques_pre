@@ -110,7 +110,7 @@ async function handleLogout() {
     if (result.success) {
       showToast('Logout realizado com sucesso!', 'success');
       setTimeout(() => {
-        window.location.href = '/login.html';
+        window.location.href = './login.html';
       }, 1000);
     } else {
       showToast('Erro ao fazer logout: ' + result.error, 'error');
@@ -121,6 +121,66 @@ async function handleLogout() {
   } finally {
     hideLoading();
   }
+}
+
+// Sistema de controle de acesso baseado na seleção de empresas
+function checkCompanySelection() {
+  const selectedCompanies = JSON.parse(localStorage.getItem('selectedCompanies') || '[]');
+  const restrictedPages = ['dashboard.html', 'listarCheques.html', 'incluirCheque.html', 'relatorio.html', 'agenda.html'];
+  const currentPage = window.location.pathname.split('/').pop();
+  
+  // Se estiver em uma página restrita e não houver empresas selecionadas
+  if (restrictedPages.includes(currentPage) && selectedCompanies.length === 0) {
+    showToast('Você precisa selecionar pelo menos uma empresa para acessar esta funcionalidade', 'warning');
+    setTimeout(() => {
+      window.location.href = './empresas.html';
+    }, 2000);
+    return false;
+  }
+  
+  return true;
+}
+
+// Bloquear menus quando não há empresas selecionadas
+function updateMenuRestrictions() {
+  const selectedCompanies = JSON.parse(localStorage.getItem('selectedCompanies') || '[]');
+  const restrictedMenus = [
+    'dashboard.html',
+    'listarCheques.html', 
+    'incluirCheque.html',
+    'relatorio.html',
+    'agenda.html'
+  ];
+  
+  restrictedMenus.forEach(page => {
+    const menuItem = document.querySelector(`a[href="${page}"]`);
+    if (menuItem) {
+      if (selectedCompanies.length === 0) {
+        menuItem.style.opacity = '0.5';
+        menuItem.style.pointerEvents = 'none';
+        menuItem.title = 'Selecione uma empresa primeiro';
+        
+        // Adicionar ícone de bloqueio
+        if (!menuItem.querySelector('.lock-icon')) {
+          const lockIcon = document.createElement('i');
+          lockIcon.className = 'fas fa-lock lock-icon';
+          lockIcon.style.marginLeft = '8px';
+          lockIcon.style.color = '#dc2626';
+          menuItem.appendChild(lockIcon);
+        }
+      } else {
+        menuItem.style.opacity = '1';
+        menuItem.style.pointerEvents = 'auto';
+        menuItem.title = '';
+        
+        // Remover ícone de bloqueio
+        const lockIcon = menuItem.querySelector('.lock-icon');
+        if (lockIcon) {
+          lockIcon.remove();
+        }
+      }
+    }
+  });
 }
 
 // Configurar formulário de login
@@ -199,6 +259,13 @@ function getFirebaseErrorMessage(error) {
 function setupUserInterface() {
   setupProfileDropdown();
   
+  // Verificar seleção de empresas
+  checkCompanySelection();
+  updateMenuRestrictions();
+  
+  // Atualizar restrições quando localStorage muda
+  window.addEventListener('storage', updateMenuRestrictions);
+  
   // Configurar notificações
   const notificationBtn = document.querySelector('.btn-notification');
   if (notificationBtn) {
@@ -243,5 +310,7 @@ export {
   showLoading,
   checkAuth,
   getCurrentUser,
-  onAuthChange
+  onAuthChange,
+  checkCompanySelection,
+  updateMenuRestrictions
 }; 

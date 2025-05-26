@@ -12,6 +12,7 @@ import {
     onSnapshot 
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { updateMenuRestrictions } from './auth.js';
 
 /**
  * Manipulação da página de empresas: listagem, cadastro, seleção de empresa ativa.
@@ -24,6 +25,10 @@ class CompanyManager {
         this.selectedCompanies = new Set();
         this.currentUser = null;
         this.unsubscribe = null;
+        
+        // Carregar seleções salvas do localStorage
+        this.loadSelectedCompanies();
+        
         this.init();
     }
 
@@ -45,7 +50,7 @@ class CompanyManager {
             } else {
                 console.log('Usuário não logado, redirecionando...');
                 this.cleanup();
-                window.location.href = 'login.html';
+                window.location.href = './login.html';
             }
         });
     }
@@ -71,7 +76,7 @@ class CompanyManager {
                     this.showLoading(true);
                     await auth.signOut();
                     this.cleanup();
-                    window.location.href = 'login.html';
+                    window.location.href = './login.html';
                 } catch (error) {
                     console.error('Erro ao fazer logout:', error);
                     this.showToast('Erro ao fazer logout', 'error');
@@ -364,11 +369,15 @@ class CompanyManager {
     }
 
     toggleCompanySelection(companyId) {
+        console.log('Toggling company selection:', companyId);
         if (this.selectedCompanies.has(companyId)) {
             this.selectedCompanies.delete(companyId);
         } else {
             this.selectedCompanies.add(companyId);
         }
+        
+        // Salvar no localStorage
+        this.saveSelectedCompanies();
         
         this.updateCompanyCardSelection(companyId);
         this.updateSelectionInfo();
@@ -401,16 +410,26 @@ class CompanyManager {
             return;
         }
 
-        const selectedCompaniesData = this.companies.filter(company => 
-            this.selectedCompanies.has(company.id)
-        );
+        const selectedCompaniesData = Array.from(this.selectedCompanies).map(id => {
+            const company = this.companies.find(c => c.id === id);
+            return {
+                id: company.id,
+                name: company.nome,
+                cnpj: company.cnpj
+            };
+        });
+
+        // Salvar informações detalhadas das empresas selecionadas
+        localStorage.setItem('selectedCompaniesData', JSON.stringify(selectedCompaniesData));
         
-        localStorage.setItem('selectedCompanies', JSON.stringify(selectedCompaniesData));
+        // Atualizar restrições de menu
+        this.saveSelectedCompanies();
+
+        this.showToast(`${this.selectedCompanies.size} empresa(s) selecionada(s) com sucesso!`, 'success');
         
-        this.showToast(`${this.selectedCompanies.size} empresa(s) selecionada(s)`, 'success');
-        
+        // Redirecionar para dashboard após aplicar seleção
         setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = './dashboard.html';
         }, 1500);
     }
 
@@ -670,6 +689,37 @@ class CompanyManager {
             info: 'info-circle'
         };
         return icons[type] || icons.info;
+    }
+
+    // Carregar empresas selecionadas do localStorage
+    loadSelectedCompanies() {
+        try {
+            const saved = localStorage.getItem('selectedCompanies');
+            if (saved) {
+                const selectedIds = JSON.parse(saved);
+                this.selectedCompanies = new Set(selectedIds);
+                console.log('Empresas selecionadas carregadas:', selectedIds);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar empresas selecionadas:', error);
+            this.selectedCompanies = new Set();
+        }
+    }
+
+    // Salvar empresas selecionadas no localStorage
+    saveSelectedCompanies() {
+        try {
+            const selectedArray = Array.from(this.selectedCompanies);
+            localStorage.setItem('selectedCompanies', JSON.stringify(selectedArray));
+            console.log('Empresas selecionadas salvas:', selectedArray);
+            
+            // Atualizar restrições de menu
+            if (typeof updateMenuRestrictions === 'function') {
+                updateMenuRestrictions();
+            }
+        } catch (error) {
+            console.error('Erro ao salvar empresas selecionadas:', error);
+        }
     }
 }
 
