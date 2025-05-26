@@ -3,31 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Senha - Sistema Financeiro</title>
+    <title>Recuperar Senha - Sistema de Gestão Financeira</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/global.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/recover.js"></script>
+    <style>
+        /* Estilos específicos para a página de recuperação */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+            padding: var(--spacing-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 255, 0.03) 2px,
+                rgba(255, 255, 255, 0.03) 4px
+            );
+            animation: movePattern 20s linear infinite;
+        }
+
+        @keyframes movePattern {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            padding: var(--spacing-xl);
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+            border-bottom: 1px solid var(--primary-200);
+        }
+
+        .auth-header h1 {
+            margin: 0 0 var(--spacing-sm) 0;
+            color: var(--primary-700);
+            font-size: 1.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .auth-header h1 i {
+            background: var(--primary-500);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .auth-header p {
+            margin: 0;
+            color: var(--gray-600);
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            padding: var(--spacing-xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-500);
+            background-color: var(--error-50);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary .loading-spinner {
+            display: none;
+        }
+
+        .btn-primary.loading .btn-text {
+            opacity: 0;
+        }
+
+        .btn-primary.loading .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+        }
+
+        .success-message {
+            padding: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .success-message.hidden {
+            display: none;
+        }
+
+        .success-icon {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .success-icon i {
+            font-size: 4rem;
+            color: var(--success-500);
+            animation: successPulse 1.5s ease-in-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-message h3 {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--gray-800);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .success-message p {
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+
+        .small-text {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--primary-600);
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 500;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .link-btn:hover {
+            color: var(--primary-700);
+        }
+
+        .auth-footer {
+            padding: var(--spacing-lg) var(--spacing-xl);
+            text-align: center;
+            background: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+            font-size: 0.9rem;
+        }
+
+        .auth-footer p {
+            margin: 0 0 var(--spacing-xs) 0;
+            color: var(--gray-600);
+        }
+
+        .auth-footer a {
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--error-500);
+            font-size: 0.85rem;
+            margin-top: var(--spacing-xs);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            min-height: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+        }
+
+        .error-message::before {
+            content: '⚠';
+            font-size: 0.8rem;
+        }
+
+        /* Responsividade */
+        @media (max-width: 640px) {
+            .auth-container {
+                padding: var(--spacing-sm);
+            }
+
+            .auth-card {
+                max-width: 100%;
+            }
+
+            .auth-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .auth-header h1 i {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .auth-form {
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1><i class="fas fa-key"></i> Recuperar Senha</h1>
+                <h1>
+                    <i class="fas fa-key"></i>
+                    Recuperar Senha
+                </h1>
                 <p>Digite seu e-mail para receber as instruções</p>
             </div>
 
-            <form id="recover-form" class="auth-form" novalidate>
+            <form id="recover-form" class="auth-form" method="POST" action="#" novalidate>
                 <div class="form-group">
                     <label for="email">E-mail</label>
                     <input type="email" id="email" name="email" required 
-                           placeholder="seu@email.com" autocomplete="email">
+                           placeholder="Digite seu e-mail"
+                           autocomplete="email">
                     <div class="error-message" id="email-error"></div>
                 </div>
 
                 <button type="submit" class="btn-primary" id="recover-btn">
-                    <span class="btn-text">Enviar Instruções</span>
-                    <div class="loading-spinner hidden">
+                    <span class="btn-text">
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar Instruções
+                    </span>
+                    <div class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
                 </button>
@@ -53,5 +368,14 @@
 
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p>Enviando e-mail...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/recover.js"></script>
 </body>
 </html> 

@@ -56,7 +56,7 @@ function getToastIcon(type) {
 }
 
 // Loading overlay
-export function showLoading(message = 'Carregando...') {
+function showLoading(message = 'Carregando...') {
   let overlay = document.getElementById('loading-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -71,7 +71,7 @@ export function showLoading(message = 'Carregando...') {
   overlay.classList.remove('hidden');
 }
 
-export function hideLoading() {
+function hideLoading() {
   const overlay = document.getElementById('loading-overlay');
   if (overlay) {
     overlay.classList.add('hidden');
