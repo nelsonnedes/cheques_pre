@@ -1,4 +1,5 @@
 /* js/dashboard.js */
+import { setupUserInterface, checkAuth } from './auth.js';
 
 const totalChequesElem = document.getElementById('total-cheques');
 const chequesPendentesElem = document.getElementById('cheques-pendentes');
@@ -116,24 +117,20 @@ function criarCanvasGrafico() {
 // Inicializa eventos da página
 function initDashboard() {
   atualizarDashboard();
-
-  const profileBtn = document.getElementById('profile-btn');
-  const profileDropdown = document.getElementById('profile-dropdown');
-
-  profileBtn.addEventListener('click', () => {
-    profileDropdown.classList.toggle('hidden');
-  });
-
-  const logoutBtn = document.getElementById('logout-btn');
-  logoutBtn.addEventListener('click', () => {
-    alert('Logout ainda não implementado.');
-  });
+  setupUserInterface();
 }
 
-
-import { protegerRota } from './routeGuard.js';
-
-window.addEventListener('DOMContentLoaded', () => {
-  protegerRota();
-  initDashboard();
+// Verificar autenticação e inicializar
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) {
+      window.location.href = '/login.html';
+      return;
+    }
+    initDashboard();
+  } catch (error) {
+    console.error('Erro na verificação de autenticação:', error);
+    window.location.href = '/login.html';
+  }
 });

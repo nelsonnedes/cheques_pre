@@ -1,5 +1,15 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { 
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  updatePassword,
+  sendPasswordResetEmail
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { 
   getFirestore, 
   collection, 
   addDoc, 
@@ -11,8 +21,17 @@ import {
   where, 
   orderBy, 
   limit, 
-  onSnapshot 
+  onSnapshot,
+  getDoc,
+  serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { 
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 // Configuração Firebase
 const firebaseConfig = {
@@ -26,7 +45,9 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Constantes para collections
 export const COLLECTIONS = {
@@ -34,7 +55,11 @@ export const COLLECTIONS = {
   EMPRESAS: 'empresas',
   CHEQUES: 'cheques',
   TRANSACOES: 'transacoes',
-  CONFIGURACOES: 'configuracoes'
+  CONFIGURACOES: 'configuracoes',
+  AGENDA: 'agenda',
+  SUPORTE: 'suporte',
+  CHAT: 'chat',
+  TICKETS: 'tickets'
 };
 
 // Status dos cheques
@@ -42,6 +67,7 @@ export const STATUS_CHEQUE = {
   PENDENTE: 'pendente',
   COMPENSADO: 'compensado',
   DEVOLVIDO: 'devolvido',
+  CANCELADO: 'cancelado',
   PARCIAL: 'parcial'
 };
 
@@ -50,6 +76,92 @@ export const TIPO_OPERACAO = {
   RECEBER: 'receber', // Empresa deposita cheque, paga juros
   PAGAR: 'pagar'      // Empresa recebe dinheiro antecipado, cobra juros
 };
+
+// Funções de Autenticação
+export async function loginUsuario(email, password) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return { success: true, user: userCredential.user };
+  } catch (error) {
+    console.error('Erro no login:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function registrarUsuario(email, password, userData) {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // Atualizar perfil
+    await updateProfile(userCredential.user, {
+      displayName: userData.nome
+    });
+    
+    // Salvar dados do usuário no Firestore
+    await adicionarDocumento(COLLECTIONS.USUARIOS, {
+      uid: userCredential.user.uid,
+      email: email,
+      nome: userData.nome,
+      telefone: userData.telefone || '',
+      empresa: userData.empresa || '',
+      criadoEm: serverTimestamp(),
+      ativo: true
+    });
+    
+    return { success: true, user: userCredential.user };
+  } catch (error) {
+    console.error('Erro no registro:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function logoutUsuario() {
+  try {
+    await signOut(auth);
+    return { success: true };
+  } catch (error) {
+    console.error('Erro no logout:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function recuperarSenha(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao recuperar senha:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export function getCurrentUser() {
+  return auth.currentUser;
+}
+
+export function onAuthChange(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+// Verificar se usuário está logado
+export async function checkAuth() {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+}
+
+// Função para redirecionar se não autenticado
+export async function requireAuth() {
+  const user = await checkAuth();
+  if (!user) {
+    window.location.href = '/login.html';
+    return false;
+  }
+  return user;
+}
 
 /**
  * Função genérica para adicionar documento

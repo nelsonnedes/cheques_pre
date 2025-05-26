@@ -1,80 +1,243 @@
-/* js/auth.js */
+// Sistema de Autenticação Universal
+import { 
+  auth, 
+  db, 
+  loginUsuario, 
+  logoutUsuario, 
+  checkAuth, 
+  getCurrentUser, 
+  onAuthChange,
+  COLLECTIONS
+} from './config.js';
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+// Estado global da autenticação
+let currentUser = null;
+let userProfile = null;
 
-// Substituir pelas suas configurações Firebase reais
-const firebaseConfig = {
-  apiKey: "AIzaSyDXE1Fx_Jn9SAjiU6pM_XdFGmo4r6R3hSM",
-  authDomain: "dbcheques.firebaseapp.com",
-  projectId: "dbcheques",
-  storageBucket: "dbcheques.appspot.com",
-  messagingSenderId: "950658998147",
-  appId: "1:950658998147:web:66f4e0c0d23e7cbb4a3c09"
-};
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-const providerGoogle = new GoogleAuthProvider();
-
-/**
- * Registra usuário com email e senha
- * @param {string} email
- * @param {string} password
- * @returns {Promise}
- */
-export async function registrar(email, password) {
-  return createUserWithEmailAndPassword(auth, email, password);
+// Toast para mensagens
+export function showToast(message, type = 'info') {
+  const toastContainer = document.getElementById('toast-container') || createToastContainer();
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-content">
+      <i class="fas ${getToastIcon(type)}"></i>
+      <span>${message}</span>
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Auto remover após 5 segundos
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.remove();
+    }
+  }, 5000);
 }
 
-/**
- * Login com email e senha
- * @param {string} email
- * @param {string} password
- * @returns {Promise}
- */
-export async function loginEmailSenha(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toast-container';
+  container.className = 'toast-container';
+  document.body.appendChild(container);
+  return container;
 }
 
-/**
- * Login com Google OAuth
- * @returns {Promise}
- */
-export async function loginGoogle() {
-  return signInWithPopup(auth, providerGoogle);
+function getToastIcon(type) {
+  switch (type) {
+    case 'success': return 'fa-check-circle';
+    case 'error': return 'fa-exclamation-circle';
+    case 'warning': return 'fa-exclamation-triangle';
+    default: return 'fa-info-circle';
+  }
 }
 
-/**
- * Logout do usuário
- * @returns {Promise}
- */
-export async function logout() {
-  return signOut(auth);
+// Loading overlay
+export function showLoading(message = 'Carregando...') {
+  let overlay = document.getElementById('loading-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.className = 'loading-overlay';
+    overlay.innerHTML = `
+      <div class="loading-spinner"></div>
+      <p>${message}</p>
+    `;
+    document.body.appendChild(overlay);
+  }
+  overlay.classList.remove('hidden');
 }
 
-/**
- * Envia link de recuperação de senha
- * @param {string} email
- * @returns {Promise}
- */
-export async function recuperarSenha(email) {
-  return sendPasswordResetEmail(auth, email);
+export function hideLoading() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
 }
 
-/**
- * Monitora estado de autenticação e executa callback
- * @param {Function} callback
- */
-export function monitorarEstadoAuth(callback) {
-  return onAuthStateChanged(auth, callback);
+// Configurar dropdown do perfil
+function setupProfileDropdown() {
+  const profileBtn = document.getElementById('profile-btn');
+  const profileDropdown = document.getElementById('profile-dropdown');
+  const logoutBtn = document.getElementById('logout-btn');
+  
+  if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('hidden');
+    });
+    
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', () => {
+      profileDropdown.classList.add('hidden');
+    });
+  }
+  
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
 }
+
+// Fazer logout
+async function handleLogout() {
+  try {
+    showLoading('Fazendo logout...');
+    const result = await logoutUsuario();
+    
+    if (result.success) {
+      showToast('Logout realizado com sucesso!', 'success');
+      setTimeout(() => {
+        window.location.href = '/login.html';
+      }, 1000);
+    } else {
+      showToast('Erro ao fazer logout: ' + result.error, 'error');
+    }
+  } catch (error) {
+    console.error('Erro no logout:', error);
+    showToast('Erro inesperado no logout', 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Configurar formulário de login
+export function setupLoginForm() {
+  const loginForm = document.getElementById('login-form');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const togglePassword = document.querySelector('.toggle-password');
+  const loginBtn = document.getElementById('login-btn');
+  
+  if (!loginForm) return;
+  
+  // Toggle senha
+  if (togglePassword) {
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      togglePassword.querySelector('i').classList.toggle('fa-eye');
+      togglePassword.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+  }
+  
+  // Submit do formulário
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    
+    if (!email || !password) {
+      showToast('Preencha todos os campos', 'warning');
+      return;
+    }
+    
+    try {
+      showLoading('Fazendo login...');
+      loginBtn.disabled = true;
+      
+      const result = await loginUsuario(email, password);
+      
+      if (result.success) {
+        showToast('Login realizado com sucesso!', 'success');
+        setTimeout(() => {
+          window.location.href = '/index.html';
+        }, 1000);
+      } else {
+        showToast('Erro no login: ' + getFirebaseErrorMessage(result.error), 'error');
+      }
+    } catch (error) {
+      console.error('Erro no login:', error);
+      showToast('Erro inesperado no login', 'error');
+    } finally {
+      hideLoading();
+      loginBtn.disabled = false;
+    }
+  });
+}
+
+// Traduzir erros do Firebase
+function getFirebaseErrorMessage(error) {
+  const errorMessages = {
+    'auth/invalid-email': 'E-mail inválido',
+    'auth/user-disabled': 'Usuário desabilitado',
+    'auth/user-not-found': 'Usuário não encontrado',
+    'auth/wrong-password': 'Senha incorreta',
+    'auth/email-already-in-use': 'E-mail já está em uso',
+    'auth/weak-password': 'Senha muito fraca',
+    'auth/network-request-failed': 'Erro de conexão',
+    'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde'
+  };
+  
+  return errorMessages[error] || error;
+}
+
+// Configurar interface do usuário
+export function setupUserInterface() {
+  setupProfileDropdown();
+  
+  // Configurar notificações
+  const notificationBtn = document.querySelector('.btn-notification');
+  if (notificationBtn) {
+    notificationBtn.addEventListener('click', () => {
+      showToast('Sistema de notificações em desenvolvimento', 'info');
+    });
+  }
+  
+  // Configurar navegação ativa
+  const currentPath = window.location.pathname;
+  const navLinks = document.querySelectorAll('.sidebar nav a');
+  
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    const href = link.getAttribute('href');
+    
+    if (href && (currentPath.includes(href) || (currentPath === '/' && href === 'index.html'))) {
+      link.classList.add('active');
+    }
+  });
+}
+
+// Inicialização automática
+document.addEventListener('DOMContentLoaded', () => {
+  // Configurar formulário de login se estiver na página de login
+  if (window.location.pathname.includes('login.html')) {
+    setupLoginForm();
+  } else {
+    // Para outras páginas, configurar interface
+    setupUserInterface();
+  }
+});
+
+// Exportar funções úteis
+export {
+  currentUser,
+  userProfile,
+  handleLogout,
+  setupUserInterface,
+  hideLoading,
+  showLoading
+}; 
