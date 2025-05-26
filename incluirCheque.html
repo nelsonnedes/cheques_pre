@@ -55,46 +55,52 @@
 
     <div class="form-container">
       <form id="cheque-form" class="cheque-form" novalidate>
-        <!-- Dados Básicos -->
-        <div class="form-section">
-          <h2><i class="fas fa-file-invoice-dollar"></i> Dados do Cheque</h2>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="numero">Número do Cheque *</label>
-              <input type="text" id="numero" name="numero" required placeholder="Ex: 000001" />
-              <div class="error-message" id="numero-error"></div>
-            </div>
-            
-            <div class="form-group">
-              <label for="banco">Banco *</label>
-              <select id="banco" name="banco" required>
-                <option value="">Selecione o banco</option>
-                <option value="001">001 - Banco do Brasil</option>
-                <option value="033">033 - Santander</option>
-                <option value="104">104 - Caixa Econômica</option>
-                <option value="237">237 - Bradesco</option>
-                <option value="341">341 - Itaú</option>
-                <option value="356">356 - Banco Real</option>
-                <option value="399">399 - HSBC</option>
-                <option value="422">422 - Banco Safra</option>
-                <option value="745">745 - Citibank</option>
-                <option value="outro">Outro</option>
-              </select>
-              <div class="error-message" id="banco-error"></div>
-            </div>
+        <!-- Informações Básicas -->
+        <div class="form-grid">
+          <!-- Seletor de Empresa (aparece quando múltiplas empresas estão selecionadas) -->
+          <div class="form-group" id="empresa-selector-group" style="display: none;">
+            <label for="empresa-selecionada">Empresa *</label>
+            <select id="empresa-selecionada" name="empresaId" required>
+              <option value="">Selecione a empresa</option>
+            </select>
+            <small class="field-help">Selecione para qual empresa este cheque será cadastrado</small>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="agencia">Agência</label>
-              <input type="text" id="agencia" name="agencia" placeholder="Ex: 1234-5" />
-            </div>
-            
-            <div class="form-group">
-              <label for="conta">Conta</label>
-              <input type="text" id="conta" name="conta" placeholder="Ex: 12345-6" />
-            </div>
+          <div class="form-group">
+            <label for="numero">Número do Cheque *</label>
+            <input type="text" id="numero" name="numero" required 
+                   placeholder="000001" maxlength="20" />
+            <small class="field-help">Número único do cheque</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="banco">Banco *</label>
+            <select id="banco" name="banco" required>
+              <option value="">Selecione o banco</option>
+              <option value="001">001 - Banco do Brasil</option>
+              <option value="033">033 - Santander</option>
+              <option value="104">104 - Caixa Econômica</option>
+              <option value="237">237 - Bradesco</option>
+              <option value="341">341 - Itaú</option>
+              <option value="356">356 - Banco Real</option>
+              <option value="399">399 - HSBC</option>
+              <option value="422">422 - Banco Safra</option>
+              <option value="745">745 - Citibank</option>
+              <option value="outro">Outro</option>
+            </select>
+            <div class="error-message" id="banco-error"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="agencia">Agência</label>
+            <input type="text" id="agencia" name="agencia" placeholder="Ex: 1234-5" />
+          </div>
+          
+          <div class="form-group">
+            <label for="conta">Conta</label>
+            <input type="text" id="conta" name="conta" placeholder="Ex: 12345-6" />
           </div>
         </div>
 

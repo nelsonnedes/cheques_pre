@@ -151,23 +151,27 @@ async function initializeDashboard() {
       return;
     }
 
-    empresaAtiva = obterEmpresaAtiva();
-    if (!empresaAtiva) {
-      console.warn('Nenhuma empresa ativa. Redirecionando para seleção de empresa.');
+    // Verificar se há empresas selecionadas
+    const selectedCompaniesData = localStorage.getItem('selectedCompanies');
+    if (!selectedCompaniesData) {
+      console.warn('Nenhuma empresa selecionada. Redirecionando para seleção de empresas.');
       window.location.href = 'empresas.html';
       return;
     }
 
-    // Garantir que o usuário existe no Firestore e está associado à empresa
-    await garantirUsuarioNoFirestore(currentUser, empresaAtiva.id || empresaAtiva.cnpj);
-    
-    // Associar usuário à empresa ativa
-    const empresaId = empresaAtiva.id || empresaAtiva.cnpj;
-    await associarUsuarioEmpresa(empresaId);
+    const selectedCompanies = JSON.parse(selectedCompaniesData);
+    if (selectedCompanies.length === 0) {
+      console.warn('Nenhuma empresa selecionada. Redirecionando para seleção de empresas.');
+      window.location.href = 'empresas.html';
+      return;
+    }
+
+    // Atualizar display das empresas
+    updateCompaniesDisplay(selectedCompanies);
 
     // Inicializar sistemas
     setupEventListeners();
-    await loadDashboardData();
+    await loadDashboardData(selectedCompanies);
     updateUserInfo();
     
     // Inicializar notificações
@@ -176,6 +180,18 @@ async function initializeDashboard() {
   } catch (error) {
     console.error('Erro ao inicializar dashboard:', error);
     window.location.href = 'login.html';
+  }
+}
+
+// Atualizar display das empresas selecionadas
+function updateCompaniesDisplay(selectedCompanies) {
+  const empresaDisplay = document.getElementById('empresa-ativa-display');
+  if (empresaDisplay) {
+    if (selectedCompanies.length === 1) {
+      empresaDisplay.textContent = selectedCompanies[0].nome;
+    } else {
+      empresaDisplay.textContent = `${selectedCompanies.length} empresas selecionadas`;
+    }
   }
 }
 
@@ -259,15 +275,15 @@ function updateUserInfo() {
 }
 
 // Carregar dados do dashboard
-async function loadDashboardData() {
+async function loadDashboardData(selectedCompanies) {
   try {
     showLoading(true);
     
     // Carregar estatísticas
-    await loadStatistics();
+    await loadStatistics(selectedCompanies);
     
     // Carregar cheques recentes
-    await loadRecentCheques();
+    await loadRecentCheques(selectedCompanies);
     
     // Carregar gráficos
     loadCharts();
@@ -281,15 +297,15 @@ async function loadDashboardData() {
 }
 
 // Carregar estatísticas
-async function loadStatistics() {
+async function loadStatistics(selectedCompanies) {
   try {
-    if (!empresaAtiva) {
-      console.warn('Nenhuma empresa ativa selecionada');
+    if (selectedCompanies.length === 0) {
+      console.warn('Nenhuma empresa selecionada');
       return;
     }
 
     const filtros = [
-      where('empresaId', '==', empresaAtiva.id || empresaAtiva.cnpj)
+      where('empresaId', '==', selectedCompanies[0].id || selectedCompanies[0].cnpj)
     ];
     
     const resultado = await buscarDocumentos(COLLECTIONS.CHEQUES, filtros);
@@ -333,15 +349,15 @@ async function loadStatistics() {
 }
 
 // Carregar cheques recentes
-async function loadRecentCheques() {
+async function loadRecentCheques(selectedCompanies) {
   try {
-    if (!empresaAtiva) {
-      console.warn('Nenhuma empresa ativa selecionada');
+    if (selectedCompanies.length === 0) {
+      console.warn('Nenhuma empresa selecionada');
       return;
     }
 
     const filtros = [
-      where('empresaId', '==', empresaAtiva.id || empresaAtiva.cnpj),
+      where('empresaId', '==', selectedCompanies[0].id || selectedCompanies[0].cnpj),
       orderBy('criadoEm', 'desc'),
       limit(5)
     ];
@@ -360,7 +376,7 @@ async function loadRecentCheques() {
             <div class="empty-state">
               <i class="fas fa-file-invoice-dollar fa-3x"></i>
               <p>Nenhum cheque encontrado</p>
-              <a href="incluir-cheque.html" class="btn btn-primary">Adicionar Primeiro Cheque</a>
+              <a href="incluirCheque.html" class="btn btn-primary">Adicionar Primeiro Cheque</a>
             </div>
           </td>
         </tr>

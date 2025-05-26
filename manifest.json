@@ -77,7 +77,7 @@
       "name": "Novo Cheque",
       "short_name": "Novo",
       "description": "Cadastrar novo cheque",
-      "url": "/incluir-cheque.html",
+      "url": "/incluirCheque.html",
       "icons": [
         {
           "src": "icons/shortcut-novo.png",

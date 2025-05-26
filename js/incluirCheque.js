@@ -29,6 +29,8 @@ const formTitle = document.getElementById('form-title');
 const breadcrumbTitle = document.getElementById('breadcrumb-title');
 const empresaDisplay = document.getElementById('empresa-ativa-display');
 const taxaEmpresaDisplay = document.getElementById('taxa-empresa-display');
+const empresaSelectorGroup = document.getElementById('empresa-selector-group');
+const empresaSelecionadaSelect = document.getElementById('empresa-selecionada');
 
 // Campos do formulário
 const numeroInput = document.getElementById('numero');
@@ -60,6 +62,7 @@ const btnExcluir = document.getElementById('btn-excluir');
 // Variáveis globais
 let currentUser = null;
 let empresaAtiva = null;
+let selectedCompanies = [];
 let editingChequeId = null;
 let currentImageFile = null;
 let currentImageUrl = null;
@@ -75,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    await loadEmpresaAtiva();
+    await loadSelectedCompanies();
     setupEventListeners();
     setupMasks();
     checkEditMode();
@@ -87,32 +90,76 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// Carregar empresa ativa
-async function loadEmpresaAtiva() {
+// Carregar empresas selecionadas
+async function loadSelectedCompanies() {
   try {
-    const empresaId = localStorage.getItem('empresaAtiva');
-    if (!empresaId) {
+    const selectedCompaniesData = localStorage.getItem('selectedCompanies');
+    
+    if (!selectedCompaniesData) {
       showToast('Nenhuma empresa selecionada', 'warning');
       window.location.href = 'empresas.html';
       return;
     }
 
-    const empresaDoc = await getDoc(doc(db, 'empresas', empresaId));
-    if (empresaDoc.exists()) {
-      empresaAtiva = { id: empresaDoc.id, ...empresaDoc.data() };
+    selectedCompanies = JSON.parse(selectedCompaniesData);
+    
+    if (selectedCompanies.length === 0) {
+      showToast('Nenhuma empresa selecionada', 'warning');
+      window.location.href = 'empresas.html';
+      return;
+    }
+
+    if (selectedCompanies.length === 1) {
+      // Uma empresa selecionada - usar como empresa ativa
+      empresaAtiva = selectedCompanies[0];
       empresaDisplay.textContent = empresaAtiva.nome;
       
       // Exibir taxa padrão da empresa
-      const taxaPadrao = empresaAtiva.taxaJurosPadrao || 0;
+      const taxaPadrao = empresaAtiva.taxaJuros || 0;
       taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
       taxaJurosInput.value = taxaPadrao;
       
     } else {
-      throw new Error('Empresa não encontrada');
+      // Múltiplas empresas - mostrar seletor
+      empresaSelectorGroup.style.display = 'block';
+      empresaDisplay.textContent = `${selectedCompanies.length} empresas selecionadas`;
+      
+      // Preencher select com empresas
+      empresaSelecionadaSelect.innerHTML = '<option value="">Selecione a empresa</option>';
+      selectedCompanies.forEach(empresa => {
+        const option = document.createElement('option');
+        option.value = empresa.id;
+        option.textContent = empresa.nome;
+        option.dataset.taxaJuros = empresa.taxaJuros || 0;
+        empresaSelecionadaSelect.appendChild(option);
+      });
+      
+      // Event listener para mudança de empresa
+      empresaSelecionadaSelect.addEventListener('change', handleEmpresaChange);
     }
+    
   } catch (error) {
-    console.error('Erro ao carregar empresa:', error);
-    showToast('Erro ao carregar dados da empresa', 'error');
+    console.error('Erro ao carregar empresas:', error);
+    showToast('Erro ao carregar dados das empresas', 'error');
+  }
+}
+
+// Manipular mudança de empresa selecionada
+function handleEmpresaChange() {
+  const selectedEmpresaId = empresaSelecionadaSelect.value;
+  
+  if (selectedEmpresaId) {
+    empresaAtiva = selectedCompanies.find(empresa => empresa.id === selectedEmpresaId);
+    
+    if (empresaAtiva) {
+      const taxaPadrao = empresaAtiva.taxaJuros || 0;
+      taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
+      taxaJurosInput.value = taxaPadrao;
+    }
+  } else {
+    empresaAtiva = null;
+    taxaEmpresaDisplay.textContent = '0%';
+    taxaJurosInput.value = '';
   }
 }
 
@@ -359,6 +406,18 @@ function validateForm() {
   
   // Limpar erros anteriores
   clearValidationErrors();
+  
+  // Validar empresa (quando múltiplas estão selecionadas)
+  if (selectedCompanies.length > 1 && !empresaSelecionadaSelect.value) {
+    showFieldError(empresaSelecionadaSelect, 'Selecione a empresa para este cheque');
+    isValid = false;
+  }
+  
+  // Validar se há empresa ativa
+  if (!empresaAtiva) {
+    showToast('Selecione uma empresa antes de continuar', 'warning');
+    isValid = false;
+  }
   
   // Validar campos obrigatórios
   if (!numeroInput.value.trim()) {

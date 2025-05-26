@@ -118,8 +118,8 @@ function exibirEmpresaAtiva() {
 function configurarEventListeners() {
   btnAplicarFiltros?.addEventListener('click', aplicarFiltros);
   btnLimparFiltros?.addEventListener('click', limparFiltros);
-  btnNovoCheck?.addEventListener('click', () => window.location.href = 'incluir-cheque.html');
-  btnPrimeiroCheque?.addEventListener('click', () => window.location.href = 'incluir-cheque.html');
+  btnNovoCheck?.addEventListener('click', () => window.location.href = 'incluirCheque.html');
+  btnPrimeiroCheque?.addEventListener('click', () => window.location.href = 'incluirCheque.html');
   btnExportarExcel?.addEventListener('click', exportarExcel);
   btnExportarPdf?.addEventListener('click', exportarPdf);
   
@@ -441,7 +441,7 @@ async function processarAcao(acao) {
 function editarCheque() {
   if (chequeAtualModal) {
     localStorage.setItem('chequeEditando', JSON.stringify(chequeAtualModal));
-    window.location.href = 'incluir-cheque.html';
+    window.location.href = 'incluirCheque.html';
   }
 }
 

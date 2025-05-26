@@ -1,4 +1,17 @@
-import { auth } from './auth.js';
+import { auth, db } from './firebase-config.js';
+import { 
+    collection, 
+    addDoc, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    where, 
+    orderBy,
+    onSnapshot 
+} from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 /**
  * Manipulação da página de empresas: listagem, cadastro, seleção de empresa ativa.
@@ -190,3 +203,470 @@ function initEmpresas() {
 }
 
 window.addEventListener('DOMContentLoaded', initEmpresas);
+
+class CompanyManager {
+    constructor() {
+        this.companies = [];
+        this.selectedCompanies = new Set();
+        this.currentUser = null;
+        this.init();
+    }
+
+    async init() {
+        this.setupEventListeners();
+        this.checkAuth();
+    }
+
+    checkAuth() {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                this.currentUser = user;
+                this.loadCompanies();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    }
+
+    setupEventListeners() {
+        // Botão adicionar empresa
+        document.getElementById('addCompanyBtn')?.addEventListener('click', () => {
+            this.openCompanyModal();
+        });
+
+        // Botão aplicar seleção
+        document.getElementById('applySelectionBtn')?.addEventListener('click', () => {
+            this.applySelection();
+        });
+
+        // Formulário de empresa
+        document.getElementById('companyForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveCompany();
+        });
+
+        // Botões do modal
+        document.getElementById('cancelCompanyBtn')?.addEventListener('click', () => {
+            this.closeCompanyModal();
+        });
+
+        // Fechar modal clicando fora
+        document.getElementById('companyModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'companyModal') {
+                this.closeCompanyModal();
+            }
+        });
+
+        // Selecionar todas as empresas
+        document.getElementById('selectAllBtn')?.addEventListener('click', () => {
+            this.selectAllCompanies();
+        });
+
+        // Limpar seleção
+        document.getElementById('clearSelectionBtn')?.addEventListener('click', () => {
+            this.clearSelection();
+        });
+
+        // Auto-formatação do CNPJ
+        document.getElementById('companyCnpj')?.addEventListener('input', (e) => {
+            this.formatCNPJ(e.target);
+        });
+    }
+
+    async loadCompanies() {
+        try {
+            this.showLoading(true);
+            
+            const companiesRef = collection(db, 'empresas');
+            const q = query(
+                companiesRef, 
+                where('userId', '==', this.currentUser.uid),
+                orderBy('nome')
+            );
+
+            // Listener em tempo real
+            onSnapshot(q, (snapshot) => {
+                this.companies = [];
+                snapshot.forEach((doc) => {
+                    this.companies.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                this.renderCompanies();
+                this.updateSelectionInfo();
+            });
+
+        } catch (error) {
+            console.error('Erro ao carregar empresas:', error);
+            this.showToast('Erro ao carregar empresas', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    renderCompanies() {
+        const container = document.getElementById('companiesGrid');
+        const emptyState = document.getElementById('emptyState');
+
+        if (this.companies.length === 0) {
+            container.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        container.style.display = 'grid';
+        emptyState.style.display = 'none';
+
+        container.innerHTML = this.companies.map(company => this.createCompanyCard(company)).join('');
+
+        // Adicionar event listeners aos cards
+        this.companies.forEach(company => {
+            const card = document.getElementById(`company-${company.id}`);
+            const checkbox = document.getElementById(`checkbox-${company.id}`);
+            
+            // Click no card seleciona/deseleciona
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.company-actions') && !e.target.closest('.company-checkbox')) {
+                    this.toggleCompanySelection(company.id);
+                }
+            });
+
+            // Checkbox
+            checkbox.addEventListener('change', () => {
+                this.toggleCompanySelection(company.id);
+            });
+
+            // Botões de ação
+            const editBtn = card.querySelector('.edit-company');
+            const deleteBtn = card.querySelector('.delete-company');
+
+            editBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.editCompany(company);
+            });
+
+            deleteBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteCompany(company.id, company.nome);
+            });
+        });
+    }
+
+    createCompanyCard(company) {
+        const isSelected = this.selectedCompanies.has(company.id);
+        const taxRate = company.taxaJuros || 0;
+        const description = company.descricao || 'Sem descrição';
+
+        return `
+            <div class="company-card ${isSelected ? 'selected' : ''}" id="company-${company.id}">
+                <div class="company-header">
+                    <div class="company-info">
+                        <div class="company-name">${company.nome}</div>
+                        <div class="company-cnpj">${this.formatCNPJDisplay(company.cnpj)}</div>
+                        <div class="company-tax-rate">${taxRate}% a.m.</div>
+                    </div>
+                    <div class="company-checkbox">
+                        <input type="checkbox" id="checkbox-${company.id}" ${isSelected ? 'checked' : ''}>
+                        <label for="checkbox-${company.id}" class="checkbox-custom"></label>
+                    </div>
+                </div>
+                
+                <div class="company-description">${description}</div>
+                
+                <div class="company-stats">
+                    <div class="stat-mini">
+                        <span class="stat-mini-value">0</span>
+                        <span class="stat-mini-label">Cheques</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-value">R$ 0</span>
+                        <span class="stat-mini-label">Total</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-value">0</span>
+                        <span class="stat-mini-label">Pendentes</span>
+                    </div>
+                </div>
+                
+                <div class="company-actions">
+                    <button class="btn-company-action edit edit-company">
+                        <i class="fas fa-edit"></i>
+                        Editar
+                    </button>
+                    <button class="btn-company-action delete delete-company">
+                        <i class="fas fa-trash"></i>
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    toggleCompanySelection(companyId) {
+        if (this.selectedCompanies.has(companyId)) {
+            this.selectedCompanies.delete(companyId);
+        } else {
+            this.selectedCompanies.add(companyId);
+        }
+        
+        this.updateCompanyCardSelection(companyId);
+        this.updateSelectionInfo();
+        this.updateSelectionSummary();
+    }
+
+    updateCompanyCardSelection(companyId) {
+        const card = document.getElementById(`company-${companyId}`);
+        const checkbox = document.getElementById(`checkbox-${companyId}`);
+        
+        if (this.selectedCompanies.has(companyId)) {
+            card.classList.add('selected');
+            checkbox.checked = true;
+        } else {
+            card.classList.remove('selected');
+            checkbox.checked = false;
+        }
+    }
+
+    updateSelectionInfo() {
+        const selectedCount = document.getElementById('selectedCount');
+        const totalCount = document.getElementById('totalCount');
+        
+        if (selectedCount) selectedCount.textContent = this.selectedCompanies.size;
+        if (totalCount) totalCount.textContent = this.companies.length;
+    }
+
+    updateSelectionSummary() {
+        const summaryContainer = document.getElementById('selectionSummary');
+        if (!summaryContainer) return;
+
+        if (this.selectedCompanies.size === 0) {
+            summaryContainer.style.display = 'none';
+            return;
+        }
+
+        summaryContainer.style.display = 'block';
+        const selectedCompaniesList = document.getElementById('selectedCompaniesList');
+        
+        const selectedCompaniesData = this.companies.filter(company => 
+            this.selectedCompanies.has(company.id)
+        );
+
+        selectedCompaniesList.innerHTML = selectedCompaniesData.map(company => `
+            <div class="selected-company-tag">
+                ${company.nome}
+                <button class="remove-tag" onclick="companyManager.removeFromSelection('${company.id}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    removeFromSelection(companyId) {
+        this.selectedCompanies.delete(companyId);
+        this.updateCompanyCardSelection(companyId);
+        this.updateSelectionInfo();
+        this.updateSelectionSummary();
+    }
+
+    selectAllCompanies() {
+        this.companies.forEach(company => {
+            this.selectedCompanies.add(company.id);
+            this.updateCompanyCardSelection(company.id);
+        });
+        this.updateSelectionInfo();
+        this.updateSelectionSummary();
+    }
+
+    clearSelection() {
+        this.selectedCompanies.clear();
+        this.companies.forEach(company => {
+            this.updateCompanyCardSelection(company.id);
+        });
+        this.updateSelectionInfo();
+        this.updateSelectionSummary();
+    }
+
+    applySelection() {
+        if (this.selectedCompanies.size === 0) {
+            this.showToast('Selecione pelo menos uma empresa', 'warning');
+            return;
+        }
+
+        // Salvar seleção no localStorage
+        const selectedCompaniesData = this.companies.filter(company => 
+            this.selectedCompanies.has(company.id)
+        );
+        
+        localStorage.setItem('selectedCompanies', JSON.stringify(selectedCompaniesData));
+        
+        this.showToast(`${this.selectedCompanies.size} empresa(s) selecionada(s)`, 'success');
+        
+        // Redirecionar para o dashboard
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1500);
+    }
+
+    openCompanyModal(company = null) {
+        const modal = document.getElementById('companyModal');
+        const form = document.getElementById('companyForm');
+        const title = document.getElementById('modalTitle');
+        
+        if (company) {
+            title.textContent = 'Editar Empresa';
+            document.getElementById('companyId').value = company.id;
+            document.getElementById('companyName').value = company.nome;
+            document.getElementById('companyCnpj').value = this.formatCNPJDisplay(company.cnpj);
+            document.getElementById('companyTaxRate').value = company.taxaJuros || '';
+            document.getElementById('companyDescription').value = company.descricao || '';
+        } else {
+            title.textContent = 'Nova Empresa';
+            form.reset();
+            document.getElementById('companyId').value = '';
+        }
+        
+        modal.style.display = 'flex';
+        document.getElementById('companyName').focus();
+    }
+
+    closeCompanyModal() {
+        document.getElementById('companyModal').style.display = 'none';
+    }
+
+    async saveCompany() {
+        try {
+            this.showLoading(true);
+            
+            const formData = new FormData(document.getElementById('companyForm'));
+            const companyId = formData.get('companyId');
+            
+            const companyData = {
+                nome: formData.get('companyName').trim(),
+                cnpj: this.cleanCNPJ(formData.get('companyCnpj')),
+                taxaJuros: parseFloat(formData.get('companyTaxRate')) || 0,
+                descricao: formData.get('companyDescription').trim(),
+                userId: this.currentUser.uid,
+                updatedAt: new Date()
+            };
+
+            // Validações
+            if (!companyData.nome) {
+                throw new Error('Nome da empresa é obrigatório');
+            }
+
+            if (!this.validateCNPJ(companyData.cnpj)) {
+                throw new Error('CNPJ inválido');
+            }
+
+            if (companyId) {
+                // Atualizar empresa existente
+                const companyRef = doc(db, 'empresas', companyId);
+                await updateDoc(companyRef, companyData);
+                this.showToast('Empresa atualizada com sucesso!', 'success');
+            } else {
+                // Criar nova empresa
+                companyData.createdAt = new Date();
+                await addDoc(collection(db, 'empresas'), companyData);
+                this.showToast('Empresa criada com sucesso!', 'success');
+            }
+
+            this.closeCompanyModal();
+
+        } catch (error) {
+            console.error('Erro ao salvar empresa:', error);
+            this.showToast(error.message || 'Erro ao salvar empresa', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    editCompany(company) {
+        this.openCompanyModal(company);
+    }
+
+    async deleteCompany(companyId, companyName) {
+        if (!confirm(`Tem certeza que deseja excluir a empresa "${companyName}"?`)) {
+            return;
+        }
+
+        try {
+            this.showLoading(true);
+            
+            await deleteDoc(doc(db, 'empresas', companyId));
+            
+            // Remover da seleção se estiver selecionada
+            this.selectedCompanies.delete(companyId);
+            this.updateSelectionInfo();
+            this.updateSelectionSummary();
+            
+            this.showToast('Empresa excluída com sucesso!', 'success');
+
+        } catch (error) {
+            console.error('Erro ao excluir empresa:', error);
+            this.showToast('Erro ao excluir empresa', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    // Utilitários
+    formatCNPJ(input) {
+        let value = input.value.replace(/\D/g, '');
+        value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+        value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+        input.value = value;
+    }
+
+    formatCNPJDisplay(cnpj) {
+        if (!cnpj) return '';
+        const cleaned = cnpj.replace(/\D/g, '');
+        return cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    }
+
+    cleanCNPJ(cnpj) {
+        return cnpj.replace(/\D/g, '');
+    }
+
+    validateCNPJ(cnpj) {
+        const cleaned = cnpj.replace(/\D/g, '');
+        return cleaned.length === 14;
+    }
+
+    showLoading(show) {
+        const loading = document.getElementById('loadingOverlay');
+        if (loading) {
+            loading.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+
+        const container = document.getElementById('toastContainer') || document.body;
+        container.appendChild(toast);
+
+        // Animar entrada
+        setTimeout(() => toast.classList.add('show'), 100);
+
+        // Remover após 3 segundos
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => container.removeChild(toast), 300);
+        }, 3000);
+    }
+}
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', () => {
+    window.companyManager = new CompanyManager();
+});
+
+export default CompanyManager;
