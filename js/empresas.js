@@ -10,8 +10,8 @@ import {
     where, 
     orderBy,
     onSnapshot 
-} from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 /**
  * Manipulação da página de empresas: listagem, cadastro, seleção de empresa ativa.
@@ -230,45 +230,35 @@ class CompanyManager {
 
     setupEventListeners() {
         // Botão adicionar empresa
-        document.getElementById('addCompanyBtn')?.addEventListener('click', () => {
+        document.getElementById('btn-add-empresa')?.addEventListener('click', () => {
             this.openCompanyModal();
         });
 
         // Botão aplicar seleção
-        document.getElementById('applySelectionBtn')?.addEventListener('click', () => {
+        document.getElementById('btn-apply-selection')?.addEventListener('click', () => {
             this.applySelection();
         });
 
         // Formulário de empresa
-        document.getElementById('companyForm')?.addEventListener('submit', (e) => {
+        document.getElementById('company-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.saveCompany();
         });
 
         // Botões do modal
-        document.getElementById('cancelCompanyBtn')?.addEventListener('click', () => {
+        document.getElementById('cancel-btn')?.addEventListener('click', () => {
             this.closeCompanyModal();
         });
 
         // Fechar modal clicando fora
-        document.getElementById('companyModal')?.addEventListener('click', (e) => {
-            if (e.target.id === 'companyModal') {
+        document.getElementById('company-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'company-modal') {
                 this.closeCompanyModal();
             }
         });
 
-        // Selecionar todas as empresas
-        document.getElementById('selectAllBtn')?.addEventListener('click', () => {
-            this.selectAllCompanies();
-        });
-
-        // Limpar seleção
-        document.getElementById('clearSelectionBtn')?.addEventListener('click', () => {
-            this.clearSelection();
-        });
-
         // Auto-formatação do CNPJ
-        document.getElementById('companyCnpj')?.addEventListener('input', (e) => {
+        document.getElementById('company-cnpj')?.addEventListener('input', (e) => {
             this.formatCNPJ(e.target);
         });
     }
@@ -306,51 +296,55 @@ class CompanyManager {
     }
 
     renderCompanies() {
-        const container = document.getElementById('companiesGrid');
-        const emptyState = document.getElementById('emptyState');
+        const container = document.getElementById('companies-grid');
+        const emptyState = document.getElementById('empty-state');
 
         if (this.companies.length === 0) {
-            container.style.display = 'none';
-            emptyState.style.display = 'block';
+            if (container) container.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'block';
             return;
         }
 
-        container.style.display = 'grid';
-        emptyState.style.display = 'none';
+        if (container) container.style.display = 'grid';
+        if (emptyState) emptyState.style.display = 'none';
 
-        container.innerHTML = this.companies.map(company => this.createCompanyCard(company)).join('');
+        if (container) {
+            container.innerHTML = this.companies.map(company => this.createCompanyCard(company)).join('');
 
-        // Adicionar event listeners aos cards
-        this.companies.forEach(company => {
-            const card = document.getElementById(`company-${company.id}`);
-            const checkbox = document.getElementById(`checkbox-${company.id}`);
-            
-            // Click no card seleciona/deseleciona
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.company-actions') && !e.target.closest('.company-checkbox')) {
-                    this.toggleCompanySelection(company.id);
+            // Adicionar event listeners aos cards
+            this.companies.forEach(company => {
+                const card = document.getElementById(`company-${company.id}`);
+                const checkbox = document.getElementById(`checkbox-${company.id}`);
+                
+                if (card && checkbox) {
+                    // Click no card seleciona/deseleciona
+                    card.addEventListener('click', (e) => {
+                        if (!e.target.closest('.company-actions') && !e.target.closest('.company-checkbox')) {
+                            this.toggleCompanySelection(company.id);
+                        }
+                    });
+
+                    // Checkbox
+                    checkbox.addEventListener('change', () => {
+                        this.toggleCompanySelection(company.id);
+                    });
+
+                    // Botões de ação
+                    const editBtn = card.querySelector('.edit-company');
+                    const deleteBtn = card.querySelector('.delete-company');
+
+                    editBtn?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.editCompany(company);
+                    });
+
+                    deleteBtn?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.deleteCompany(company.id, company.nome);
+                    });
                 }
             });
-
-            // Checkbox
-            checkbox.addEventListener('change', () => {
-                this.toggleCompanySelection(company.id);
-            });
-
-            // Botões de ação
-            const editBtn = card.querySelector('.edit-company');
-            const deleteBtn = card.querySelector('.delete-company');
-
-            editBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.editCompany(company);
-            });
-
-            deleteBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.deleteCompany(company.id, company.nome);
-            });
-        });
+        }
     }
 
     createCompanyCard(company) {
@@ -429,11 +423,11 @@ class CompanyManager {
     }
 
     updateSelectionInfo() {
-        const selectedCount = document.getElementById('selectedCount');
-        const totalCount = document.getElementById('totalCount');
+        const selectedCounter = document.getElementById('selected-counter');
         
-        if (selectedCount) selectedCount.textContent = this.selectedCompanies.size;
-        if (totalCount) totalCount.textContent = this.companies.length;
+        if (selectedCounter) {
+            selectedCounter.textContent = `${this.selectedCompanies.size} empresas selecionadas`;
+        }
     }
 
     updateSelectionSummary() {
@@ -509,43 +503,46 @@ class CompanyManager {
     }
 
     openCompanyModal(company = null) {
-        const modal = document.getElementById('companyModal');
-        const form = document.getElementById('companyForm');
-        const title = document.getElementById('modalTitle');
+        const modal = document.getElementById('company-modal');
+        const form = document.getElementById('company-form');
+        const title = document.getElementById('modal-title');
         
         if (company) {
-            title.textContent = 'Editar Empresa';
-            document.getElementById('companyId').value = company.id;
-            document.getElementById('companyName').value = company.nome;
-            document.getElementById('companyCnpj').value = this.formatCNPJDisplay(company.cnpj);
-            document.getElementById('companyTaxRate').value = company.taxaJuros || '';
-            document.getElementById('companyDescription').value = company.descricao || '';
+            if (title) title.textContent = 'Editar Empresa';
+            if (document.getElementById('company-id')) document.getElementById('company-id').value = company.id;
+            if (document.getElementById('company-name')) document.getElementById('company-name').value = company.nome;
+            if (document.getElementById('company-cnpj')) document.getElementById('company-cnpj').value = this.formatCNPJDisplay(company.cnpj);
+            if (document.getElementById('company-tax-rate')) document.getElementById('company-tax-rate').value = company.taxaJuros || '';
+            if (document.getElementById('company-description')) document.getElementById('company-description').value = company.descricao || '';
         } else {
-            title.textContent = 'Nova Empresa';
-            form.reset();
-            document.getElementById('companyId').value = '';
+            if (title) title.textContent = 'Nova Empresa';
+            if (form) form.reset();
+            if (document.getElementById('company-id')) document.getElementById('company-id').value = '';
         }
         
-        modal.style.display = 'flex';
-        document.getElementById('companyName').focus();
+        if (modal) {
+            modal.style.display = 'flex';
+            const nameInput = document.getElementById('company-name');
+            if (nameInput) nameInput.focus();
+        }
     }
 
     closeCompanyModal() {
-        document.getElementById('companyModal').style.display = 'none';
+        document.getElementById('company-modal').style.display = 'none';
     }
 
     async saveCompany() {
         try {
             this.showLoading(true);
             
-            const formData = new FormData(document.getElementById('companyForm'));
+            const formData = new FormData(document.getElementById('company-form'));
             const companyId = formData.get('companyId');
             
             const companyData = {
-                nome: formData.get('companyName').trim(),
-                cnpj: this.cleanCNPJ(formData.get('companyCnpj')),
-                taxaJuros: parseFloat(formData.get('companyTaxRate')) || 0,
-                descricao: formData.get('companyDescription').trim(),
+                nome: formData.get('nome').trim(),
+                cnpj: this.cleanCNPJ(formData.get('cnpj')),
+                taxaJuros: parseFloat(formData.get('taxaJuros')) || 0,
+                descricao: formData.get('descricao').trim(),
                 userId: this.currentUser.uid,
                 updatedAt: new Date()
             };
@@ -650,7 +647,7 @@ class CompanyManager {
             <span>${message}</span>
         `;
 
-        const container = document.getElementById('toastContainer') || document.body;
+        const container = document.getElementById('toast-container') || document.body;
         container.appendChild(toast);
 
         // Animar entrada
