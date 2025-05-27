@@ -1,23 +1,17 @@
 /* js/dashboard.js */
-import { setupUserInterface, checkAuth, getCurrentUser } from './auth.js';
 import { 
   db, 
   auth,
-  onAuthChange,
   COLLECTIONS, 
   STATUS_CHEQUE, 
   TIPO_OPERACAO, 
   buscarDocumentos, 
   formatarMoeda, 
-  formatarData, 
-  obterEmpresaAtiva,
-  associarUsuarioEmpresa,
-  garantirUsuarioNoFirestore,
-  signOut
+  formatarData
 } from './config.js';
 import { initializeNotifications } from './notifications.js';
 import { where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Variáveis globais
 let currentUser = null;
@@ -36,26 +30,44 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// Aguardar shared components
+async function waitForSharedComponents() {
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  while (!window.sharedComponents && attempts < maxAttempts) {
+    console.log('⏳ Aguardando shared components...', attempts + 1);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    attempts++;
+  }
+  
+  if (window.sharedComponents) {
+    console.log('✅ Shared components encontrado');
+  } else {
+    console.warn('⚠️ Shared components não disponível, usando fallback');
+  }
+}
+
 // Inicializar dashboard
 async function initializeDashboard() {
   try {
-    currentUser = getCurrentUser();
+    console.log('🔄 Inicializando dashboard...');
+    
+    // Aguardar shared components
+    await waitForSharedComponents();
+    
     if (!currentUser) {
       console.log('Nenhum usuário atual, redirecionando...');
       window.location.href = 'login.html';
       return;
     }
 
-    // Verificar se há empresas selecionadas
-    const selectedCompaniesData = localStorage.getItem('selectedCompanies');
-    if (!selectedCompaniesData) {
-      console.warn('Nenhuma empresa selecionada.');
-      return;
-    }
-
-    selectedCompanies = JSON.parse(selectedCompaniesData);
+    // Carregar empresas selecionadas
+    await loadSelectedCompanies();
+    
     if (selectedCompanies.length === 0) {
-      console.warn('Nenhuma empresa selecionada.');
+      console.warn('⚠️ Nenhuma empresa selecionada.');
+      showCompanyWarning();
       return;
     }
 
@@ -70,9 +82,62 @@ async function initializeDashboard() {
     // Inicializar notificações
     await initializeNotifications();
     
+    console.log('✅ Dashboard inicializado com sucesso');
+    
   } catch (error) {
-    console.error('Erro ao inicializar dashboard:', error);
-    window.location.href = 'login.html';
+    console.error('❌ Erro ao inicializar dashboard:', error);
+    showToast('Erro ao carregar dashboard', 'error');
+  }
+}
+
+// Carregar empresas selecionadas
+async function loadSelectedCompanies() {
+  try {
+    console.log('🔄 Carregando empresas selecionadas...');
+    
+    // Tentar usar shared components primeiro
+    if (window.sharedComponents) {
+      selectedCompanies = window.sharedComponents.getSelectedCompanies();
+      console.log('✅ Empresas carregadas via shared components:', selectedCompanies);
+    } else {
+      // Fallback para localStorage
+      const selectedCompaniesData = localStorage.getItem('selectedCompanies');
+      if (selectedCompaniesData) {
+        selectedCompanies = JSON.parse(selectedCompaniesData);
+        console.log('✅ Empresas carregadas via localStorage:', selectedCompanies);
+      } else {
+        selectedCompanies = [];
+        console.warn('⚠️ Nenhuma empresa encontrada');
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro ao carregar empresas:', error);
+    selectedCompanies = [];
+  }
+}
+
+// Mostrar aviso de empresa
+function showCompanyWarning() {
+  const warningHtml = `
+    <div class="company-warning">
+      <div class="warning-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Nenhuma empresa selecionada</strong>
+          <p>Selecione uma empresa para visualizar o dashboard</p>
+        </div>
+        <a href="empresas.html" class="btn btn-primary">
+          <i class="fas fa-building"></i>
+          Selecionar Empresa
+        </a>
+      </div>
+    </div>
+  `;
+  
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) {
+    mainContent.innerHTML = warningHtml;
   }
 }
 

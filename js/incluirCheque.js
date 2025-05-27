@@ -19,9 +19,8 @@ import {
   deleteObject 
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
-import { db, storage } from './config.js';
-import { getCurrentUser, checkAuth } from './auth.js';
-import { showToast, formatCurrency, parseCurrency, formatDate } from './utils.js';
+import { auth, db, storage } from './firebase-config.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Elementos DOM
 const form = document.getElementById('cheque-form');
@@ -67,43 +66,145 @@ let editingChequeId = null;
 let currentImageFile = null;
 let currentImageUrl = null;
 
+/**
+ * Funções auxiliares
+ */
+function showToast(message, type = 'info') {
+  console.log(`${type.toUpperCase()}: ${message}`);
+  
+  // Criar elemento de toast
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-content">
+      <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+      <span>${message}</span>
+    </div>
+  `;
+  
+  // Adicionar ao body
+  document.body.appendChild(toast);
+  
+  // Remover após 3 segundos
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+  }, 3000);
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value || 0);
+}
+
+function parseCurrency(value) {
+  if (!value) return 0;
+  return parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+}
+
+function formatDate(date, format = 'dd/MM/yyyy') {
+  if (!date) return '';
+  
+  const d = date instanceof Date ? date : new Date(date);
+  
+  if (format === 'yyyy-MM-dd') {
+    return d.toISOString().split('T')[0];
+  }
+  
+  return d.toLocaleDateString('pt-BR');
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    await checkAuth();
-    currentUser = getCurrentUser();
+    console.log('🔄 Inicializando página de incluir cheque...');
     
-    if (!currentUser) {
-      window.location.href = 'login.html';
-      return;
-    }
-
+    // Aguardar shared components
+    await waitForSharedComponents();
+    
+    // Verificar autenticação
+    await checkAuth();
+    
     await loadSelectedCompanies();
     setupEventListeners();
     setupMasks();
     checkEditMode();
     setDefaultValues();
     
+    console.log('✅ Página inicializada com sucesso');
+    
   } catch (error) {
-    console.error('Erro na inicialização:', error);
+    console.error('❌ Erro na inicialização:', error);
     showToast('Erro ao carregar a página', 'error');
   }
 });
 
+/**
+ * Aguardar shared components
+ */
+async function waitForSharedComponents() {
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  while (!window.sharedComponents && attempts < maxAttempts) {
+    console.log('⏳ Aguardando shared components...', attempts + 1);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    attempts++;
+  }
+  
+  if (window.sharedComponents) {
+    console.log('✅ Shared components encontrado');
+  } else {
+    console.warn('⚠️ Shared components não disponível, usando fallback');
+  }
+}
+
+/**
+ * Verificar autenticação
+ */
+async function checkAuth() {
+  return new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        console.log('✅ Usuário autenticado:', user.email);
+        resolve(user);
+      } else {
+        console.log('❌ Usuário não autenticado');
+        window.location.href = 'login.html';
+        reject(new Error('Usuário não autenticado'));
+      }
+    });
+  });
+}
+
 // Carregar empresas selecionadas
 async function loadSelectedCompanies() {
   try {
-    const selectedCompaniesData = localStorage.getItem('selectedCompanies');
+    console.log('🔄 Carregando empresas selecionadas...');
     
-    if (!selectedCompaniesData) {
-      console.warn('Nenhuma empresa selecionada.');
-      return;
+    // Tentar usar shared components primeiro
+    if (window.sharedComponents) {
+      selectedCompanies = window.sharedComponents.getSelectedCompanies();
+      console.log('✅ Empresas carregadas via shared components:', selectedCompanies);
+    } else {
+      // Fallback para localStorage
+      const selectedCompaniesData = localStorage.getItem('selectedCompanies');
+      if (selectedCompaniesData) {
+        selectedCompanies = JSON.parse(selectedCompaniesData);
+        console.log('✅ Empresas carregadas via localStorage:', selectedCompanies);
+      } else {
+        selectedCompanies = [];
+        console.warn('⚠️ Nenhuma empresa encontrada');
+      }
     }
-
-    selectedCompanies = JSON.parse(selectedCompaniesData);
     
     if (selectedCompanies.length === 0) {
-      console.warn('Nenhuma empresa selecionada.');
+      console.warn('⚠️ Nenhuma empresa selecionada.');
+      showToast('Selecione uma empresa para incluir cheques', 'warning');
       return;
     }
 
@@ -137,7 +238,7 @@ async function loadSelectedCompanies() {
     }
     
   } catch (error) {
-    console.error('Erro ao carregar empresas:', error);
+    console.error('❌ Erro ao carregar empresas:', error);
     showToast('Erro ao carregar dados das empresas', 'error');
   }
 }
