@@ -8,9 +8,9 @@ import {
   buscarDocumentos, 
   formatarMoeda, 
   formatarData
-} from './config.js';
+} from './firebase-config.js';
 import { initializeNotifications } from './notifications.js';
-import { where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { where, orderBy, limit, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Variáveis globais

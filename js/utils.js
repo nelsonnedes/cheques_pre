@@ -1,5 +1,5 @@
 // Funções utilitárias para o sistema
-import { auth, db } from './config.js';
+import { auth, db } from './firebase-config.js';
 
 // Formatação de valores
 export function formatCurrency(value) {

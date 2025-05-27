@@ -8,7 +8,7 @@ import {
   getCurrentUser, 
   onAuthChange,
   COLLECTIONS
-} from './config.js';
+} from './firebase-config.js';
 
 // Estado global da autenticação
 let currentUser = null;

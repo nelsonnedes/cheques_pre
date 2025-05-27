@@ -8,7 +8,7 @@ import {
   formatarData, 
   obterEmpresaAtiva,
   getCurrentUser
-} from './config.js';
+} from './firebase-config.js';
 import { where, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 // Configurações de notificação

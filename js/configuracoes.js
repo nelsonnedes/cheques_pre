@@ -28,7 +28,7 @@ import {
 } from 'firebase/storage';
 
 // Importações locais
-import { auth, db, storage } from './config.js';
+import { auth, db, storage } from './firebase-config.js';
 import { checkAuth, getCurrentUser } from './auth.js';
 import { showToast, showLoading, hideLoading } from './utils.js';
 

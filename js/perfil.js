@@ -10,7 +10,7 @@ import {
   buscarDocumentos,
   formatarData,
   COLLECTIONS 
-} from './config.js';
+} from './firebase-config.js';
 import { initializeNotifications } from './notifications.js';
 import { 
   updatePassword, 

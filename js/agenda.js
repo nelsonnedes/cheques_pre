@@ -1,6 +1,5 @@
 // Importações do Firebase
 import { 
-    getFirestore, 
     collection, 
     addDoc, 
     query, 
@@ -12,10 +11,12 @@ import {
     where,
     getDocs,
     getDoc
-} from 'firebase/firestore';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Importações locais
-import { auth, db } from './config.js';
+import { auth, db } from './firebase-config.js';
 import { checkAuth, getCurrentUser } from './auth.js';
 import { showToast, showLoading, hideLoading, formatDate, formatCurrency } from './utils.js';
 
