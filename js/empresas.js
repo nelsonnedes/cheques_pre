@@ -167,18 +167,54 @@ class CompanyManager {
     }
 
     setupProfileMenu() {
+        console.log('🔧 Configurando menu do perfil...');
         const profileBtn = document.getElementById('profile-btn');
         const profileDropdown = document.getElementById('profile-dropdown');
         
+        console.log('📍 Elementos encontrados:', {
+            profileBtn: !!profileBtn,
+            profileDropdown: !!profileDropdown,
+            profileBtnElement: profileBtn,
+            profileDropdownElement: profileDropdown
+        });
+        
         if (profileBtn && profileDropdown && !profileBtn.hasAttribute('data-listener-added')) {
             profileBtn.setAttribute('data-listener-added', 'true');
+            
+            console.log('✅ Adicionando event listener no botão do perfil');
             profileBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log('🖱️ Botão do perfil clicado!');
+                console.log('📋 Estado atual do dropdown:', {
+                    hasHiddenClass: profileDropdown.classList.contains('hidden'),
+                    display: window.getComputedStyle(profileDropdown).display,
+                    visibility: window.getComputedStyle(profileDropdown).visibility,
+                    zIndex: window.getComputedStyle(profileDropdown).zIndex
+                });
+                
                 profileDropdown.classList.toggle('hidden');
+                
+                console.log('📋 Estado após toggle:', {
+                    hasHiddenClass: profileDropdown.classList.contains('hidden'),
+                    display: window.getComputedStyle(profileDropdown).display,
+                    visibility: window.getComputedStyle(profileDropdown).visibility
+                });
             });
             
-            document.addEventListener('click', () => {
-                profileDropdown.classList.add('hidden');
+            console.log('✅ Adicionando event listener no documento para fechar dropdown');
+            document.addEventListener('click', (e) => {
+                if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                    console.log('🖱️ Clicou fora do menu, fechando dropdown');
+                    profileDropdown.classList.add('hidden');
+                }
+            });
+            
+            console.log('🎯 Menu do perfil configurado com sucesso!');
+        } else {
+            console.error('❌ Erro na configuração do menu do perfil:', {
+                profileBtn: !!profileBtn,
+                profileDropdown: !!profileDropdown,
+                alreadyConfigured: profileBtn?.hasAttribute('data-listener-added')
             });
         }
     }
@@ -198,6 +234,7 @@ class CompanyManager {
     async loadCompanies() {
         try {
             console.log('Carregando empresas...');
+            console.log('🔑 UID do usuário atual:', this.currentUser?.uid);
             this.showLoading(true);
             
             if (this.unsubscribe) {
@@ -208,24 +245,35 @@ class CompanyManager {
             const companiesRef = collection(db, 'empresas');
             
             this.unsubscribe = onSnapshot(companiesRef, (snapshot) => {
-                console.log('Empresas recebidas do Firestore:', snapshot.size);
+                console.log('📊 Empresas recebidas do Firestore:', snapshot.size);
                 this.companies = [];
                 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
+                    console.log('📝 Documento empresa:', {
+                        id: doc.id,
+                        createdBy: data.createdBy,
+                        nome: data.nome,
+                        userUID: this.currentUser?.uid,
+                        matches: data.createdBy === this.currentUser?.uid
+                    });
+                    
                     // Filtrar apenas empresas do usuário atual no JavaScript
-                    if (data.userId === this.currentUser.uid) {
+                    if (data.createdBy === this.currentUser.uid) {
+                        console.log('✅ Empresa adicionada:', data.nome);
                         this.companies.push({
                             id: doc.id,
                             ...data
                         });
+                    } else {
+                        console.log('❌ Empresa rejeitada (não é do usuário):', data.nome);
                     }
                 });
                 
                 // Ordenar no JavaScript
                 this.companies.sort((a, b) => a.nome.localeCompare(b.nome));
                 
-                console.log('Empresas filtradas para o usuário:', this.companies.length);
+                console.log('📋 Empresas filtradas para o usuário:', this.companies.length);
                 this.renderCompanies();
                 this.updateSelectionInfo();
                 this.showLoading(false);
@@ -465,60 +513,95 @@ class CompanyManager {
 
     async saveCompany() {
         try {
+            console.log('🔄 Iniciando salvamento de empresa...');
+            console.log('👤 Usuário atual:', this.currentUser);
+            
+            if (!this.currentUser) {
+                throw new Error('Usuário não autenticado');
+            }
+            
+            console.log('🔑 UID do usuário:', this.currentUser.uid);
             this.showLoading(true);
             
             const formData = new FormData(document.getElementById('company-form'));
             const companyId = document.getElementById('company-id')?.value || '';
             
+            console.log('📝 Dados do formulário:', {
+                nome: formData.get('nome'),
+                cnpj: formData.get('cnpj'),
+                taxaJuros: formData.get('taxaJuros'),
+                descricao: formData.get('descricao')
+            });
+
             const companyData = {
                 nome: formData.get('nome')?.trim() || '',
                 cnpj: this.cleanCNPJ(formData.get('cnpj') || ''),
                 taxaJuros: parseFloat(formData.get('taxaJuros')) || 0,
                 descricao: formData.get('descricao')?.trim() || '',
-                userId: this.currentUser.uid,
+                createdBy: this.currentUser.uid,
+                ativo: true,
                 updatedAt: new Date()
             };
 
-            // Validações
-            const validation = this.validateCompanyData(companyData);
-            if (validation.error) {
-                throw new Error(validation.error);
+            console.log('🏢 Dados da empresa processados:', companyData);
+
+            // Validações básicas
+            if (!companyData.nome) {
+                throw new Error('Nome da empresa é obrigatório');
+            }
+            
+            if (!companyData.cnpj) {
+                throw new Error('CNPJ é obrigatório');
             }
 
+            console.log('✅ Validação básica passou');
+
             if (companyId) {
+                console.log('📝 Atualizando empresa existente...');
                 const companyRef = doc(db, 'empresas', companyId);
                 await updateDoc(companyRef, companyData);
                 this.showToast('Empresa atualizada com sucesso!', 'success');
-  } else {
+            } else {
+                console.log('➕ Criando nova empresa...');
+                companyData.criadoEm = new Date();
                 companyData.createdAt = new Date();
-                await addDoc(collection(db, 'empresas'), companyData);
+                
+                console.log('📤 Dados finais a serem enviados:', companyData);
+                console.log('🔗 Tentando conectar com Firestore...');
+                
+                const result = await addDoc(collection(db, 'empresas'), companyData);
+                console.log('✅ Documento criado com ID:', result.id);
                 this.showToast('Empresa criada com sucesso!', 'success');
             }
 
+            console.log('✅ Salvamento concluído com sucesso');
             this.closeCompanyModal();
+            await this.loadCompanies();
 
         } catch (error) {
-            console.error('Erro ao salvar empresa:', error);
-            this.showToast(error.message || 'Erro ao salvar empresa', 'error');
+            console.error('❌ Erro detalhado ao salvar empresa:', error);
+            console.error('📋 Código do erro:', error.code);
+            console.error('📋 Mensagem do erro:', error.message);
+            console.error('📋 Stack trace:', error.stack);
+            
+            let errorMessage = 'Erro ao salvar empresa';
+            
+            if (error.code === 'permission-denied') {
+                errorMessage = 'Erro de permissão. Verifique se você está logado corretamente.';
+                console.error('🚫 Detalhes da permissão negada:', {
+                    user: this.currentUser,
+                    uid: this.currentUser?.uid,
+                    email: this.currentUser?.email
+                });
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            this.showToast(errorMessage, 'error');
         } finally {
+            console.log('🔄 Salvamento finalizado');
             this.showLoading(false);
         }
-    }
-
-    validateCompanyData(data) {
-        if (!data.nome) {
-            return { error: 'Nome da empresa é obrigatório' };
-        }
-        if (data.nome.length < 2) {
-            return { error: 'Nome deve ter pelo menos 2 caracteres' };
-        }
-        if (!this.validateCNPJ(data.cnpj)) {
-            return { error: 'CNPJ inválido' };
-        }
-        if (data.taxaJuros < 0 || data.taxaJuros > 100) {
-            return { error: 'Taxa de juros deve estar entre 0% e 100%' };
-        }
-        return { error: null };
     }
 
     editCompany(company) {
