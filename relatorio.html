@@ -407,6 +407,26 @@
         .company-warning .btn {
             margin-left: auto !important;
         }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .loading-indicator.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -476,6 +496,18 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <!-- Aviso de empresa não selecionada -->
+        <div id="company-warning" class="company-warning" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="warning-content">
+                <strong>Nenhuma empresa selecionada</strong>
+                <p>Selecione uma empresa para visualizar os relatórios.</p>
+            </div>
+            <a href="empresas.html" class="btn btn-primary">
+                <i class="fas fa-building"></i> Gerenciar Empresas
+            </a>
+        </div>
+
         <section class="page-header">
             <h2><i class="fas fa-chart-bar"></i> Relatórios Financeiros</h2>
             <div class="header-actions">
@@ -488,177 +520,180 @@
             </div>
         </section>
 
-        <!-- Filtros -->
-        <section class="filters-section">
-            <div class="filters-container">
-                <div class="filter-group">
-                    <label for="periodo">Período</label>
-                    <select id="periodo" name="periodo">
-                        <option value="7">Últimos 7 dias</option>
-                        <option value="30" selected>Últimos 30 dias</option>
-                        <option value="90">Últimos 90 dias</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                </div>
-
-                <div class="filter-group" id="custom-dates" style="display: none;">
-                    <label for="data-inicio">Data Início</label>
-                    <input type="date" id="data-inicio" name="data-inicio">
-                </div>
-
-                <div class="filter-group" id="custom-dates-end" style="display: none;">
-                    <label for="data-fim">Data Fim</label>
-                    <input type="date" id="data-fim" name="data-fim">
-                </div>
-
-                <div class="filter-group">
-                    <label for="tipo-operacao">Tipo</label>
-                    <select id="tipo-operacao" name="tipo-operacao">
-                        <option value="">Todos</option>
-                        <option value="a-receber">A Receber</option>
-                        <option value="a-pagar">A Pagar</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="empresa-filtro">Empresa</label>
-                    <select id="empresa-filtro" name="empresa-filtro">
-                        <option value="">Todas as empresas</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-primary" id="aplicar-filtros">
-                    <i class="fas fa-filter"></i> Aplicar
-                </button>
-            </div>
-        </section>
-
-        <!-- Resumo -->
-        <section class="summary-section">
-            <div class="cards-container">
-                <div class="card">
-                    <div class="card-icon primary">
-                        <i class="fas fa-money-bill-wave"></i>
+        <!-- Container do Relatório -->
+        <div id="relatorio-container">
+            <!-- Filtros -->
+            <section class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="periodo">Período</label>
+                        <select id="periodo" name="periodo">
+                            <option value="7">Últimos 7 dias</option>
+                            <option value="30" selected>Últimos 30 dias</option>
+                            <option value="90">Últimos 90 dias</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
                     </div>
-                    <div class="card-content">
-                        <h3>Total Geral</h3>
-                        <p class="card-value" id="total-geral">R$ 0,00</p>
-                        <span class="card-change positive" id="change-total">+0%</span>
+
+                    <div class="filter-group" id="custom-dates" style="display: none;">
+                        <label for="data-inicio">Data Início</label>
+                        <input type="date" id="data-inicio" name="data-inicio">
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-icon success">
-                        <i class="fas fa-arrow-up"></i>
+                    <div class="filter-group" id="custom-dates-end" style="display: none;">
+                        <label for="data-fim">Data Fim</label>
+                        <input type="date" id="data-fim" name="data-fim">
                     </div>
-                    <div class="card-content">
-                        <h3>A Receber</h3>
-                        <p class="card-value success" id="total-receber">R$ 0,00</p>
-                        <span class="card-change positive" id="change-receber">+0%</span>
+
+                    <div class="filter-group">
+                        <label for="tipo-operacao">Tipo</label>
+                        <select id="tipo-operacao" name="tipo-operacao">
+                            <option value="">Todos</option>
+                            <option value="a-receber">A Receber</option>
+                            <option value="a-pagar">A Pagar</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-icon danger">
-                        <i class="fas fa-arrow-down"></i>
+                    <div class="filter-group">
+                        <label for="empresa-filtro">Empresa</label>
+                        <select id="empresa-filtro" name="empresa-filtro">
+                            <option value="">Todas as empresas</option>
+                        </select>
                     </div>
-                    <div class="card-content">
-                        <h3>A Pagar</h3>
-                        <p class="card-value danger" id="total-pagar">R$ 0,00</p>
-                        <span class="card-change negative" id="change-pagar">-0%</span>
-                    </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-icon warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3>Vencidos</h3>
-                        <p class="card-value warning" id="total-vencidos">R$ 0,00</p>
-                        <span class="card-count" id="count-vencidos">0 cheques</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Gráficos -->
-        <section class="charts-section">
-            <div class="charts-container">
-                <div class="chart-card">
-                    <h3><i class="fas fa-chart-line"></i> Evolução por Período</h3>
-                    <canvas id="evolutionChart" width="400" height="200"></canvas>
-                </div>
-
-                <div class="chart-card">
-                    <h3><i class="fas fa-chart-pie"></i> Distribuição por Status</h3>
-                    <canvas id="statusChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-
-            <div class="charts-container">
-                <div class="chart-card">
-                    <h3><i class="fas fa-chart-bar"></i> Volume por Empresa</h3>
-                    <canvas id="empresaChart" width="400" height="200"></canvas>
-                </div>
-
-                <div class="chart-card">
-                    <h3><i class="fas fa-chart-area"></i> Fluxo de Caixa</h3>
-                    <canvas id="fluxoChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tabela Detalhada -->
-        <section class="table-section">
-            <div class="table-header">
-                <h3><i class="fas fa-table"></i> Relatório Detalhado</h3>
-                <div class="table-actions">
-                    <button class="btn btn-secondary" id="export-table">
-                        <i class="fas fa-file-excel"></i> Excel
-                    </button>
-                    <button class="btn btn-secondary" id="export-pdf">
-                        <i class="fas fa-file-pdf"></i> PDF
+                    <button class="btn btn-primary" id="aplicar-filtros">
+                        <i class="fas fa-filter"></i> Aplicar
                     </button>
                 </div>
-            </div>
+            </section>
 
-            <div class="table-container">
-                <table class="table" id="relatorio-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Empresa</th>
-                            <th>Número</th>
-                            <th>Emitente</th>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                            <th>Vencimento</th>
-                            <th>Status</th>
-                            <th>Juros</th>
-                        </tr>
-                    </thead>
-                    <tbody id="relatorio-tbody">
-                        <!-- Dados carregados via JS -->
-                    </tbody>
-                </table>
-            </div>
+            <!-- Resumo -->
+            <section class="summary-section">
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-icon primary">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Geral</h3>
+                            <p class="card-value" id="total-geral">R$ 0,00</p>
+                            <span class="card-change positive" id="change-total">+0%</span>
+                        </div>
+                    </div>
 
-            <div class="table-pagination">
-                <div class="pagination-info">
-                    <span id="pagination-info">Mostrando 0 de 0 registros</span>
+                    <div class="card">
+                        <div class="card-icon success">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>A Receber</h3>
+                            <p class="card-value success" id="total-receber">R$ 0,00</p>
+                            <span class="card-change positive" id="change-receber">+0%</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon danger">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>A Pagar</h3>
+                            <p class="card-value danger" id="total-pagar">R$ 0,00</p>
+                            <span class="card-change negative" id="change-pagar">-0%</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Vencidos</h3>
+                            <p class="card-value warning" id="total-vencidos">R$ 0,00</p>
+                            <span class="card-count" id="count-vencidos">0 cheques</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="pagination-controls">
-                    <button class="btn-pagination" id="prev-page" disabled>
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <span id="page-info">Página 1 de 1</span>
-                    <button class="btn-pagination" id="next-page" disabled>
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+            </section>
+
+            <!-- Gráficos -->
+            <section class="charts-section">
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-line"></i> Evolução por Período</h3>
+                        <canvas id="evolutionChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-pie"></i> Distribuição por Status</h3>
+                        <canvas id="statusChart" width="400" height="200"></canvas>
+                    </div>
                 </div>
-            </div>
-        </section>
+
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-bar"></i> Volume por Empresa</h3>
+                        <canvas id="empresaChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-area"></i> Fluxo de Caixa</h3>
+                        <canvas id="fluxoChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabela Detalhada -->
+            <section class="table-section">
+                <div class="table-header">
+                    <h3><i class="fas fa-table"></i> Relatório Detalhado</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="export-table">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="btn btn-secondary" id="export-pdf">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="table" id="relatorio-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Empresa</th>
+                                <th>Número</th>
+                                <th>Emitente</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th>Juros</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relatorio-tbody">
+                            <!-- Dados carregados via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        <span id="pagination-info">Mostrando 0 de 0 registros</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn-pagination" id="prev-page" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="page-info">Página 1 de 1</span>
+                        <button class="btn-pagination" id="next-page" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- Loading Overlay -->
@@ -667,6 +702,12 @@
             <i class="fas fa-spinner fa-spin fa-3x"></i>
             <p>Carregando relatórios...</p>
         </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading-indicator hidden">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Carregando dados...</span>
     </div>
 
     <!-- Toast Container -->

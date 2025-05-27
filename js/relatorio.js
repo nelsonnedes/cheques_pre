@@ -14,18 +14,18 @@ let relatorioData = [];
 let currentFilters = {};
 
 // Elementos DOM
-const empresaDisplay = document.getElementById('empresa-ativa-display');
-const filtroDataInicio = document.getElementById('filtro-data-inicio');
-const filtroDataFim = document.getElementById('filtro-data-fim');
-const filtroStatus = document.getElementById('filtro-status');
-const filtroTipo = document.getElementById('filtro-tipo');
-const btnFiltrar = document.getElementById('btn-filtrar');
-const btnLimparFiltros = document.getElementById('btn-limpar-filtros');
-const btnExportarPDF = document.getElementById('btn-exportar-pdf');
-const btnExportarExcel = document.getElementById('btn-exportar-excel');
-const relatorioContainer = document.getElementById('relatorio-container');
-const loadingIndicator = document.getElementById('loading-indicator');
-const companyWarning = document.getElementById('company-warning');
+const empresaDisplay = document.getElementById('selected-company-name');
+const filtroDataInicio = document.getElementById('data-inicio');
+const filtroDataFim = document.getElementById('data-fim');
+const filtroStatus = document.getElementById('tipo-operacao');
+const filtroTipo = document.getElementById('tipo-operacao');
+const btnFiltrar = document.getElementById('aplicar-filtros');
+const btnLimparFiltros = document.getElementById('refresh-btn');
+const btnExportarPDF = document.getElementById('export-pdf');
+const btnExportarExcel = document.getElementById('export-table');
+const relatorioContainer = document.getElementById('relatorio-table');
+const loadingIndicator = document.getElementById('loading-overlay');
+const companyWarning = document.getElementById('company-indicator');
 
 // Verificar autenticação
 onAuthStateChanged(auth, async (user) => {
