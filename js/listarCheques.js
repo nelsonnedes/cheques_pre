@@ -1,40 +1,67 @@
-import { auth, onAuthChange } from './auth.js';
+import { auth, db } from './firebase-config.js';
 import { 
-  db, 
-  COLLECTIONS, 
-  STATUS_CHEQUE, 
-  TIPO_OPERACAO, 
-  buscarDocumentos, 
-  atualizarDocumento, 
-  calcularJuros, 
-  formatarMoeda, 
-  formatarData, 
-  calcularDiasEntreDatas, 
-  obterEmpresaAtiva,
-  associarUsuarioEmpresa,
-  garantirUsuarioNoFirestore
-} from './config.js';
-import { where, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+// Constantes
+const STATUS_CHEQUE = {
+  PENDENTE: 'pendente',
+  COMPENSADO: 'compensado',
+  DEVOLVIDO: 'devolvido',
+  CANCELADO: 'cancelado',
+  PARCIAL: 'parcial'
+};
+
+const TIPO_OPERACAO = {
+  RECEBER: 'receber',
+  PAGAR: 'pagar'
+};
+
+const STATUS_LABELS = {
+  pendente: 'Pendente',
+  compensado: 'Compensado',
+  devolvido: 'Devolvido',
+  cancelado: 'Cancelado',
+  parcial: 'Parcial'
+};
+
+const OPERACAO_LABELS = {
+  receber: 'A Receber',
+  pagar: 'A Pagar'
+};
 
 // Elementos DOM
 const empresaAtivaDisplay = document.getElementById('empresa-ativa-display');
-const filtroStatus = document.getElementById('filtro-status');
-const filtroOperacao = document.getElementById('filtro-operacao');
-const filtroDataInicio = document.getElementById('filtro-data-inicio');
-const filtroDataFim = document.getElementById('filtro-data-fim');
-const filtroEmitente = document.getElementById('filtro-emitente');
-const btnAplicarFiltros = document.getElementById('btn-aplicar-filtros');
-const btnLimparFiltros = document.getElementById('btn-limpar-filtros');
+const filtroStatus = document.getElementById('status-filter');
+const filtroDataInicio = document.getElementById('date-from');
+const filtroDataFim = document.getElementById('date-to');
+const filtroEmitente = document.getElementById('search');
+const btnAplicarFiltros = document.getElementById('apply-filters');
+const btnLimparFiltros = document.getElementById('clear-filters');
 const btnNovoCheck = document.getElementById('btn-novo-cheque');
-const btnExportarExcel = document.getElementById('btn-exportar-excel');
+const btnExportarExcel = document.getElementById('export-btn');
 const btnExportarPdf = document.getElementById('btn-exportar-pdf');
 const btnPrimeiroCheque = document.getElementById('btn-primeiro-cheque');
-const chequesList = document.getElementById('cheques-list');
-const loadingElement = document.getElementById('loading');
+const chequesList = document.getElementById('cheques-tbody');
+const loadingElement = document.getElementById('loading-overlay');
 const emptyState = document.getElementById('empty-state');
 const totalGeral = document.getElementById('total-geral');
 const totalReceber = document.getElementById('total-receber');
 const totalPagar = document.getElementById('total-pagar');
+
+// Elementos de resumo
+const totalCount = document.getElementById('total-count');
+const totalValue = document.getElementById('total-value');
+const pendingCount = document.getElementById('pending-count');
+const clearedCount = document.getElementById('cleared-count');
 
 // Modal elementos
 const modalAcoes = document.getElementById('modal-acoes');
@@ -56,65 +83,131 @@ const btnEditar = document.getElementById('btn-editar');
 // Variáveis globais
 let chequesData = [];
 let chequeAtualModal = null;
-let empresaAtiva = null;
+let selectedCompanies = [];
+let currentUser = null;
 
 /**
  * Inicializar página
  */
-function inicializar() {
+async function inicializar() {
+  console.log('🔄 Inicializando página de cheques...');
+  
+  // Aguardar shared components
+  await waitForSharedComponents();
+  
+  // Verificar autenticação
   verificarAutenticacao();
+  
+  // Configurar event listeners
   configurarEventListeners();
-  aplicarMascaraMonetaria();
-  definirDataOperacao();
+  
+  console.log('✅ Página de cheques inicializada');
+}
+
+/**
+ * Aguardar shared components
+ */
+async function waitForSharedComponents() {
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  while (!window.sharedComponents && attempts < maxAttempts) {
+    console.log('⏳ Aguardando shared components...', attempts + 1);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    attempts++;
+  }
+  
+  if (window.sharedComponents) {
+    console.log('✅ Shared components encontrado');
+    
+    // Verificar empresas selecionadas
+    selectedCompanies = window.sharedComponents.getSelectedCompanies() || [];
+    console.log('🏢 Empresas selecionadas:', selectedCompanies);
+    
+    // Escutar mudanças nas empresas
+    window.addEventListener('companiesChanged', (event) => {
+      console.log('🔄 Empresas alteradas:', event.detail.companies);
+      selectedCompanies = event.detail.companies || [];
+      
+      if (selectedCompanies.length > 0) {
+        hideCompanyWarning();
+        carregarCheques();
+      } else {
+        showCompanyWarning();
+      }
+    });
+  } else {
+    console.warn('⚠️ Shared components não disponível');
+  }
 }
 
 /**
  * Verificar autenticação
  */
 function verificarAutenticacao() {
-  onAuthChange(async (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      alert('Você precisa estar logado para acessar esta página.');
+      console.log('❌ Usuário não autenticado');
       window.location.href = 'login.html';
       return;
     }
     
-    empresaAtiva = obterEmpresaAtiva();
-    if (!empresaAtiva) {
-      console.warn('Nenhuma empresa selecionada.');
+    currentUser = user;
+    console.log('✅ Usuário autenticado:', user.email);
+    
+    // Verificar se há empresas selecionadas
+    if (selectedCompanies.length === 0) {
+      console.warn('❌ Nenhuma empresa selecionada');
+      showCompanyWarning();
       return;
     }
     
-    try {
-      // Garantir que o usuário existe no Firestore e está associado à empresa
-      await garantirUsuarioNoFirestore(user, empresaAtiva.id || empresaAtiva.cnpj);
-      
-      // Associar usuário à empresa ativa
-      const empresaId = empresaAtiva.id || empresaAtiva.cnpj;
-      await associarUsuarioEmpresa(empresaId);
-      
-      exibirEmpresaAtiva();
-      await carregarCheques();
-    } catch (error) {
-      console.error('Erro ao configurar usuário:', error);
-      alert('Erro ao configurar acesso. Tente novamente.');
-    }
+    // Carregar cheques
+    await carregarCheques();
   });
 }
 
 /**
- * Exibir empresa ativa no header
+ * Mostrar aviso de empresa não selecionada
  */
-function exibirEmpresaAtiva() {
-  if (empresaAtiva && empresaAtivaDisplay) {
-    empresaAtivaDisplay.textContent = empresaAtiva.nome;
-  }
+function showCompanyWarning() {
+  const warning = document.getElementById('company-warning');
+  const filtersSection = document.querySelector('.filters-section');
+  const tableSection = document.querySelector('.table-section');
+  const summaryCards = document.querySelector('.summary-cards');
+  
+  if (warning) warning.style.display = 'flex';
+  if (filtersSection) filtersSection.style.display = 'none';
+  if (tableSection) tableSection.style.display = 'none';
+  if (summaryCards) summaryCards.style.display = 'none';
+  
+  console.log('⚠️ Exibindo aviso de empresa não selecionada');
+}
+
+/**
+ * Ocultar aviso de empresa
+ */
+function hideCompanyWarning() {
+  const warning = document.getElementById('company-warning');
+  const filtersSection = document.querySelector('.filters-section');
+  const tableSection = document.querySelector('.table-section');
+  const summaryCards = document.querySelector('.summary-cards');
+  
+  if (warning) warning.style.display = 'none';
+  if (filtersSection) filtersSection.style.display = 'block';
+  if (tableSection) tableSection.style.display = 'block';
+  if (summaryCards) summaryCards.style.display = 'flex';
+  
+  console.log('✅ Ocultando aviso de empresa');
 }
 
 /**
  * Configurar event listeners
  */
 function configurarEventListeners() {
+  console.log('🔧 Configurando event listeners...');
+  
+  // Filtros
   btnAplicarFiltros?.addEventListener('click', aplicarFiltros);
   btnLimparFiltros?.addEventListener('click', limparFiltros);
   btnNovoCheck?.addEventListener('click', () => window.location.href = 'incluirCheque.html');
@@ -122,10 +215,26 @@ function configurarEventListeners() {
   btnExportarExcel?.addEventListener('click', exportarExcel);
   btnExportarPdf?.addEventListener('click', exportarPdf);
   
-  // Modal
-  modalClose?.addEventListener('click', fecharModal);
-  modalAcoes?.addEventListener('click', (e) => {
-    if (e.target === modalAcoes) fecharModal();
+  // Modais - fechar
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', fecharModais);
+  });
+  
+  // Fechar modal clicando fora
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        fecharModais();
+      }
+    });
+  });
+  
+  // Seleção de cheques
+  const selectAll = document.getElementById('select-all');
+  selectAll?.addEventListener('change', (e) => {
+    const checkboxes = document.querySelectorAll('input[name="cheque-select"]');
+    checkboxes.forEach(cb => cb.checked = e.target.checked);
+    updateBulkActions();
   });
   
   // Ações do modal
@@ -149,87 +258,66 @@ function configurarEventListeners() {
       abrirModalAcoes(cheque);
     }
   });
+  
+  console.log('✅ Event listeners configurados');
 }
 
 /**
- * Aplicar máscara monetária
- */
-function aplicarMascaraMonetaria() {
-  valorPagamento?.addEventListener('input', (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    value = (value / 100).toFixed(2);
-    value = value.replace('.', ',');
-    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    e.target.value = 'R$ ' + value;
-  });
-}
-
-/**
- * Definir data padrão para hoje
- */
-function definirDataOperacao() {
-  if (dataOperacao) {
-    dataOperacao.value = new Date().toISOString().split('T')[0];
-  }
-}
-
-/**
- * Carregar cheques da empresa ativa
+ * Carregar cheques das empresas selecionadas
  */
 async function carregarCheques() {
-  if (!empresaAtiva) return;
+  if (!currentUser || selectedCompanies.length === 0) {
+    console.warn('❌ Usuário não autenticado ou nenhuma empresa selecionada');
+    return;
+  }
   
+  console.log('🔄 Carregando cheques...');
   mostrarLoading(true);
   
   try {
-    const filtros = [
-      where('empresaId', '==', empresaAtiva.id || empresaAtiva.cnpj),
-      orderBy('vencimento', 'desc')
-    ];
+    chequesData = [];
     
-    const resultado = await buscarDocumentos(COLLECTIONS.CHEQUES, filtros);
-    
-    if (resultado.success) {
-      chequesData = resultado.data.map(cheque => ({
-        ...cheque,
-        jurosCalculados: calcularJurosVencimento(cheque),
-        totalComJuros: calcularTotalComJuros(cheque)
-      }));
+    // Carregar cheques de todas as empresas selecionadas
+    for (const company of selectedCompanies) {
+      const companyId = company.id || company.cnpj;
       
-      renderizarCheques(chequesData);
-      atualizarTotalizadores(chequesData);
-    } else {
-      console.error('Erro ao carregar cheques:', resultado.error);
-      mostrarErro('Erro ao carregar cheques. Tente novamente.');
+      const q = query(
+        collection(db, 'cheques'),
+        where('empresaId', '==', companyId),
+        orderBy('vencimento', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      querySnapshot.forEach((doc) => {
+        const cheque = { 
+          id: doc.id, 
+          ...doc.data(),
+          empresaNome: company.nome
+        };
+        chequesData.push(cheque);
+      });
     }
+    
+    // Ordenar por vencimento
+    chequesData.sort((a, b) => {
+      const dateA = new Date(a.vencimento);
+      const dateB = new Date(b.vencimento);
+      return dateB - dateA;
+    });
+    
+    console.log(`✅ ${chequesData.length} cheques carregados`);
+    
+    renderizarCheques(chequesData);
+    atualizarTotalizadores(chequesData);
+    hideCompanyWarning();
+    
   } catch (error) {
-    console.error('Erro:', error);
-    mostrarErro('Erro inesperado ao carregar cheques.');
+    console.error('❌ Erro ao carregar cheques:', error);
+    mostrarErro('Erro ao carregar cheques: ' + error.message);
+  } finally {
+    mostrarLoading(false);
   }
-  
-  mostrarLoading(false);
-}
-
-/**
- * Calcular juros por vencimento
- */
-function calcularJurosVencimento(cheque) {
-  if (cheque.status === STATUS_CHEQUE.COMPENSADO) return 0;
-  
-  const hoje = new Date();
-  const vencimento = new Date(cheque.vencimento);
-  
-  if (hoje <= vencimento) return 0;
-  
-  const diasAtraso = calcularDiasEntreDatas(vencimento, hoje);
-  return calcularJuros(cheque.valor, cheque.taxaJuros || empresaAtiva.taxaJuros, diasAtraso);
-}
-
-/**
- * Calcular total com juros
- */
-function calcularTotalComJuros(cheque) {
-  return cheque.valor + calcularJurosVencimento(cheque);
 }
 
 /**
@@ -245,9 +333,13 @@ function renderizarCheques(cheques) {
   
   const html = cheques.map(cheque => `
     <tr class="cheque-row" data-cheque-id="${cheque.id}">
-      <td>${cheque.numero}</td>
-      <td>${cheque.emitente}</td>
+      <td>
+        <input type="checkbox" name="cheque-select" value="${cheque.id}" onchange="updateBulkActions()">
+      </td>
+      <td>${cheque.numero || 'N/A'}</td>
+      <td>${cheque.emitente || 'N/A'}</td>
       <td>${formatarMoeda(cheque.valor)}</td>
+      <td>${formatarData(cheque.dataEmissao)}</td>
       <td>${formatarData(cheque.vencimento)}</td>
       <td>
         <span class="status-badge status-${cheque.status}">
@@ -255,25 +347,24 @@ function renderizarCheques(cheques) {
         </span>
       </td>
       <td>
-        <span class="operacao-badge operacao-${cheque.tipoOperacao}">
-          ${OPERACAO_LABELS[cheque.tipoOperacao] || cheque.tipoOperacao}
-        </span>
-      </td>
-      <td class="${cheque.jurosCalculados > 0 ? 'text-warning' : ''}">
-        ${formatarMoeda(cheque.jurosCalculados)}
-      </td>
-      <td class="font-weight-bold">
-        ${formatarMoeda(cheque.totalComJuros)}
-      </td>
-      <td>
-        <button class="btn btn-sm" data-action="actions" data-cheque-id="${cheque.id}">
-          <i class="fas fa-cog"></i>
-        </button>
+        <div class="action-buttons">
+          <button class="btn btn-sm btn-outline" onclick="viewDetails('${cheque.id}')" title="Ver detalhes">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="editCheque('${cheque.id}')" title="Editar">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCheque('${cheque.id}')" title="Excluir">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
       </td>
     </tr>
   `).join('');
   
-  chequesList.innerHTML = html;
+  if (chequesList) {
+    chequesList.innerHTML = html;
+  }
 }
 
 /**
@@ -281,20 +372,22 @@ function renderizarCheques(cheques) {
  */
 function atualizarTotalizadores(cheques) {
   const totais = cheques.reduce((acc, cheque) => {
-    acc.geral += cheque.totalComJuros;
+    acc.total += 1;
+    acc.valor += cheque.valor || 0;
     
-    if (cheque.tipoOperacao === TIPO_OPERACAO.RECEBER) {
-      acc.receber += cheque.totalComJuros;
-    } else {
-      acc.pagar += cheque.totalComJuros;
+    if (cheque.status === STATUS_CHEQUE.PENDENTE) {
+      acc.pendentes += 1;
+    } else if (cheque.status === STATUS_CHEQUE.COMPENSADO) {
+      acc.compensados += 1;
     }
     
     return acc;
-  }, { geral: 0, receber: 0, pagar: 0 });
+  }, { total: 0, valor: 0, pendentes: 0, compensados: 0 });
   
-  if (totalGeral) totalGeral.textContent = formatarMoeda(totais.geral);
-  if (totalReceber) totalReceber.textContent = formatarMoeda(totais.receber);
-  if (totalPagar) totalPagar.textContent = formatarMoeda(totais.pagar);
+  if (totalCount) totalCount.textContent = totais.total;
+  if (totalValue) totalValue.textContent = formatarMoeda(totais.valor);
+  if (pendingCount) pendingCount.textContent = totais.pendentes;
+  if (clearedCount) clearedCount.textContent = totais.compensados;
 }
 
 /**
@@ -303,7 +396,6 @@ function atualizarTotalizadores(cheques) {
 function aplicarFiltros() {
   const filtros = {
     status: filtroStatus?.value || '',
-    operacao: filtroOperacao?.value || '',
     dataInicio: filtroDataInicio?.value || '',
     dataFim: filtroDataFim?.value || '',
     emitente: filtroEmitente?.value.toLowerCase() || ''
@@ -311,7 +403,6 @@ function aplicarFiltros() {
   
   const chequesFiltrados = chequesData.filter(cheque => {
     if (filtros.status && cheque.status !== filtros.status) return false;
-    if (filtros.operacao && cheque.tipoOperacao !== filtros.operacao) return false;
     if (filtros.emitente && !cheque.emitente.toLowerCase().includes(filtros.emitente)) return false;
     
     const vencimento = new Date(cheque.vencimento);
@@ -330,7 +421,6 @@ function aplicarFiltros() {
  */
 function limparFiltros() {
   if (filtroStatus) filtroStatus.value = '';
-  if (filtroOperacao) filtroOperacao.value = '';
   if (filtroDataInicio) filtroDataInicio.value = '';
   if (filtroDataFim) filtroDataFim.value = '';
   if (filtroEmitente) filtroEmitente.value = '';
@@ -448,8 +538,8 @@ function editarCheque() {
  * Exportar para Excel
  */
 function exportarExcel() {
-  // Implementação futura com biblioteca de export
-  alert('Funcionalidade de exportação para Excel será implementada em breve.');
+  console.log('Exportar para Excel - funcionalidade a ser implementada');
+  mostrarSucesso('Funcionalidade de exportação será implementada em breve');
 }
 
 /**
@@ -473,7 +563,11 @@ function extrairValorMonetario(str) {
  */
 function mostrarLoading(mostrar) {
   if (loadingElement) {
-    loadingElement.classList.toggle('hidden', !mostrar);
+    if (mostrar) {
+      loadingElement.classList.remove('hidden');
+    } else {
+      loadingElement.classList.add('hidden');
+    }
   }
 }
 
@@ -481,11 +575,14 @@ function mostrarLoading(mostrar) {
  * Mostrar/ocultar estado vazio
  */
 function mostrarEstadoVazio(mostrar) {
-  if (emptyState) {
-    emptyState.classList.toggle('hidden', !mostrar);
-  }
-  if (document.querySelector('.cheques-section .table-container')) {
-    document.querySelector('.cheques-section .table-container').classList.toggle('hidden', mostrar);
+  const tableSection = document.querySelector('.table-section');
+  const summaryCards = document.querySelector('.summary-cards');
+  
+  if (mostrar) {
+    if (chequesList) chequesList.innerHTML = '<tr><td colspan="8" class="text-center">Nenhum cheque encontrado</td></tr>';
+    if (summaryCards) summaryCards.style.display = 'none';
+  } else {
+    if (summaryCards) summaryCards.style.display = 'flex';
   }
 }
 
@@ -493,7 +590,8 @@ function mostrarEstadoVazio(mostrar) {
  * Mostrar mensagem de sucesso
  */
 function mostrarSucesso(mensagem) {
-  // Implementação simples - pode ser melhorada com toast/notification
+  console.log('✅ Sucesso:', mensagem);
+  // Implementar toast ou notificação
   alert(mensagem);
 }
 
@@ -501,22 +599,88 @@ function mostrarSucesso(mensagem) {
  * Mostrar mensagem de erro
  */
 function mostrarErro(mensagem) {
-  // Implementação simples - pode ser melhorada com toast/notification
+  console.error('❌ Erro:', mensagem);
+  // Implementar toast ou notificação
   alert(mensagem);
 }
 
-// Labels para exibição
-const STATUS_LABELS = {
-  [STATUS_CHEQUE.PENDENTE]: 'Pendente',
-  [STATUS_CHEQUE.COMPENSADO]: 'Compensado',
-  [STATUS_CHEQUE.DEVOLVIDO]: 'Devolvido',
-  [STATUS_CHEQUE.PARCIAL]: 'Parcial'
-};
+/**
+ * Fechar todos os modais
+ */
+function fecharModais() {
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.classList.add('hidden');
+  });
+}
 
-const OPERACAO_LABELS = {
-  [TIPO_OPERACAO.RECEBER]: 'A Receber',
-  [TIPO_OPERACAO.PAGAR]: 'A Pagar'
-};
+/**
+ * Atualizar ações em lote
+ */
+function updateBulkActions() {
+  const selectedCheckboxes = document.querySelectorAll('input[name="cheque-select"]:checked');
+  const bulkActionsBtn = document.getElementById('bulk-actions-btn');
+  const selectedCountSpan = document.getElementById('selected-count');
+  
+  if (bulkActionsBtn) {
+    bulkActionsBtn.disabled = selectedCheckboxes.length === 0;
+  }
+  
+  if (selectedCountSpan) {
+    selectedCountSpan.textContent = selectedCheckboxes.length;
+  }
+}
+
+/**
+ * Ver detalhes do cheque
+ */
+function viewDetails(chequeId) {
+  const cheque = chequesData.find(c => c.id === chequeId);
+  if (!cheque) return;
+  
+  // Implementar modal de detalhes
+  console.log('Ver detalhes:', cheque);
+}
+
+/**
+ * Editar cheque
+ */
+function editCheque(chequeId) {
+  const cheque = chequesData.find(c => c.id === chequeId);
+  if (!cheque) return;
+  
+  // Redirecionar para página de edição
+  window.location.href = `incluirCheque.html?edit=${chequeId}`;
+}
+
+/**
+ * Excluir cheque
+ */
+async function deleteCheque(chequeId) {
+  const cheque = chequesData.find(c => c.id === chequeId);
+  if (!cheque) return;
+  
+  if (!confirm(`Tem certeza que deseja excluir o cheque ${cheque.numero}?`)) {
+    return;
+  }
+  
+  try {
+    mostrarLoading(true);
+    await deleteDoc(doc(db, 'cheques', chequeId));
+    mostrarSucesso('Cheque excluído com sucesso!');
+    await carregarCheques(); // Recarregar lista
+  } catch (error) {
+    console.error('Erro ao excluir cheque:', error);
+    mostrarErro('Erro ao excluir cheque: ' + error.message);
+  } finally {
+    mostrarLoading(false);
+  }
+}
+
+// Tornar funções globais para uso nos event handlers inline
+window.updateBulkActions = updateBulkActions;
+window.viewDetails = viewDetails;
+window.editCheque = editCheque;
+window.deleteCheque = deleteCheque;
 
 // Inicializar quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', inicializar); 

@@ -31,12 +31,8 @@ class CompanyManager {
         console.log('🚀 Inicializando CompanyManager...');
         
         try {
-            // Inicializar componente compartilhado
-            if (window.SharedComponents) {
-                window.sharedComponents = new window.SharedComponents();
-                await window.sharedComponents.init();
-                console.log('✅ Componente compartilhado inicializado');
-            }
+            // Aguardar shared components se disponível
+            await this.waitForSharedComponents();
             
             await this.checkAuth();
             this.setupEventListeners();
@@ -49,6 +45,24 @@ class CompanyManager {
         }
     }
 
+    async waitForSharedComponents() {
+        // Aguardar shared components por até 3 segundos
+        let attempts = 0;
+        const maxAttempts = 6;
+        
+        while (!window.sharedComponents && attempts < maxAttempts) {
+            console.log('⏳ Aguardando shared components...', attempts + 1);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+        
+        if (window.sharedComponents) {
+            console.log('✅ Shared components encontrado');
+        } else {
+            console.warn('⚠️ Shared components não disponível, continuando sem ele');
+        }
+    }
+
     checkAuth() {
         console.log('Verificando autenticação...');
         onAuthStateChanged(auth, (user) => {
@@ -56,10 +70,9 @@ class CompanyManager {
             if (user) {
                 this.currentUser = user;
                 console.log('Usuário logado:', user.email);
-                this.updateUserDisplay(user);
                 this.loadCompanies();
             } else {
-                console.log('Usuário não logado, redirecionando...');
+                console.log('❌ Usuário não autenticado');
                 this.cleanup();
                 window.location.href = 'login.html';
             }
@@ -70,31 +83,6 @@ class CompanyManager {
         if (this.unsubscribe) {
             this.unsubscribe();
             this.unsubscribe = null;
-        }
-    }
-
-    updateUserDisplay(user) {
-        const userNameElement = document.getElementById('user-name');
-        if (userNameElement) {
-            userNameElement.textContent = user.displayName || user.email?.split('@')[0] || 'Usuário';
-        }
-        
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn && !logoutBtn.hasAttribute('data-listener-added')) {
-            logoutBtn.setAttribute('data-listener-added', 'true');
-            logoutBtn.addEventListener('click', async () => {
-                try {
-                    this.showLoading(true);
-                    await auth.signOut();
-                    this.cleanup();
-                    window.location.href = 'login.html';
-                } catch (error) {
-                    console.error('Erro ao fazer logout:', error);
-                    this.showToast('Erro ao fazer logout', 'error');
-                } finally {
-                    this.showLoading(false);
-                }
-            });
         }
     }
 
@@ -173,116 +161,62 @@ class CompanyManager {
             });
         }
 
-        // Menu profile
-        this.setupProfileMenu();
-
-        // Menu mobile
-        this.setupMobileMenu();
+        // Menu mobile (apenas se shared components não estiver disponível)
+        if (!window.sharedComponents) {
+            this.setupMobileMenu();
+        }
 
         console.log('Event listeners configurados');
     }
 
-    setupProfileMenu() {
-        console.log('🔧 Configurando menu do perfil...');
-        const profileBtn = document.getElementById('profile-btn');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        
-        console.log('📍 Elementos encontrados:', {
-            profileBtn: !!profileBtn,
-            profileDropdown: !!profileDropdown,
-            profileBtnElement: profileBtn,
-            profileDropdownElement: profileDropdown
-        });
-        
-        if (profileBtn && profileDropdown && !profileBtn.hasAttribute('data-listener-added')) {
-            profileBtn.setAttribute('data-listener-added', 'true');
-            
-            console.log('✅ Adicionando event listener no botão do perfil');
-            profileBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                console.log('🖱️ Botão do perfil clicado!');
-                console.log('📋 Estado atual do dropdown:', {
-                    hasHiddenClass: profileDropdown.classList.contains('hidden'),
-                    display: window.getComputedStyle(profileDropdown).display,
-                    visibility: window.getComputedStyle(profileDropdown).visibility,
-                    zIndex: window.getComputedStyle(profileDropdown).zIndex
-                });
-                
-                profileDropdown.classList.toggle('hidden');
-                
-                console.log('📋 Estado após toggle:', {
-                    hasHiddenClass: profileDropdown.classList.contains('hidden'),
-                    display: window.getComputedStyle(profileDropdown).display,
-                    visibility: window.getComputedStyle(profileDropdown).visibility
-                });
-            });
-            
-            console.log('✅ Adicionando event listener no documento para fechar dropdown');
-            document.addEventListener('click', (e) => {
-                if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                    console.log('🖱️ Clicou fora do menu, fechando dropdown');
-                    profileDropdown.classList.add('hidden');
-                }
-            });
-            
-            console.log('🎯 Menu do perfil configurado com sucesso!');
-        } else {
-            console.error('❌ Erro na configuração do menu do perfil:', {
-                profileBtn: !!profileBtn,
-                profileDropdown: !!profileDropdown,
-                alreadyConfigured: profileBtn?.hasAttribute('data-listener-added')
-            });
-        }
-    }
-
     setupMobileMenu() {
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.querySelector('.sidebar');
         
-        if (mobileMenuBtn && sidebar && !mobileMenuBtn.hasAttribute('data-listener-added')) {
-            mobileMenuBtn.setAttribute('data-listener-added', 'true');
-            mobileMenuBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
+        if (sidebarToggle && sidebar && !sidebarToggle.hasAttribute('data-listener-added')) {
+            sidebarToggle.setAttribute('data-listener-added', 'true');
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
             });
         }
     }
 
     async loadCompanies() {
-        try {
-            this.showLoading(true);
-            
-            const user = auth.currentUser;
-            if (!user) {
-                console.error('Usuário não autenticado');
-                return;
-            }
+        if (!this.currentUser) {
+            console.log('❌ Usuário não autenticado');
+            return;
+        }
 
+        try {
+            console.log('🔄 Carregando empresas...');
+            this.showLoading(true);
+
+            // Consulta simplificada sem orderBy para evitar erro de índice
+            const companiesRef = collection(db, 'empresas');
             const q = query(
-                collection(db, 'empresas'),
-                where('createdBy', '==', user.uid),
-                orderBy('nome')
+                companiesRef,
+                where('createdBy', '==', this.currentUser.uid)
             );
 
             const querySnapshot = await getDocs(q);
             this.companies = [];
-            
+
             querySnapshot.forEach((doc) => {
-                this.companies.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
+                const company = { id: doc.id, ...doc.data() };
+                this.companies.push(company);
             });
 
-            console.log('Empresas carregadas:', this.companies);
+            // Ordenar no cliente
+            this.companies.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            console.log(`✅ ${this.companies.length} empresas carregadas`);
             
-            // Carregar seleção existente
             this.loadExistingSelection();
-            
             this.renderCompanies();
             this.updateSelectionInfo();
 
         } catch (error) {
-            console.error('Erro ao carregar empresas:', error);
+            console.error('❌ Erro ao carregar empresas:', error);
             this.showToast('Erro ao carregar empresas', 'error');
         } finally {
             this.showLoading(false);
@@ -335,8 +269,8 @@ class CompanyManager {
         if (this.companies.length === 0) {
             container.style.display = 'none';
             if (emptyState) emptyState.style.display = 'block';
-    return;
-  }
+            return;
+        }
 
         container.style.display = 'grid';
         if (emptyState) emptyState.style.display = 'none';
@@ -554,7 +488,7 @@ class CompanyManager {
         if (company) {
             if (title) title.textContent = 'Editar Empresa';
             this.fillFormFields(company);
-  } else {
+        } else {
             if (title) title.textContent = 'Nova Empresa';
             if (form) form.reset();
             const companyIdField = document.getElementById('company-id');

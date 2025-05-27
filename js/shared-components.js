@@ -13,16 +13,22 @@ class SharedComponents {
         this.notifications = [];
         this.notificationsUnsubscribe = null;
         this.selectedCompanies = this.getSelectedCompanies();
-        this.init();
+        this.initialized = false;
     }
 
     init() {
+        if (this.initialized) {
+            console.log('🔧 Shared components já inicializados');
+            return;
+        }
+        
         console.log('🔧 Inicializando componentes compartilhados...');
         this.setupAuth();
         this.setupProfileMenu();
         this.setupNotifications();
         this.setupMobileMenu();
         this.setupCompanyIndicator();
+        this.initialized = true;
     }
 
     setupAuth() {
@@ -47,8 +53,8 @@ class SharedComponents {
 
     setupLogoutButton() {
         const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn && !logoutBtn.hasAttribute('data-listener-added')) {
-            logoutBtn.setAttribute('data-listener-added', 'true');
+        if (logoutBtn && !logoutBtn.hasAttribute('data-shared-listener')) {
+            logoutBtn.setAttribute('data-shared-listener', 'true');
             logoutBtn.addEventListener('click', async () => {
                 try {
                     await auth.signOut();
@@ -66,8 +72,8 @@ class SharedComponents {
         const profileBtn = document.getElementById('profile-btn');
         const profileDropdown = document.getElementById('profile-dropdown');
         
-        if (profileBtn && profileDropdown && !profileBtn.hasAttribute('data-listener-added')) {
-            profileBtn.setAttribute('data-listener-added', 'true');
+        if (profileBtn && profileDropdown && !profileBtn.hasAttribute('data-shared-listener')) {
+            profileBtn.setAttribute('data-shared-listener', 'true');
             
             console.log('✅ Configurando event listeners do menu do perfil');
             
@@ -103,8 +109,8 @@ class SharedComponents {
         const notificationBtn = document.getElementById('notification-btn');
         const notificationDropdown = document.getElementById('notification-dropdown');
         
-        if (notificationBtn && notificationDropdown && !notificationBtn.hasAttribute('data-listener-added')) {
-            notificationBtn.setAttribute('data-listener-added', 'true');
+        if (notificationBtn && notificationDropdown && !notificationBtn.hasAttribute('data-shared-listener')) {
+            notificationBtn.setAttribute('data-shared-listener', 'true');
             
             console.log('✅ Configurando event listeners das notificações');
             
@@ -500,6 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sharedComponents) {
         console.log('🚀 Inicializando componentes compartilhados...');
         sharedComponents = new SharedComponents();
+        sharedComponents.init(); // Chamar init explicitamente
         window.sharedComponents = sharedComponents; // Disponibilizar globalmente
     }
 });

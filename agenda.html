@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda - Sistema de Cheques</title>
+    <title>Sistema de Gestão e Operações Financeiras - Agenda</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/global.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <script type="module" defer src="js/agenda.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script type="module" src="js/shared-components.js"></script>
+    <script type="module" src="js/agenda.js"></script>
     
     <style>
         /* Correções de layout para evitar sobreposição */
@@ -94,47 +93,6 @@
                 padding: 90px 10px 10px 10px !important;
             }
         }
-
-        /* Company Indicator Styles */
-        .company-indicator {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            padding: 8px 16px;
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            max-width: 300px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .company-indicator:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .company-indicator i {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .company-indicator span {
-            font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .company-indicator.hidden {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
@@ -144,22 +102,22 @@
             <button id="sidebar-toggle" class="sidebar-toggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="logo">
-                <i class="fas fa-money-check-alt"></i>
-                <span>ChequesPRE</span>
-            </div>
-            <div id="company-indicator" class="company-indicator hidden">
-                <i class="fas fa-building"></i>
-                <span id="current-company-name">Empresa</span>
-            </div>
+            <h1 class="app-name">Sistema Financeiro</h1>
         </div>
         
-        <div class="header-actions">
-            <button id="notification-btn" class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span id="notification-badge" class="notification-badge hidden">0</span>
-            </button>
+        <div class="header-right">
+            <!-- Container de Notificações -->
+            <div class="notification-container">
+                <button id="notification-btn" class="btn-notification">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-badge" class="notification-badge hidden">0</span>
+                </button>
+                <div id="notification-dropdown" class="notification-dropdown hidden">
+                    <!-- Conteúdo será preenchido pelo JavaScript -->
+                </div>
+            </div>
             
+            <!-- Menu do Perfil -->
             <div class="profile-menu">
                 <button id="profile-btn" class="profile-btn">
                     <i class="fas fa-user-circle"></i>
@@ -185,14 +143,11 @@
     <!-- Sidebar -->
     <nav id="sidebar" class="sidebar">
         <ul>
-            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-            <li><a href="listarCheques.html"><i class="fas fa-file-invoice-dollar"></i> Listar Cheques</a></li>
-            <li><a href="incluirCheque.html"><i class="fas fa-plus-circle"></i> Incluir Cheque</a></li>
+            <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+            <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
             <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
             <li><a href="agenda.html" class="active"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
-            <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
-            <li><a href="perfil.html"><i class="fas fa-user"></i> Perfil</a></li>
-            <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
             <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
         </ul>
     </nav>
