@@ -1,4 +1,4 @@
-import { auth, db } from './firebase-config.js';
+import { auth, db, formatarMoeda, formatarData } from './firebase-config.js';
 import { 
   collection, 
   query, 

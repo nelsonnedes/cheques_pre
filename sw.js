@@ -158,8 +158,8 @@ async function networkFirst(request) {
     try {
         const networkResponse = await fetch(request);
         
-        // Cache apenas respostas válidas
-        if (networkResponse.status === 200) {
+        // Cache apenas respostas válidas e métodos seguros (GET)
+        if (networkResponse.status === 200 && request.method === 'GET') {
             const cache = await caches.open(DYNAMIC_CACHE);
             cache.put(request, networkResponse.clone());
         }
@@ -169,9 +169,12 @@ async function networkFirst(request) {
     } catch (error) {
         console.error('Network First falhou:', error);
         
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) {
-            return cachedResponse;
+        // Só buscar do cache para métodos GET
+        if (request.method === 'GET') {
+            const cachedResponse = await caches.match(request);
+            if (cachedResponse) {
+                return cachedResponse;
+            }
         }
         
         throw error;
@@ -180,6 +183,11 @@ async function networkFirst(request) {
 
 // Estratégia Stale While Revalidate
 async function staleWhileRevalidate(request) {
+    // Só usar cache para métodos GET
+    if (request.method !== 'GET') {
+        return fetch(request);
+    }
+    
     const cache = await caches.open(DYNAMIC_CACHE);
     const cachedResponse = await cache.match(request);
     
