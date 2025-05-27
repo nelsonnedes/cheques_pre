@@ -3,47 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suporte - Sistema Financeiro</title>
+    <title>Sistema de Gestão e Operações Financeiras - Suporte</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/global.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script type="module" src="js/auth.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="module" src="js/shared-components.js"></script>
     <script type="module" src="js/suporte.js"></script>
+    
+    <style>
+        /* Correções de layout para evitar sobreposição */
+        .header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 1000 !important;
+            height: 70px !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+        }
+        
+        .sidebar {
+            position: fixed !important;
+            left: 0 !important;
+            top: 70px !important;
+            bottom: 0 !important;
+            width: 250px !important;
+            z-index: 999 !important;
+            background: white !important;
+            border-right: 1px solid #e2e8f0 !important;
+            overflow-y: auto !important;
+        }
+        
+        .main-content {
+            margin-left: 250px !important;
+            margin-top: 70px !important;
+            padding: 20px !important;
+            min-height: calc(100vh - 70px) !important;
+        }
+        
+        .sidebar nav ul li a {
+            display: flex !important;
+            align-items: center !important;
+            padding: 0.75rem 1rem !important;
+            color: #4a5568 !important;
+            text-decoration: none !important;
+            border-left: 3px solid transparent !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .sidebar nav ul li a i {
+            width: 20px !important;
+            margin-right: 0.75rem !important;
+            font-size: 1rem !important;
+        }
+        
+        .sidebar nav ul li a:hover {
+            background: #EBF8FF !important;
+            color: #2B77AD !important;
+            border-left-color: #90CDF4 !important;
+            transform: translateX(2px) !important;
+        }
+        
+        .sidebar nav ul li a.active {
+            background: #EBF8FF !important;
+            color: #2C5282 !important;
+            border-left-color: #4299E1 !important;
+            font-weight: 600 !important;
+        }
+        
+        .mobile-menu-btn {
+            display: none !important;
+            background: none !important;
+            border: none !important;
+            color: white !important;
+            font-size: 1.2rem !important;
+            padding: 0.5rem !important;
+            cursor: pointer !important;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s ease !important;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0) !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                padding: 80px 15px 15px 15px !important;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 90px 10px 10px 10px !important;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
     <header class="header">
         <div class="header-left">
+            <button id="sidebar-toggle" class="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1 class="app-name">Sistema Financeiro</h1>
         </div>
+        
         <div class="header-right">
-            <button class="btn-notification" aria-label="Notificações">
-                <i class="fas fa-bell"></i>
-                <span class="badge" id="notification-count">0</span>
-            </button>
-            <div class="profile-menu">
-                <button id="profile-btn" aria-label="Menu de perfil">
-                    <i class="fas fa-user-circle fa-lg"></i>
+            <!-- Container de Notificações -->
+            <div class="notification-container">
+                <button id="notification-btn" class="btn-notification">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-badge" class="notification-badge hidden">0</span>
                 </button>
-                <div id="profile-dropdown" class="dropdown hidden">
-                    <a href="configuracoes.html">Configurações</a>
-                    <button id="logout-btn">Sair</button>
+                <div id="notification-dropdown" class="notification-dropdown hidden">
+                    <!-- Conteúdo será preenchido pelo JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Menu do Perfil -->
+            <div class="profile-menu">
+                <button id="profile-btn" class="profile-btn">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name">Usuário</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="profile-dropdown" class="profile-dropdown hidden">
+                    <a href="perfil.html">
+                        <i class="fas fa-user"></i> Meu Perfil
+                    </a>
+                    <a href="configuracoes.html">
+                        <i class="fas fa-cog"></i> Configurações
+                    </a>
+                    <hr>
+                    <button id="logout-btn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <aside class="sidebar">
-        <nav>
-            <ul>
-                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
-                <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
-                <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-                <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
-                <li><a href="suporte.html" class="active"><i class="fas fa-headset"></i> Suporte</a></li>
-            </ul>
-        </nav>
-    </aside>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <ul>
+            <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+            <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
+            <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+            <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+            <li><a href="suporte.html" class="active"><i class="fas fa-headset"></i> Suporte</a></li>
+        </ul>
+    </nav>
 
+    <!-- Main Content -->
     <main class="main-content">
         <section class="page-header">
             <h2><i class="fas fa-headset"></i> Central de Suporte</h2>

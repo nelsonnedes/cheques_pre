@@ -54,28 +54,26 @@ service cloud.firestore {
     }
 
     // ===========================================
-    // COLEÇÃO EMPRESAS (REGRAS CORRIGIDAS)
+    // COLEÇÃO EMPRESAS (REGRAS SIMPLIFICADAS MÁXIMO)
     // ===========================================
     match /empresas/{empresaId} {
-      // Permitir leitura para usuários autenticados (suas próprias empresas)
+      // Permitir leitura para usuários autenticados
       allow read: if request.auth != null;
       
-      // Permitir criação para usuários autenticados com dados válidos
+      // Permitir criação para usuários autenticados com dados mínimos
       allow create: if request.auth != null && 
                        request.resource.data.createdBy == request.auth.uid &&
-                       request.resource.data.nome is string && 
-                       request.resource.data.nome.size() > 0 &&
-                       request.resource.data.cnpj is string && 
-                       request.resource.data.cnpj.size() > 0 &&
-                       request.resource.data.ativo is bool;
+                       request.resource.data.nome != null && 
+                       request.resource.data.cnpj != null &&
+                       request.resource.data.ativo != null;
       
-      // Permitir atualização apenas pelo criador
+      // Permitir atualização para usuários autenticados
       allow update: if request.auth != null && 
-                       isOwner(resource);
+                       resource.data.createdBy == request.auth.uid;
       
-      // Permitir exclusão apenas pelo criador
+      // Permitir exclusão para usuários autenticados
       allow delete: if request.auth != null && 
-                       isOwner(resource);
+                       resource.data.createdBy == request.auth.uid;
     }
 
     // ===========================================

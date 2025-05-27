@@ -13,6 +13,107 @@ import {
 // Estado global da autenticação
 let currentUser = null;
 let userProfile = null;
+let userCompanies = [];
+
+// Verificar empresas do usuário
+async function checkUserCompanies(userId) {
+  try {
+    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    
+    const companiesRef = collection(db, 'empresas');
+    const q = query(companiesRef, where('createdBy', '==', userId));
+    const snapshot = await getDocs(q);
+    
+    userCompanies = [];
+    snapshot.forEach((doc) => {
+      userCompanies.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    console.log('Empresas do usuário:', userCompanies.length);
+    return userCompanies;
+  } catch (error) {
+    console.error('Erro ao verificar empresas do usuário:', error);
+    return [];
+  }
+}
+
+// Verificar acesso às páginas
+function checkPageAccess() {
+  const currentPage = window.location.pathname;
+  const selectedCompanies = localStorage.getItem('selectedCompanies');
+  
+  // Páginas sempre permitidas
+  const allowedPages = [
+    'empresas.html',
+    'perfil.html', 
+    'configuracoes.html',
+    'suporte.html',
+    'login.html',
+    'register.html',
+    'recover.html'
+  ];
+  
+  // Páginas que requerem empresa selecionada
+  const restrictedPages = [
+    'dashboard.html',
+    'listarCheques.html', 
+    'incluirCheque.html',
+    'relatorios.html',
+    'agenda.html',
+    'index.html'
+  ];
+  
+  // Se estiver em página permitida, sempre deixar passar
+  if (allowedPages.some(page => currentPage.includes(page))) {
+    return true;
+  }
+  
+  // Se estiver em página restrita, verificar empresas
+  if (restrictedPages.some(page => currentPage.includes(page))) {
+    if (!selectedCompanies || JSON.parse(selectedCompanies).length === 0) {
+      console.log('Redirecionando para empresas - nenhuma empresa selecionada');
+      window.location.href = 'empresas.html';
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+// Configurar navegação inteligente
+function setupIntelligentNavigation() {
+  const navLinks = document.querySelectorAll('.sidebar nav a, .nav-link');
+  
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    
+    // Links que precisam de verificação
+    const restrictedLinks = [
+      'dashboard.html',
+      'listarCheques.html',
+      'incluirCheque.html', 
+      'relatorios.html',
+      'agenda.html',
+      'index.html'
+    ];
+    
+    if (restrictedLinks.some(page => href && href.includes(page))) {
+      link.addEventListener('click', function(e) {
+        const selectedCompanies = localStorage.getItem('selectedCompanies');
+        
+        if (!selectedCompanies || JSON.parse(selectedCompanies).length === 0) {
+          e.preventDefault();
+          console.log('Redirecionando para empresas - link clicado sem empresa selecionada');
+          window.location.href = 'empresas.html';
+          return false;
+        }
+      });
+    }
+  });
+}
 
 // Toast para mensagens
 export function showToast(message, type = 'info') {
@@ -196,8 +297,14 @@ function getFirebaseErrorMessage(error) {
 }
 
 // Configurar interface do usuário
-function setupUserInterface() {
+async function setupUserInterface() {
   setupProfileDropdown();
+  
+  // Verificar acesso à página atual
+  checkPageAccess();
+  
+  // Configurar navegação inteligente
+  setupIntelligentNavigation();
   
   // Configurar notificações
   const notificationBtn = document.querySelector('.btn-notification');
@@ -222,13 +329,13 @@ function setupUserInterface() {
 }
 
 // Inicialização automática
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Configurar formulário de login se estiver na página de login
   if (window.location.pathname.includes('login.html')) {
     setupLoginForm();
   } else {
     // Para outras páginas, configurar interface
-    setupUserInterface();
+    await setupUserInterface();
   }
 });
 
@@ -237,11 +344,15 @@ export {
   auth,
   currentUser,
   userProfile,
+  userCompanies,
   handleLogout,
   setupUserInterface,
   hideLoading,
   showLoading,
   checkAuth,
   getCurrentUser,
-  onAuthChange
+  onAuthChange,
+  checkUserCompanies,
+  checkPageAccess,
+  setupIntelligentNavigation
 }; 

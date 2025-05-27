@@ -96,16 +96,14 @@ async function loadSelectedCompanies() {
     const selectedCompaniesData = localStorage.getItem('selectedCompanies');
     
     if (!selectedCompaniesData) {
-      showToast('Nenhuma empresa selecionada', 'warning');
-      window.location.href = 'empresas.html';
+      console.warn('Nenhuma empresa selecionada.');
       return;
     }
 
     selectedCompanies = JSON.parse(selectedCompaniesData);
     
     if (selectedCompanies.length === 0) {
-      showToast('Nenhuma empresa selecionada', 'warning');
-      window.location.href = 'empresas.html';
+      console.warn('Nenhuma empresa selecionada.');
       return;
     }
 
@@ -141,25 +139,6 @@ async function loadSelectedCompanies() {
   } catch (error) {
     console.error('Erro ao carregar empresas:', error);
     showToast('Erro ao carregar dados das empresas', 'error');
-  }
-}
-
-// Manipular mudança de empresa selecionada
-function handleEmpresaChange() {
-  const selectedEmpresaId = empresaSelecionadaSelect.value;
-  
-  if (selectedEmpresaId) {
-    empresaAtiva = selectedCompanies.find(empresa => empresa.id === selectedEmpresaId);
-    
-    if (empresaAtiva) {
-      const taxaPadrao = empresaAtiva.taxaJuros || 0;
-      taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
-      taxaJurosInput.value = taxaPadrao;
-    }
-  } else {
-    empresaAtiva = null;
-    taxaEmpresaDisplay.textContent = '0%';
-    taxaJurosInput.value = '';
   }
 }
 
@@ -685,5 +664,24 @@ async function handleDelete() {
   } finally {
     btnExcluir.disabled = false;
     btnExcluir.innerHTML = '<i class="fas fa-trash"></i> Excluir';
+  }
+}
+
+// Manipular mudança de empresa selecionada
+function handleEmpresaChange() {
+  const selectedEmpresaId = empresaSelecionadaSelect.value;
+  
+  if (selectedEmpresaId) {
+    empresaAtiva = selectedCompanies.find(empresa => empresa.id === selectedEmpresaId);
+    
+    if (empresaAtiva) {
+      const taxaPadrao = empresaAtiva.taxaJuros || 0;
+      taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
+      taxaJurosInput.value = taxaPadrao;
+    }
+  } else {
+    empresaAtiva = null;
+    taxaEmpresaDisplay.textContent = '0%';
+    taxaJurosInput.value = '';
   }
 } 

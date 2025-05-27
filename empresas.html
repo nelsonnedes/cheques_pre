@@ -198,147 +198,197 @@
     
     /* Fix z-index hierarchy - ESSENCIAL PARA CORRIGIR SOBREPOSIÇÃO */
     .header {
-      position: fixed !important;
-      z-index: 1000 !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-    }
-    
-    .sidebar {
-      position: fixed !important;
-      z-index: 900 !important;
-      top: 0 !important;
-      left: 0 !important;
-      padding-top: 70px !important; /* Espaço para header */
-    }
-    
-    /* Garantir que conteúdo principal não sobreponha */
-    body {
-      padding-top: 0 !important;
-      margin-top: 0 !important;
-    }
-    
-    /* Toast container - garantir visibilidade */
-    #toast-container {
       position: fixed;
-      top: 90px;
-      right: 20px;
-      z-index: 10002;
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      z-index: 1000;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
     
-    /* Evitar conflitos com grid layout */
-    body {
-      display: block !important;
-      grid-template-columns: none !important;
-      grid-template-rows: none !important;
-      grid-template-areas: none !important;
-    }
-    
-    /* Header específico desta página */
-    .header {
-      background: linear-gradient(135deg, var(--primary-800, #2C5282) 0%, var(--primary-600, #3182CE) 100%);
-      color: white;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      padding: 0.75rem 1.5rem !important;
-      height: 70px !important;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-    
-    .header .container {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      width: 100% !important;
-      max-width: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-    
-    .logo {
-      display: flex !important;
-      align-items: center !important;
-      gap: 0.5rem !important;
-      font-weight: 700 !important;
-      font-size: 1.5rem !important;
-    }
-    
-    .header-actions {
-      display: flex !important;
-      align-items: center !important;
-      gap: 1rem !important;
-    }
-    
-    /* Sidebar específico desta página */
     .sidebar {
+      position: fixed;
+      left: 0;
+      top: 70px; /* Começar abaixo do header */
+      bottom: 0;
+      width: 250px;
+      z-index: 999;
+      background: white;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+
+    /* Corrigir menu do perfil - SOLUÇÃO PARA O DROPDOWN */
+    .profile-menu {
+      position: relative !important;
+    }
+
+    #profile-dropdown {
+      position: absolute !important;
+      right: 0 !important;
+      top: calc(100% + 8px) !important;
       background: white !important;
-      border-right: 1px solid #E2E8F0 !important;
-      width: 280px !important;
-      height: 100vh !important;
-      overflow-y: auto !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 12px !important;
+      overflow: hidden !important;
+      min-width: 180px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      z-index: 9999 !important; /* Z-index muito alto para aparecer sobre tudo */
+      backdrop-filter: blur(10px) !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+      transition: all 0.2s ease !important;
     }
-    
-    .sidebar-nav {
-      padding: 1rem 0 !important;
+
+    #profile-dropdown.hidden {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateY(-10px) !important;
     }
-    
-    .nav-item {
+
+    #profile-dropdown a, 
+    #profile-dropdown button {
+      padding: 12px 16px !important;
+      color: #374151 !important;
+      text-align: left !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      border: none !important;
+      background: transparent !important;
+      text-decoration: none !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      border-bottom: 1px solid #f3f4f6 !important;
       display: flex !important;
       align-items: center !important;
-      gap: 0.75rem !important;
-      padding: 1rem 1.5rem !important;
-      color: #4A5568 !important;
-      text-decoration: none !important;
-      font-weight: 500 !important;
-      transition: all 0.2s ease !important;
-      border-left: 3px solid transparent !important;
+      gap: 8px !important;
     }
-    
-    .nav-item:hover {
-      background: #EBF8FF !important;
-      color: #2B77AD !important;
-      border-left-color: #90CDF4 !important;
-      transform: translateX(2px) !important;
+
+    #profile-dropdown a:last-child, 
+    #profile-dropdown button:last-child {
+      border-bottom: none !important;
     }
-    
-    .nav-item.active {
-      background: #EBF8FF !important;
-      color: #2C5282 !important;
-      border-left-color: #4299E1 !important;
-      font-weight: 600 !important;
+
+    #profile-dropdown a:hover, 
+    #profile-dropdown button:hover {
+      background: #f3f4f6 !important;
+      color: #667eea !important;
     }
-    
-    .mobile-menu-btn {
-      display: none !important;
-      background: none !important;
-      border: none !important;
-      color: white !important;
-      font-size: 1.2rem !important;
-      padding: 0.5rem !important;
+
+    /* Garantir que o botão do perfil funcione */
+    .profile-btn {
+      position: relative !important;
+      z-index: 1001 !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 2px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 8px !important;
       cursor: pointer !important;
+      color: white !important;
+      padding: 8px 12px !important;
+      transition: all 0.2s ease !important;
+      backdrop-filter: blur(10px) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+
+    .profile-btn:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    /* Divider no dropdown */
+    .dropdown-divider {
+      margin: 0 !important;
+      border: none !important;
+      border-top: 1px solid #e5e7eb !important;
     }
     
-    @media (max-width: 480px) {
+    /* Responsivo */
+    @media (max-width: 768px) {
       .main-content {
-        padding: 100px 10px 10px 10px; /* Ainda mais espaço no mobile */
+        margin-left: 0;
+        width: 100%;
+        padding: 90px 15px 15px 15px; /* Aumentar padding-top para mobile */
       }
       
-      .mobile-menu-btn {
-        display: block !important;
+      #profile-dropdown {
+        right: 10px !important;
+        min-width: 160px !important;
       }
       
-      .sidebar {
-        transform: translateX(-100%) !important;
-        transition: transform 0.3s ease !important;
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
       }
       
-      .sidebar.open {
-        transform: translateX(0) !important;
+      .page-actions {
+        justify-content: stretch;
       }
+      
+      .page-actions .btn {
+        flex: 1;
+      }
+      
+      .companies-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .selection-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 20px;
+      }
+      
+      .info-card {
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+
+    /* Company Indicator Styles */
+    .company-indicator {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: 8px 16px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .company-indicator:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .company-indicator i {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .company-indicator span {
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
@@ -357,6 +407,12 @@
         <span>ChequesPRE</span>
       </div>
 
+      <!-- Company Indicator -->
+      <div class="company-indicator" id="company-indicator" style="display: none;">
+        <i class="fas fa-building"></i>
+        <span id="company-name">Nenhuma empresa</span>
+      </div>
+
       <!-- Header actions -->
       <div class="header-actions">
         <!-- Notifications -->
@@ -371,7 +427,7 @@
         </div>
 
         <!-- Profile menu -->
-        <div class="profile-menu">
+      <div class="profile-menu">
           <button class="profile-btn" id="profile-btn">
             <i class="fas fa-user-circle"></i>
             <span id="user-name">Usuário</span>
@@ -387,7 +443,7 @@
             <hr class="dropdown-divider">
             <button class="dropdown-item" id="logout-btn">
               <i class="fas fa-sign-out-alt"></i> Sair
-            </button>
+        </button>
           </div>
         </div>
       </div>
@@ -523,7 +579,7 @@
             <label for="company-description">Descrição</label>
             <textarea id="company-description" name="descricao" rows="3" placeholder="Descrição opcional da empresa"></textarea>
           </div>
-        </form>
+      </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-action="cancel">Cancelar</button>
@@ -541,6 +597,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Scripts -->
+  <script type="module" src="js/shared-components.js"></script>
   <script type="module" src="js/empresas.js"></script>
 </body>
 </html>

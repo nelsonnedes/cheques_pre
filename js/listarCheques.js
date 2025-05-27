@@ -81,8 +81,7 @@ function verificarAutenticacao() {
     
     empresaAtiva = obterEmpresaAtiva();
     if (!empresaAtiva) {
-      alert('Nenhuma empresa selecionada. Selecione uma empresa primeiro.');
-      window.location.href = 'empresas.html';
+      console.warn('Nenhuma empresa selecionada.');
       return;
     }
     

@@ -10,7 +10,148 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     rel="stylesheet"
   />
+  <script type="module" defer src="js/shared-components.js"></script>
   <script type="module" defer src="js/dashboard.js"></script>
+  
+  <style>
+    /* Correções de layout para evitar sobreposição */
+    .header {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 1000 !important;
+      height: 70px !important;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+    
+    /* Indicador da empresa selecionada */
+    .company-indicator {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 8px !important;
+      padding: 6px 12px !important;
+      margin-right: 15px !important;
+      font-size: 13px !important;
+      color: white !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      max-width: 200px !important;
+      overflow: hidden !important;
+    }
+    
+    .company-indicator .company-name {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    .company-indicator.multiple {
+      cursor: pointer !important;
+    }
+    
+    .company-indicator.multiple:hover {
+      background: rgba(255, 255, 255, 0.25) !important;
+    }
+    
+    .sidebar {
+      position: fixed !important;
+      left: 0 !important;
+      top: 70px !important;
+      bottom: 0 !important;
+      width: 250px !important;
+      z-index: 999 !important;
+      background: white !important;
+      border-right: 1px solid #e2e8f0 !important;
+      overflow-y: auto !important;
+    }
+    
+    .main-content {
+      margin-left: 250px !important;
+      margin-top: 70px !important;
+      padding: 20px !important;
+      min-height: calc(100vh - 70px) !important;
+      background-color: #f8f9fa;
+    }
+    
+    .sidebar nav ul li a {
+      display: flex !important;
+      align-items: center !important;
+      padding: 0.75rem 1rem !important;
+      color: #4a5568 !important;
+      text-decoration: none !important;
+      border-left: 3px solid transparent !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .sidebar nav ul li a i {
+      width: 20px !important;
+      margin-right: 0.75rem !important;
+      font-size: 1rem !important;
+    }
+    
+    .sidebar nav ul li a:hover {
+      background: #EBF8FF !important;
+      color: #2B77AD !important;
+      border-left-color: #90CDF4 !important;
+      transform: translateX(2px) !important;
+    }
+    
+    .sidebar nav ul li a.active {
+      background: #EBF8FF !important;
+      color: #2C5282 !important;
+      border-left-color: #4299E1 !important;
+      font-weight: 600 !important;
+    }
+    
+    .sidebar-toggle {
+      display: none !important;
+      background: none !important;
+      border: none !important;
+      color: white !important;
+      font-size: 1.2rem !important;
+      padding: 0.5rem !important;
+      cursor: pointer !important;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease !important;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0) !important;
+      }
+      
+      .main-content {
+        margin-left: 0 !important;
+        padding: 80px 15px 15px 15px !important;
+      }
+      
+      .sidebar-toggle {
+        display: block !important;
+      }
+
+      .company-indicator {
+        max-width: 120px !important;
+        margin-right: 8px !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 90px 10px 10px 10px !important;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Toast Container -->
@@ -31,6 +172,15 @@
       </button>
       <h1 class="app-name">Sistema Financeiro</h1>
     </div>
+    
+    <div class="header-center">
+      <!-- Indicador da empresa selecionada -->
+      <div id="company-indicator" class="company-indicator hidden">
+        <i class="fas fa-building"></i>
+        <span class="company-name" id="selected-company-name">Nenhuma empresa</span>
+      </div>
+    </div>
+    
     <div class="header-right">
       <div class="notification-container">
         <button class="btn-notification" aria-label="Notificações">

@@ -28,9 +28,25 @@ class CompanyManager {
     }
 
     async init() {
-        console.log('Inicializando CompanyManager...');
-        this.setupEventListeners();
-        this.checkAuth();
+        console.log('🚀 Inicializando CompanyManager...');
+        
+        try {
+            // Inicializar componente compartilhado
+            if (window.SharedComponents) {
+                window.sharedComponents = new window.SharedComponents();
+                await window.sharedComponents.init();
+                console.log('✅ Componente compartilhado inicializado');
+            }
+            
+            await this.checkAuth();
+            this.setupEventListeners();
+            await this.loadCompanies();
+            
+            console.log('✅ CompanyManager inicializado com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar CompanyManager:', error);
+            this.showToast('Erro ao inicializar sistema de empresas', 'error');
+        }
     }
 
     checkAuth() {
@@ -233,60 +249,76 @@ class CompanyManager {
 
     async loadCompanies() {
         try {
-            console.log('Carregando empresas...');
-            console.log('🔑 UID do usuário atual:', this.currentUser?.uid);
             this.showLoading(true);
             
-            if (this.unsubscribe) {
-                this.unsubscribe();
+            const user = auth.currentUser;
+            if (!user) {
+                console.error('Usuário não autenticado');
+                return;
             }
+
+            const q = query(
+                collection(db, 'empresas'),
+                where('createdBy', '==', user.uid),
+                orderBy('nome')
+            );
+
+            const querySnapshot = await getDocs(q);
+            this.companies = [];
             
-            // Query simplificada sem índice - filtrar no JavaScript
-            const companiesRef = collection(db, 'empresas');
-            
-            this.unsubscribe = onSnapshot(companiesRef, (snapshot) => {
-                console.log('📊 Empresas recebidas do Firestore:', snapshot.size);
-                this.companies = [];
-                
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    console.log('📝 Documento empresa:', {
-                        id: doc.id,
-                        createdBy: data.createdBy,
-                        nome: data.nome,
-                        userUID: this.currentUser?.uid,
-                        matches: data.createdBy === this.currentUser?.uid
-                    });
-                    
-                    // Filtrar apenas empresas do usuário atual no JavaScript
-                    if (data.createdBy === this.currentUser.uid) {
-                        console.log('✅ Empresa adicionada:', data.nome);
-                        this.companies.push({
-                            id: doc.id,
-                            ...data
-                        });
-                    } else {
-                        console.log('❌ Empresa rejeitada (não é do usuário):', data.nome);
-                    }
+            querySnapshot.forEach((doc) => {
+                this.companies.push({
+                    id: doc.id,
+                    ...doc.data()
                 });
-                
-                // Ordenar no JavaScript
-                this.companies.sort((a, b) => a.nome.localeCompare(b.nome));
-                
-                console.log('📋 Empresas filtradas para o usuário:', this.companies.length);
-                this.renderCompanies();
-                this.updateSelectionInfo();
-                this.showLoading(false);
-            }, (error) => {
-                console.error('Erro no listener das empresas:', error);
-                this.showToast('Erro ao carregar empresas: ' + error.message, 'error');
-                this.showLoading(false);
             });
 
+            console.log('Empresas carregadas:', this.companies);
+            
+            // Carregar seleção existente
+            this.loadExistingSelection();
+            
+            this.renderCompanies();
+            this.updateSelectionInfo();
+
         } catch (error) {
-            console.error('Erro ao configurar listener das empresas:', error);
-            this.showToast('Erro ao carregar empresas: ' + error.message, 'error');
+            console.error('Erro ao carregar empresas:', error);
+            this.showToast('Erro ao carregar empresas', 'error');
+        } finally {
             this.showLoading(false);
+        }
+    }
+
+    loadExistingSelection() {
+        try {
+            // Primeiro tentar carregar do componente compartilhado
+            if (window.sharedComponents && typeof window.sharedComponents.getSelectedCompanies === 'function') {
+                const selectedFromShared = window.sharedComponents.getSelectedCompanies();
+                if (selectedFromShared && selectedFromShared.length > 0) {
+                    console.log('Carregando seleção do componente compartilhado:', selectedFromShared);
+                    selectedFromShared.forEach(company => {
+                        this.selectedCompanies.add(company.id);
+                    });
+                    return;
+                }
+            }
+
+            // Fallback: carregar do localStorage
+            const savedSelection = localStorage.getItem('selectedCompanies');
+            if (savedSelection) {
+                const selectedCompaniesData = JSON.parse(savedSelection);
+                console.log('Carregando seleção do localStorage:', selectedCompaniesData);
+                
+                if (Array.isArray(selectedCompaniesData)) {
+                    selectedCompaniesData.forEach(company => {
+                        if (company && company.id) {
+                            this.selectedCompanies.add(company.id);
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar seleção existente:', error);
         }
     }
 
@@ -444,22 +476,73 @@ class CompanyManager {
     }
 
     applySelection() {
+        console.log('Aplicando seleção de empresas...');
+        
         if (this.selectedCompanies.size === 0) {
-            this.showToast('Selecione pelo menos uma empresa', 'warning');
-    return;
-  }
+            this.showToast('Selecione pelo menos uma empresa para continuar', 'warning');
+            return;
+        }
 
+        // Obter dados completos das empresas selecionadas
         const selectedCompaniesData = this.companies.filter(company => 
             this.selectedCompanies.has(company.id)
         );
-        
-        localStorage.setItem('selectedCompanies', JSON.stringify(selectedCompaniesData));
-        
-        this.showToast(`${this.selectedCompanies.size} empresa(s) selecionada(s)`, 'success');
-        
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1500);
+
+        console.log('Empresas selecionadas para aplicar:', selectedCompaniesData);
+
+        // Integrar com componente compartilhado se disponível
+        if (window.sharedComponents && typeof window.sharedComponents.setSelectedCompanies === 'function') {
+            try {
+                // Atualizar no sistema compartilhado
+                window.sharedComponents.setSelectedCompanies(selectedCompaniesData);
+                
+                const message = selectedCompaniesData.length === 1 
+                    ? `Empresa "${selectedCompaniesData[0].nome}" selecionada com sucesso!`
+                    : `${selectedCompaniesData.length} empresas selecionadas com sucesso!`;
+                    
+                this.showToast(message, 'success');
+                
+                console.log('🏢 Seleção aplicada via componente compartilhado');
+                
+                // Redirecionar para dashboard após aplicar seleção
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Erro ao aplicar seleção via componente compartilhado:', error);
+                this.fallbackApplySelection(selectedCompaniesData);
+            }
+        } else {
+            console.warn('Componente compartilhado não disponível, usando fallback');
+            this.fallbackApplySelection(selectedCompaniesData);
+        }
+    }
+
+    fallbackApplySelection(selectedCompaniesData) {
+        // Fallback: salvar no localStorage diretamente
+        try {
+            localStorage.setItem('selectedCompanies', JSON.stringify(selectedCompaniesData));
+            
+            const message = selectedCompaniesData.length === 1 
+                ? `Empresa "${selectedCompaniesData[0].nome}" selecionada!`
+                : `${selectedCompaniesData.length} empresas selecionadas!`;
+                
+            this.showToast(message, 'success');
+            
+            // Disparar evento customizado para atualizar outras partes do sistema
+            window.dispatchEvent(new CustomEvent('companiesChanged', {
+                detail: { companies: selectedCompaniesData }
+            }));
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Erro no fallback de seleção:', error);
+            this.showToast('Erro ao salvar seleção de empresas', 'error');
+        }
     }
 
     openCompanyModal(company = null) {
@@ -566,10 +649,32 @@ class CompanyManager {
                 companyData.criadoEm = new Date();
                 companyData.createdAt = new Date();
                 
-                console.log('📤 Dados finais a serem enviados:', companyData);
+                console.log('📤 Dados finais antes do envio:', JSON.stringify(companyData, null, 2));
+                console.log('🔍 Verificação específica dos campos:');
+                console.log('  - createdBy:', companyData.createdBy);
+                console.log('  - nome:', companyData.nome);
+                console.log('  - cnpj:', companyData.cnpj);
+                console.log('  - ativo:', companyData.ativo);
+                console.log('  - usuário logado UID:', this.currentUser.uid);
+                console.log('  - Match createdBy === uid:', companyData.createdBy === this.currentUser.uid);
+                
+                // Criar o objeto final explicitamente para evitar qualquer problema
+                const finalCompanyData = {
+                    nome: companyData.nome,
+                    cnpj: companyData.cnpj,
+                    taxaJuros: companyData.taxaJuros,
+                    descricao: companyData.descricao,
+                    createdBy: this.currentUser.uid,
+                    ativo: true,
+                    criadoEm: new Date(),
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+                
+                console.log('🚀 Dados limpos para envio:', JSON.stringify(finalCompanyData, null, 2));
                 console.log('🔗 Tentando conectar com Firestore...');
                 
-                const result = await addDoc(collection(db, 'empresas'), companyData);
+                const result = await addDoc(collection(db, 'empresas'), finalCompanyData);
                 console.log('✅ Documento criado com ID:', result.id);
                 this.showToast('Empresa criada com sucesso!', 'success');
             }

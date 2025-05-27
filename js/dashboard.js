@@ -49,21 +49,19 @@ async function initializeDashboard() {
     // Verificar se há empresas selecionadas
     const selectedCompaniesData = localStorage.getItem('selectedCompanies');
     if (!selectedCompaniesData) {
-      console.warn('Nenhuma empresa selecionada. Redirecionando para seleção de empresas.');
-      window.location.href = 'empresas.html';
+      console.warn('Nenhuma empresa selecionada.');
       return;
     }
 
     selectedCompanies = JSON.parse(selectedCompaniesData);
     if (selectedCompanies.length === 0) {
-      console.warn('Nenhuma empresa selecionada. Redirecionando para seleção de empresas.');
-      window.location.href = 'empresas.html';
+      console.warn('Nenhuma empresa selecionada.');
       return;
     }
 
     // Atualizar display das empresas
     updateCompaniesDisplay(selectedCompanies);
-
+    
     // Inicializar sistemas
     setupEventListeners();
     await loadDashboardData(selectedCompanies);
@@ -375,7 +373,7 @@ function loadMonthlyChart() {
         }
       }
     });
-}
+  }
 
 // Funções utilitárias
 function updateElement(id, value) {

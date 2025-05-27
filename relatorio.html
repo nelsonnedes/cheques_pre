@@ -3,55 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios - Sistema Financeiro</title>
+    <title>Sistema de Gestão e Operações Financeiras - Relatórios</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/global.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script type="module" src="js/auth.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="module" src="js/shared-components.js"></script>
     <script type="module" src="js/relatorio.js"></script>
+    
+    <style>
+        /* Correções específicas para a página de relatórios */
+        .header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 1000 !important;
+            height: 70px !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+            color: white !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0 20px !important;
+        }
+        
+        .sidebar {
+            position: fixed !important;
+            left: 0 !important;
+            top: 70px !important;
+            bottom: 0 !important;
+            width: 250px !important;
+            z-index: 999 !important;
+            background: white !important;
+            border-right: 1px solid #e2e8f0 !important;
+            overflow-y: auto !important;
+        }
+        
+        .main-content {
+            margin-left: 250px !important;
+            margin-top: 70px !important;
+            padding: 20px !important;
+            min-height: calc(100vh - 70px) !important;
+            background-color: #f8f9fa !important;
+        }
+
+        /* Indicador da empresa selecionada */
+        .company-indicator {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            padding: 6px 12px !important;
+            margin-right: 15px !important;
+            font-size: 13px !important;
+            color: white !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            max-width: 200px !important;
+            overflow: hidden !important;
+        }
+
+        .company-indicator .company-name {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        .company-indicator.multiple {
+            cursor: pointer !important;
+        }
+
+        .company-indicator.multiple:hover {
+            background: rgba(255, 255, 255, 0.25) !important;
+        }
+
+        /* Layout dos cards */
+        .summary-section {
+            margin-bottom: 30px !important;
+        }
+
+        .summary-section .cards-container {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+            gap: 20px !important;
+            margin-bottom: 0 !important;
+        }
+
+        .summary-section .card {
+            background: white !important;
+            border-radius: 12px !important;
+            padding: 24px !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e5e7eb !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+        }
+
+        .summary-section .card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .card-icon {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 24px !important;
+            flex-shrink: 0 !important;
+        }
+
+        .card-icon.success {
+            background: #10b981 !important;
+            color: white !important;
+        }
+
+        .card-icon.danger {
+            background: #ef4444 !important;
+            color: white !important;
+        }
+
+        .card-icon.warning {
+            background: #f59e0b !important;
+            color: white !important;
+        }
+
+        .card-icon.primary {
+            background: #667eea !important;
+            color: white !important;
+        }
+
+        .card-content {
+            flex: 1 !important;
+        }
+
+        .card-content h3 {
+            margin: 0 0 8px 0 !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            color: #6b7280 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .card-value {
+            margin: 0 0 4px 0 !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            color: #1f2937 !important;
+            line-height: 1.2 !important;
+        }
+
+        .card-value.success {
+            color: #10b981 !important;
+        }
+
+        .card-value.danger {
+            color: #ef4444 !important;
+        }
+
+        .card-value.warning {
+            color: #f59e0b !important;
+        }
+
+        .card-change {
+            font-size: 12px !important;
+            font-weight: 500 !important;
+        }
+
+        .card-change.positive {
+            color: #10b981 !important;
+        }
+
+        .card-change.negative {
+            color: #ef4444 !important;
+        }
+
+        .card-count {
+            font-size: 12px !important;
+            color: #6b7280 !important;
+        }
+
+        /* Seções de gráficos */
+        .charts-section {
+            margin: 30px 0 !important;
+        }
+
+        .charts-container {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)) !important;
+            gap: 20px !important;
+            margin-bottom: 20px !important;
+        }
+
+        .chart-card {
+            background: white !important;
+            border-radius: 12px !important;
+            padding: 24px !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e5e7eb !important;
+        }
+
+        .chart-card h3 {
+            margin: 0 0 20px 0 !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        .chart-card canvas {
+            max-height: 300px !important;
+            width: 100% !important;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s ease !important;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0) !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                padding: 80px 15px 15px 15px !important;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr !important;
+            }
+
+            .chart-card {
+                padding: 16px !important;
+            }
+
+            .company-indicator {
+                max-width: 120px !important;
+                margin-right: 8px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 90px 10px 10px 10px !important;
+            }
+
+            .summary-section .cards-container {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+
+            .summary-section .card {
+                padding: 16px !important;
+                flex-direction: column !important;
+                text-align: center !important;
+                gap: 12px !important;
+            }
+
+            .card-icon {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 20px !important;
+            }
+
+            .card-value {
+                font-size: 24px !important;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
     <header class="header">
         <div class="header-left">
+            <button id="sidebar-toggle" class="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1 class="app-name">Sistema Financeiro</h1>
         </div>
+        
+        <div class="header-center">
+            <!-- Indicador da empresa selecionada -->
+            <div id="company-indicator" class="company-indicator hidden">
+                <i class="fas fa-building"></i>
+                <span class="company-name" id="selected-company-name">Nenhuma empresa</span>
+            </div>
+        </div>
+        
         <div class="header-right">
-            <button class="btn-notification" aria-label="Notificações">
-                <i class="fas fa-bell"></i>
-                <span class="badge" id="notification-count">0</span>
-            </button>
-            <div class="profile-menu">
-                <button id="profile-btn" aria-label="Menu de perfil">
-                    <i class="fas fa-user-circle fa-lg"></i>
+            <!-- Container de Notificações -->
+            <div class="notification-container">
+                <button id="notification-btn" class="btn-notification">
+                    <i class="fas fa-bell"></i>
+                    <span id="notification-badge" class="notification-badge hidden">0</span>
                 </button>
-                <div id="profile-dropdown" class="dropdown hidden">
-                    <a href="configuracoes.html">Configurações</a>
-                    <button id="logout-btn">Sair</button>
+                <div id="notification-dropdown" class="notification-dropdown hidden">
+                    <!-- Conteúdo será preenchido pelo JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Menu do Perfil -->
+            <div class="profile-menu">
+                <button id="profile-btn" class="profile-btn">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name">Usuário</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div id="profile-dropdown" class="profile-dropdown hidden">
+                    <a href="perfil.html">
+                        <i class="fas fa-user"></i> Meu Perfil
+                    </a>
+                    <a href="configuracoes.html">
+                        <i class="fas fa-cog"></i> Configurações
+                    </a>
+                    <hr>
+                    <button id="logout-btn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <aside class="sidebar">
-        <nav>
-            <ul>
-                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="listar-cheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
-                <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
-                <li><a href="relatorio.html" class="active"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-                <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
-                <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
-            </ul>
-        </nav>
-    </aside>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <ul>
+            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="listarCheques.html"><i class="fas fa-file-invoice-dollar"></i> Cheques</a></li>
+            <li><a href="empresas.html"><i class="fas fa-building"></i> Empresas</a></li>
+            <li><a href="relatorio.html" class="active"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+            <li><a href="agenda.html"><i class="fas fa-calendar-alt"></i> Agenda</a></li>
+            <li><a href="suporte.html"><i class="fas fa-headset"></i> Suporte</a></li>
+        </ul>
+    </nav>
 
+    <!-- Main Content -->
     <main class="main-content">
         <section class="page-header">
             <h2><i class="fas fa-chart-bar"></i> Relatórios Financeiros</h2>
             <div class="header-actions">
-                <button class="btn-secondary" id="export-btn">
+                <button class="btn btn-secondary" id="export-btn">
                     <i class="fas fa-download"></i> Exportar
                 </button>
-                <button class="btn-primary" id="refresh-btn">
+                <button class="btn btn-primary" id="refresh-btn">
                     <i class="fas fa-sync-alt"></i> Atualizar
                 </button>
             </div>
@@ -96,7 +401,7 @@
                     </select>
                 </div>
 
-                <button class="btn-primary" id="aplicar-filtros">
+                <button class="btn btn-primary" id="aplicar-filtros">
                     <i class="fas fa-filter"></i> Aplicar
                 </button>
             </div>
@@ -106,7 +411,7 @@
         <section class="summary-section">
             <div class="cards-container">
                 <div class="card">
-                    <div class="card-icon">
+                    <div class="card-icon primary">
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <div class="card-content">
@@ -183,10 +488,10 @@
             <div class="table-header">
                 <h3><i class="fas fa-table"></i> Relatório Detalhado</h3>
                 <div class="table-actions">
-                    <button class="btn-secondary" id="export-table">
+                    <button class="btn btn-secondary" id="export-table">
                         <i class="fas fa-file-excel"></i> Excel
                     </button>
-                    <button class="btn-secondary" id="export-pdf">
+                    <button class="btn btn-secondary" id="export-pdf">
                         <i class="fas fa-file-pdf"></i> PDF
                     </button>
                 </div>
