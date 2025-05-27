@@ -9,7 +9,7 @@ import {
   obterEmpresaAtiva,
   getCurrentUser
 } from './firebase-config.js';
-import { where, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Configurações de notificação
 const NOTIFICATION_TYPES = {
