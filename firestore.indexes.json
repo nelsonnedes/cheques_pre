@@ -47,6 +47,20 @@
       ]
     },
     {
+      "collectionGroup": "cheques",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "empresaId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "vencimento",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "empresas",
       "queryScope": "COLLECTION",
       "fields": [
