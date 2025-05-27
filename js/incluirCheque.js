@@ -295,6 +295,10 @@ function setupEventListeners() {
   if (vencimentoInput) {
     vencimentoInput.addEventListener('blur', validateVencimento);
   }
+  if (dataEmissaoInput) {
+    dataEmissaoInput.addEventListener('blur', validateDataEmissao);
+    dataEmissaoInput.addEventListener('change', validateVencimento); // Re-validar vencimento quando emissão mudar
+  }
   
   // Tipo de operação (se existir)
   tipoOperacaoInputs.forEach(input => {
@@ -551,14 +555,19 @@ function validateForm() {
     isValid = false;
   }
   
-  // Validar data de vencimento
-  if (vencimentoInput.value) {
+  // Validar data de emissão
+  if (!dataEmissaoInput.value) {
+    showFieldError(dataEmissaoInput, 'Data de emissão é obrigatória');
+    isValid = false;
+  }
+  
+  // Validar relação entre datas se ambas estiverem preenchidas
+  if (dataEmissaoInput.value && vencimentoInput.value) {
+    const dataEmissao = new Date(dataEmissaoInput.value);
     const vencimento = new Date(vencimentoInput.value);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
     
-    if (vencimento < hoje) {
-      showFieldError(vencimentoInput, 'Data de vencimento não pode ser anterior a hoje');
+    if (dataEmissao > vencimento) {
+      showFieldError(dataEmissaoInput, 'Data de emissão não pode ser posterior à data de vencimento');
       isValid = false;
     }
   }
@@ -611,15 +620,40 @@ function validateVencimento() {
   }
   
   const vencimento = new Date(vencimentoInput.value);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
   
-  if (vencimento < hoje) {
-    showFieldError(vencimentoInput, 'Data de vencimento não pode ser anterior a hoje');
-    return false;
+  // Verificar se a data de emissão foi preenchida
+  if (dataEmissaoInput.value) {
+    const dataEmissao = new Date(dataEmissaoInput.value);
+    
+    // A data de vencimento não pode ser menor que a data de emissão
+    if (vencimento < dataEmissao) {
+      showFieldError(vencimentoInput, 'Data de vencimento não pode ser anterior à data de emissão');
+      return false;
+    }
   }
   
   clearFieldError(vencimentoInput);
+  return true;
+}
+
+function validateDataEmissao() {
+  if (!dataEmissaoInput.value) {
+    showFieldError(dataEmissaoInput, 'Data de emissão é obrigatória');
+    return false;
+  }
+  
+  // Se a data de vencimento estiver preenchida, validar se a emissão não é posterior
+  if (vencimentoInput.value) {
+    const dataEmissao = new Date(dataEmissaoInput.value);
+    const vencimento = new Date(vencimentoInput.value);
+    
+    if (dataEmissao > vencimento) {
+      showFieldError(dataEmissaoInput, 'Data de emissão não pode ser posterior à data de vencimento');
+      return false;
+    }
+  }
+  
+  clearFieldError(dataEmissaoInput);
   return true;
 }
 
