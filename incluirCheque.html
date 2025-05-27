@@ -283,6 +283,218 @@
       padding-left: 40px !important;
       text-align: right !important;
     }
+
+    /* Estilos para o cabeçalho da página */
+    .page-header {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: flex-end !important;
+      margin-bottom: 30px !important;
+      padding-bottom: 20px !important;
+      border-bottom: 1px solid #e5e7eb !important;
+    }
+
+    .page-header-left h1 {
+      margin: 8px 0 0 0 !important;
+      font-size: 28px !important;
+      font-weight: 700 !important;
+      color: #1f2937 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+
+    .breadcrumb {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-bottom: 8px !important;
+      font-size: 14px !important;
+      color: #6b7280 !important;
+    }
+
+    .breadcrumb a {
+      color: #667eea !important;
+      text-decoration: none !important;
+      transition: color 0.2s ease !important;
+    }
+
+    .breadcrumb a:hover {
+      color: #5a67d8 !important;
+    }
+
+    .breadcrumb span:not(#breadcrumb-title) {
+      color: #d1d5db !important;
+    }
+
+    .empresa-info {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      padding: 8px 16px !important;
+      background: rgba(102, 126, 234, 0.1) !important;
+      border-radius: 8px !important;
+      font-size: 14px !important;
+      margin-right: 16px !important;
+    }
+
+    .empresa-label {
+      font-weight: 500 !important;
+      color: #374151 !important;
+    }
+
+    .empresa-ativa {
+      font-weight: 600 !important;
+      color: #667eea !important;
+    }
+
+    .taxa-info {
+      color: #6b7280 !important;
+      font-size: 13px !important;
+    }
+
+    #taxa-empresa-display {
+      font-weight: 600 !important;
+      color: #059669 !important;
+    }
+
+    /* Responsividade do cabeçalho */
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+      }
+
+      .page-header-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+      }
+
+      .empresa-info {
+        margin-right: 0 !important;
+        flex: 1 !important;
+      }
+    }
+
+    /* Estilos para radio buttons */
+    .radio-group {
+      display: flex !important;
+      gap: 20px !important;
+      margin-top: 8px !important;
+    }
+
+    .radio-label {
+      display: flex !important;
+      align-items: center !important;
+      cursor: pointer !important;
+      padding: 12px 16px !important;
+      border: 2px solid #e5e7eb !important;
+      border-radius: 8px !important;
+      transition: all 0.3s ease !important;
+      background: white !important;
+      flex: 1 !important;
+    }
+
+    .radio-label:hover {
+      border-color: #667eea !important;
+      background: #f8faff !important;
+    }
+
+    .radio-label input[type="radio"] {
+      margin-right: 12px !important;
+      width: 18px !important;
+      height: 18px !important;
+      accent-color: #667eea !important;
+    }
+
+    .radio-label input[type="radio"]:checked + .radio-text {
+      color: #667eea !important;
+      font-weight: 600 !important;
+    }
+
+    .radio-label:has(input[type="radio"]:checked) {
+      border-color: #667eea !important;
+      background: #f0f4ff !important;
+    }
+
+    .radio-text {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      font-size: 14px !important;
+      color: #374151 !important;
+    }
+
+    .text-green {
+      color: #059669 !important;
+    }
+
+    .text-red {
+      color: #dc2626 !important;
+    }
+
+    /* Seções do formulário */
+    .form-section {
+      margin-bottom: 32px !important;
+      padding: 24px !important;
+      background: white !important;
+      border-radius: 12px !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      border: 1px solid #e5e7eb !important;
+    }
+
+    .form-section h2 {
+      margin: 0 0 20px 0 !important;
+      font-size: 18px !important;
+      font-weight: 600 !important;
+      color: #1f2937 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding-bottom: 12px !important;
+      border-bottom: 2px solid #f3f4f6 !important;
+    }
+
+    .form-row {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+      gap: 20px !important;
+      margin-bottom: 20px !important;
+    }
+
+    .form-row:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1 !important;
+    }
+
+    /* Ações do formulário */
+    .form-actions {
+      display: flex !important;
+      gap: 16px !important;
+      justify-content: flex-end !important;
+      padding-top: 24px !important;
+      border-top: 1px solid #e5e7eb !important;
+      margin-top: 32px !important;
+    }
+
+    /* Responsividade móvel para ações */
+    @media (max-width: 640px) {
+      .form-actions {
+        flex-direction: column-reverse !important;
+      }
+
+      .radio-group {
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -348,10 +560,29 @@
 
   <main class="main-content">
     <div class="page-header">
-      <h1>Incluir Novo Cheque</h1>
-      <a href="listarCheques.html" class="btn btn-outline">
-        <i class="fas fa-arrow-left"></i> Voltar
-      </a>
+      <div class="page-header-left">
+        <nav class="breadcrumb">
+          <a href="dashboard.html">Dashboard</a>
+          <span>/</span>
+          <a href="listarCheques.html">Cheques</a>
+          <span>/</span>
+          <span id="breadcrumb-title">Incluir Cheque</span>
+        </nav>
+        <h1 id="form-title"><i class="fas fa-plus"></i> Incluir Novo Cheque</h1>
+      </div>
+      <div class="page-header-right">
+        <!-- Indicador da empresa ativa -->
+        <div class="empresa-info">
+          <span class="empresa-label">Empresa:</span>
+          <span id="empresa-ativa-display" class="empresa-ativa">Carregando...</span>
+          <span class="taxa-info">
+            Taxa: <span id="taxa-empresa-display">0%</span>
+          </span>
+        </div>
+        <a href="listarCheques.html" class="btn btn-outline">
+          <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+      </div>
     </div>
 
     <div class="form-container">
@@ -470,6 +701,44 @@
               </select>
             </div>
           </div>
+
+          <!-- Tipo de Operação -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de Operação *</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="tipoOperacao" value="receber" checked>
+                  <span class="radio-text">
+                    <i class="fas fa-arrow-up text-green"></i>
+                    A Receber
+                  </span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="tipoOperacao" value="pagar">
+                  <span class="radio-text">
+                    <i class="fas fa-arrow-down text-red"></i>
+                    A Pagar
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Taxa de Juros e Carência -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="taxa-juros">Taxa de Juros (% ao mês)</label>
+              <input type="number" id="taxa-juros" name="taxaJuros" step="0.01" min="0" max="100" placeholder="2.00" />
+              <small class="field-help">Taxa aplicada em caso de atraso</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="carencia">Carência (dias)</label>
+              <input type="number" id="carencia" name="carencia" min="0" max="365" value="0" placeholder="0" />
+              <small class="field-help">Dias de carência antes da cobrança de juros</small>
+            </div>
+          </div>
         </div>
 
         <!-- Dados Adicionais -->
@@ -533,6 +802,9 @@
         <div class="form-actions">
           <button type="button" id="cancel-btn" class="btn btn-outline">
             <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="button" id="delete-btn" class="btn btn-danger hidden">
+            <i class="fas fa-trash"></i> Excluir Cheque
           </button>
           <button type="button" id="save-draft-btn" class="btn btn-secondary">
             <i class="fas fa-save"></i> Salvar Rascunho

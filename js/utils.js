@@ -440,6 +440,228 @@ export function getNextBusinessDay(date) {
   return nextDay;
 }
 
+// ===== FUNÇÕES DE UI =====
+
+/**
+ * Mostrar/ocultar loading overlay
+ */
+export function showLoading(message = 'Carregando...') {
+  let overlay = document.getElementById('loading-overlay');
+  
+  if (!overlay) {
+    // Criar overlay se não existir
+    overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.className = 'loading-overlay';
+    overlay.innerHTML = `
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-message">${message}</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // Adicionar estilos CSS se não existirem
+    if (!document.getElementById('loading-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'loading-styles';
+      styles.textContent = `
+        .loading-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+        }
+        .loading-overlay.hidden {
+          display: none;
+        }
+        .loading-content {
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          text-align: center;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #667eea;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 15px;
+        }
+        .loading-message {
+          margin: 0;
+          color: #333;
+          font-size: 14px;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+  } else {
+    // Atualizar mensagem se o overlay já existir
+    const messageElement = overlay.querySelector('.loading-message');
+    if (messageElement) {
+      messageElement.textContent = message;
+    }
+  }
+  
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Ocultar loading overlay
+ */
+export function hideLoading() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+}
+
+/**
+ * Mostrar toast notification
+ */
+export function showToast(message, type = 'info', duration = 3000) {
+  // Criar container de toasts se não existir
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    
+    // Adicionar estilos CSS se não existirem
+    if (!document.getElementById('toast-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'toast-styles';
+      styles.textContent = `
+        .toast-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 10000;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .toast {
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 16px;
+          min-width: 300px;
+          max-width: 400px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transform: translateX(100%);
+          opacity: 0;
+          transition: all 0.3s ease;
+          border-left: 4px solid;
+        }
+        .toast.show {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        .toast.toast-success {
+          border-left-color: #10b981;
+        }
+        .toast.toast-error {
+          border-left-color: #ef4444;
+        }
+        .toast.toast-warning {
+          border-left-color: #f59e0b;
+        }
+        .toast.toast-info {
+          border-left-color: #3b82f6;
+        }
+        .toast-content {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .toast-content i {
+          font-size: 18px;
+        }
+        .toast-success .toast-content i {
+          color: #10b981;
+        }
+        .toast-error .toast-content i {
+          color: #ef4444;
+        }
+        .toast-warning .toast-content i {
+          color: #f59e0b;
+        }
+        .toast-info .toast-content i {
+          color: #3b82f6;
+        }
+        .toast-content span {
+          flex: 1;
+          color: #374151;
+          font-size: 14px;
+        }
+        @media (max-width: 480px) {
+          .toast-container {
+            left: 20px;
+            right: 20px;
+            top: 80px;
+          }
+          .toast {
+            min-width: auto;
+            max-width: none;
+          }
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+  }
+  
+  // Criar toast
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  
+  const iconMap = {
+    success: 'fas fa-check-circle',
+    error: 'fas fa-exclamation-circle',
+    warning: 'fas fa-exclamation-triangle',
+    info: 'fas fa-info-circle'
+  };
+  
+  toast.innerHTML = `
+    <div class="toast-content">
+      <i class="${iconMap[type] || iconMap.info}"></i>
+      <span>${message}</span>
+    </div>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Mostrar toast
+  setTimeout(() => toast.classList.add('show'), 100);
+  
+  // Remover toast após duração especificada
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, duration);
+}
+
 // Exportar todas as funções como default
 export default {
   formatCurrency,
@@ -476,5 +698,8 @@ export default {
   generateRandomColor,
   getInitials,
   isWeekend,
-  getNextBusinessDay
+  getNextBusinessDay,
+  showLoading,
+  hideLoading,
+  showToast
 }; 

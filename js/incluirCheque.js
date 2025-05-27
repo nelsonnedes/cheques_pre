@@ -37,26 +37,26 @@ const emitenteInput = document.getElementById('emitente');
 const bancoInput = document.getElementById('banco');
 const agenciaInput = document.getElementById('agencia');
 const contaInput = document.getElementById('conta');
-const cpfCnpjInput = document.getElementById('cpf-cnpj');
+const cpfCnpjInput = document.getElementById('documento');
 const valorInput = document.getElementById('valor');
-const vencimentoInput = document.getElementById('vencimento');
-const dataEmissaoInput = document.getElementById('data-emissao');
+const vencimentoInput = document.getElementById('dataVencimento');
+const dataEmissaoInput = document.getElementById('dataEmissao');
 const tipoOperacaoInputs = document.querySelectorAll('input[name="tipoOperacao"]');
 const taxaJurosInput = document.getElementById('taxa-juros');
 const carenciaInput = document.getElementById('carencia');
-const imagemInput = document.getElementById('imagem-cheque');
+const imagemInput = document.getElementById('imagem');
 const observacoesInput = document.getElementById('observacoes');
 
 // Upload de imagem
 const uploadArea = document.getElementById('upload-area');
-const previewContainer = document.getElementById('preview-container');
-const previewImage = document.getElementById('preview-image');
+const previewContainer = document.getElementById('image-preview');
+const previewImage = document.getElementById('preview-img');
 const removeImageBtn = document.getElementById('remove-image');
 
 // Botões
-const btnSalvar = document.getElementById('btn-salvar');
-const btnCancelar = document.getElementById('btn-cancelar');
-const btnExcluir = document.getElementById('btn-excluir');
+const btnSalvar = document.getElementById('submit-btn');
+const btnCancelar = document.getElementById('cancel-btn');
+const btnExcluir = document.getElementById('delete-btn');
 
 // Variáveis globais
 let currentUser = null;
@@ -211,30 +211,42 @@ async function loadSelectedCompanies() {
     if (selectedCompanies.length === 1) {
       // Uma empresa selecionada - usar como empresa ativa
       empresaAtiva = selectedCompanies[0];
-      empresaDisplay.textContent = empresaAtiva.nome;
+      if (empresaDisplay) {
+        empresaDisplay.textContent = empresaAtiva.nome;
+      }
       
       // Exibir taxa padrão da empresa
       const taxaPadrao = empresaAtiva.taxaJuros || 0;
-      taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
-      taxaJurosInput.value = taxaPadrao;
+      if (taxaEmpresaDisplay) {
+        taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
+      }
+      if (taxaJurosInput) {
+        taxaJurosInput.value = taxaPadrao;
+      }
       
     } else {
       // Múltiplas empresas - mostrar seletor
-      empresaSelectorGroup.style.display = 'block';
-      empresaDisplay.textContent = `${selectedCompanies.length} empresas selecionadas`;
+      if (empresaSelectorGroup) {
+        empresaSelectorGroup.style.display = 'block';
+      }
+      if (empresaDisplay) {
+        empresaDisplay.textContent = `${selectedCompanies.length} empresas selecionadas`;
+      }
       
       // Preencher select com empresas
-      empresaSelecionadaSelect.innerHTML = '<option value="">Selecione a empresa</option>';
-      selectedCompanies.forEach(empresa => {
-        const option = document.createElement('option');
-        option.value = empresa.id;
-        option.textContent = empresa.nome;
-        option.dataset.taxaJuros = empresa.taxaJuros || 0;
-        empresaSelecionadaSelect.appendChild(option);
-      });
-      
-      // Event listener para mudança de empresa
-      empresaSelecionadaSelect.addEventListener('change', handleEmpresaChange);
+      if (empresaSelecionadaSelect) {
+        empresaSelecionadaSelect.innerHTML = '<option value="">Selecione a empresa</option>';
+        selectedCompanies.forEach(empresa => {
+          const option = document.createElement('option');
+          option.value = empresa.id;
+          option.textContent = empresa.nome;
+          option.dataset.taxaJuros = empresa.taxaJuros || 0;
+          empresaSelecionadaSelect.appendChild(option);
+        });
+        
+        // Event listener para mudança de empresa
+        empresaSelecionadaSelect.addEventListener('change', handleEmpresaChange);
+      }
     }
     
   } catch (error) {
@@ -246,26 +258,45 @@ async function loadSelectedCompanies() {
 // Configurar event listeners
 function setupEventListeners() {
   // Formulário
-  form.addEventListener('submit', handleSubmit);
+  if (form) {
+    form.addEventListener('submit', handleSubmit);
+  }
   
   // Botões
-  btnCancelar.addEventListener('click', handleCancel);
-  btnExcluir.addEventListener('click', handleDelete);
+  if (btnCancelar) {
+    btnCancelar.addEventListener('click', handleCancel);
+  }
+  if (btnExcluir) {
+    btnExcluir.addEventListener('click', handleDelete);
+  }
   
   // Upload de imagem
-  uploadArea.addEventListener('click', () => imagemInput.click());
-  uploadArea.addEventListener('dragover', handleDragOver);
-  uploadArea.addEventListener('drop', handleDrop);
-  imagemInput.addEventListener('change', handleImageSelect);
-  removeImageBtn.addEventListener('click', removeImage);
+  if (uploadArea && imagemInput) {
+    uploadArea.addEventListener('click', () => imagemInput.click());
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('drop', handleDrop);
+    imagemInput.addEventListener('change', handleImageSelect);
+  }
+  
+  if (removeImageBtn) {
+    removeImageBtn.addEventListener('click', removeImage);
+  }
   
   // Validação em tempo real
-  numeroInput.addEventListener('blur', validateNumero);
-  emitenteInput.addEventListener('blur', validateEmitente);
-  valorInput.addEventListener('blur', validateValor);
-  vencimentoInput.addEventListener('blur', validateVencimento);
+  if (numeroInput) {
+    numeroInput.addEventListener('blur', validateNumero);
+  }
+  if (emitenteInput) {
+    emitenteInput.addEventListener('blur', validateEmitente);
+  }
+  if (valorInput) {
+    valorInput.addEventListener('blur', validateValor);
+  }
+  if (vencimentoInput) {
+    vencimentoInput.addEventListener('blur', validateVencimento);
+  }
   
-  // Tipo de operação
+  // Tipo de operação (se existir)
   tipoOperacaoInputs.forEach(input => {
     input.addEventListener('change', handleTipoOperacaoChange);
   });
@@ -777,12 +808,20 @@ function handleEmpresaChange() {
     
     if (empresaAtiva) {
       const taxaPadrao = empresaAtiva.taxaJuros || 0;
-      taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
-      taxaJurosInput.value = taxaPadrao;
+      if (taxaEmpresaDisplay) {
+        taxaEmpresaDisplay.textContent = `${taxaPadrao}%`;
+      }
+      if (taxaJurosInput) {
+        taxaJurosInput.value = taxaPadrao;
+      }
     }
   } else {
     empresaAtiva = null;
-    taxaEmpresaDisplay.textContent = '0%';
-    taxaJurosInput.value = '';
+    if (taxaEmpresaDisplay) {
+      taxaEmpresaDisplay.textContent = '0%';
+    }
+    if (taxaJurosInput) {
+      taxaJurosInput.value = '';
+    }
   }
 } 

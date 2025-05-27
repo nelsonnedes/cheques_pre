@@ -84,6 +84,136 @@ export const TIPO_OPERACAO = {
   PAGAR: 'pagar'
 };
 
+// Empresa ativa (configuração global)
+let activeCompany = null;
+
+// ===== FUNÇÕES UTILITÁRIAS =====
+
+/**
+ * Buscar documentos com filtros
+ */
+export async function buscarDocumentos(collectionName, filtros = []) {
+  try {
+    const collectionRef = collection(db, collectionName);
+    
+    let q;
+    if (filtros.length > 0) {
+      q = query(collectionRef, ...filtros);
+    } else {
+      q = collectionRef;
+    }
+    
+    const snapshot = await getDocs(q);
+    const docs = [];
+    
+    snapshot.forEach((doc) => {
+      docs.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return {
+      success: true,
+      data: docs,
+      count: docs.length
+    };
+  } catch (error) {
+    console.error('Erro ao buscar documentos:', error);
+    return {
+      success: false,
+      error: error.message,
+      data: [],
+      count: 0
+    };
+  }
+}
+
+/**
+ * Funções de formatação
+ */
+export function formatarMoeda(valor) {
+  if (!valor && valor !== 0) return 'R$ 0,00';
+  
+  const numValue = typeof valor === 'string' ? 
+    parseFloat(valor.replace(/[^\d,-]/g, '').replace(',', '.')) : valor;
+  
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(numValue || 0);
+}
+
+export function formatarData(data, formato = 'dd/MM/yyyy') {
+  if (!data) return '';
+  
+  const d = data instanceof Date ? data : 
+           data.toDate ? data.toDate() : 
+           new Date(data);
+  
+  if (isNaN(d.getTime())) return '';
+  
+  const dia = String(d.getDate()).padStart(2, '0');
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const ano = d.getFullYear();
+  
+  switch (formato) {
+    case 'dd/MM/yyyy':
+      return `${dia}/${mes}/${ano}`;
+    case 'yyyy-MM-dd':
+      return `${ano}-${mes}-${dia}`;
+    case 'MM/yyyy':
+      return `${mes}/${ano}`;
+    default:
+      return d.toLocaleDateString('pt-BR');
+  }
+}
+
+/**
+ * Gerenciar empresa ativa
+ */
+export function obterEmpresaAtiva() {
+  if (activeCompany) {
+    return activeCompany;
+  }
+  
+  // Tentar obter do localStorage
+  const empresaSelecionada = localStorage.getItem('empresaAtiva');
+  if (empresaSelecionada) {
+    try {
+      activeCompany = JSON.parse(empresaSelecionada);
+      return activeCompany;
+    } catch (error) {
+      console.warn('Erro ao parsear empresa ativa do localStorage:', error);
+    }
+  }
+  
+  // Tentar obter das empresas selecionadas
+  const selectedCompanies = localStorage.getItem('selectedCompanies');
+  if (selectedCompanies) {
+    try {
+      const companies = JSON.parse(selectedCompanies);
+      if (companies.length === 1) {
+        activeCompany = companies[0];
+        return activeCompany;
+      }
+    } catch (error) {
+      console.warn('Erro ao parsear empresas selecionadas:', error);
+    }
+  }
+  
+  return null;
+}
+
+export function definirEmpresaAtiva(empresa) {
+  activeCompany = empresa;
+  if (empresa) {
+    localStorage.setItem('empresaAtiva', JSON.stringify(empresa));
+  } else {
+    localStorage.removeItem('empresaAtiva');
+  }
+}
+
 // Funções de Autenticação
 export async function loginUsuario(email, password) {
   try {
@@ -127,46 +257,6 @@ export async function checkAuth() {
       resolve(user);
     });
   });
-}
-
-// Funções utilitárias
-export function formatarMoeda(valor) {
-  if (!valor && valor !== 0) return 'R$ 0,00';
-  
-  const numValue = typeof valor === 'string' ? 
-    parseFloat(valor.replace(/[^\d,-]/g, '').replace(',', '.')) : valor;
-  
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(numValue || 0);
-}
-
-export function formatarData(data) {
-  if (!data) return '';
-  
-  const d = data instanceof Date ? data : new Date(data);
-  if (isNaN(d.getTime())) return '';
-  
-  return d.toLocaleDateString('pt-BR');
-}
-
-export function obterEmpresaAtiva() {
-  try {
-    const empresa = localStorage.getItem('empresaAtiva');
-    return empresa ? JSON.parse(empresa) : null;
-  } catch (error) {
-    console.error('Erro ao obter empresa ativa:', error);
-    return null;
-  }
-}
-
-export function definirEmpresaAtiva(empresa) {
-  try {
-    localStorage.setItem('empresaAtiva', JSON.stringify(empresa));
-  } catch (error) {
-    console.error('Erro ao definir empresa ativa:', error);
-  }
 }
 
 export async function garantirUsuarioNoFirestore(user, empresaId = null) {
