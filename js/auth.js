@@ -110,7 +110,7 @@ async function handleLogout() {
     if (result.success) {
       showToast('Logout realizado com sucesso!', 'success');
       setTimeout(() => {
-        window.location.href = './login.html';
+        window.location.href = '/login.html';
       }, 1000);
     } else {
       showToast('Erro ao fazer logout: ' + result.error, 'error');
@@ -121,69 +121,6 @@ async function handleLogout() {
   } finally {
     hideLoading();
   }
-}
-
-// Sistema de controle de acesso baseado na seleção de empresas
-function checkCompanySelection() {
-  const selectedCompanies = JSON.parse(localStorage.getItem('selectedCompanies') || '[]');
-  const restrictedPages = ['dashboard.html', 'listarCheques.html', 'incluirCheque.html', 'relatorio.html', 'agenda.html'];
-  const currentPage = window.location.pathname.split('/').pop();
-  
-  // Não bloquear a página empresas.html - usuário deve poder cadastrar empresas mesmo sem seleção
-  if (currentPage === 'empresas.html') {
-    return true;
-  }
-  
-  // Se estiver em uma página restrita e não houver empresas selecionadas
-  if (restrictedPages.includes(currentPage) && selectedCompanies.length === 0) {
-    showToast('Você precisa selecionar pelo menos uma empresa para acessar esta funcionalidade', 'warning');
-    setTimeout(() => {
-      window.location.href = './empresas.html';
-    }, 2000);
-    return false;
-  }
-  
-  return true;
-}
-
-// Bloquear menus quando não há empresas selecionadas
-function updateMenuRestrictions() {
-  const selectedCompanies = JSON.parse(localStorage.getItem('selectedCompanies') || '[]');
-  const restrictedMenus = [
-    'dashboard.html',
-    'listarCheques.html', 
-    'incluirCheque.html',
-    'relatorio.html',
-    'agenda.html'
-  ];
-  
-  restrictedMenus.forEach(page => {
-    const menuItem = document.querySelector(`a[href="${page}"]`);
-    if (menuItem) {
-      if (selectedCompanies.length === 0) {
-        // Usar classes CSS ao invés de estilos inline
-        menuItem.classList.add('menu-restricted');
-        menuItem.title = 'Selecione uma empresa primeiro';
-        
-        // Adicionar ícone de bloqueio apenas se não existir
-        if (!menuItem.querySelector('.lock-icon')) {
-          const lockIcon = document.createElement('i');
-          lockIcon.className = 'fas fa-lock lock-icon';
-          menuItem.appendChild(lockIcon);
-        }
-      } else {
-        // Remover restrições
-        menuItem.classList.remove('menu-restricted');
-        menuItem.title = '';
-        
-        // Remover ícone de bloqueio
-        const lockIcon = menuItem.querySelector('.lock-icon');
-        if (lockIcon) {
-          lockIcon.remove();
-        }
-      }
-    }
-  });
 }
 
 // Configurar formulário de login
@@ -227,7 +164,7 @@ export function setupLoginForm() {
       if (result.success) {
         showToast('Login realizado com sucesso!', 'success');
         setTimeout(() => {
-          window.location.href = './empresas.html';
+          window.location.href = '/empresas.html';
         }, 1000);
       } else {
         showToast('Erro no login: ' + getFirebaseErrorMessage(result.error), 'error');
@@ -261,18 +198,6 @@ function getFirebaseErrorMessage(error) {
 // Configurar interface do usuário
 function setupUserInterface() {
   setupProfileDropdown();
-  
-  // Verificar seleção de empresas
-  checkCompanySelection();
-  
-  // Só aplicar restrições de menu se não estiver na página empresas
-  const currentPage = window.location.pathname.split('/').pop();
-  if (currentPage !== 'empresas.html') {
-    updateMenuRestrictions();
-    
-    // Atualizar restrições quando localStorage muda
-    window.addEventListener('storage', updateMenuRestrictions);
-  }
   
   // Configurar notificações
   const notificationBtn = document.querySelector('.btn-notification');
@@ -318,7 +243,5 @@ export {
   showLoading,
   checkAuth,
   getCurrentUser,
-  onAuthChange,
-  checkCompanySelection,
-  updateMenuRestrictions
+  onAuthChange
 }; 

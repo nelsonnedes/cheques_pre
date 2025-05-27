@@ -12,7 +12,6 @@ import {
     onSnapshot 
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { updateMenuRestrictions } from './auth.js';
 
 /**
  * Manipulação da página de empresas: listagem, cadastro, seleção de empresa ativa.
@@ -25,10 +24,6 @@ class CompanyManager {
         this.selectedCompanies = new Set();
         this.currentUser = null;
         this.unsubscribe = null;
-        
-        // Carregar seleções salvas do localStorage
-        this.loadSelectedCompanies();
-        
         this.init();
     }
 
@@ -50,7 +45,7 @@ class CompanyManager {
             } else {
                 console.log('Usuário não logado, redirecionando...');
                 this.cleanup();
-                window.location.href = './login.html';
+                window.location.href = 'login.html';
             }
         });
     }
@@ -76,7 +71,7 @@ class CompanyManager {
                     this.showLoading(true);
                     await auth.signOut();
                     this.cleanup();
-                    window.location.href = './login.html';
+                    window.location.href = 'login.html';
                 } catch (error) {
                     console.error('Erro ao fazer logout:', error);
                     this.showToast('Erro ao fazer logout', 'error');
@@ -369,15 +364,11 @@ class CompanyManager {
     }
 
     toggleCompanySelection(companyId) {
-        console.log('Toggling company selection:', companyId);
         if (this.selectedCompanies.has(companyId)) {
             this.selectedCompanies.delete(companyId);
         } else {
             this.selectedCompanies.add(companyId);
         }
-        
-        // Salvar no localStorage
-        this.saveSelectedCompanies();
         
         this.updateCompanyCardSelection(companyId);
         this.updateSelectionInfo();
@@ -410,26 +401,16 @@ class CompanyManager {
     return;
   }
 
-        const selectedCompaniesData = Array.from(this.selectedCompanies).map(id => {
-            const company = this.companies.find(c => c.id === id);
-            return {
-                id: company.id,
-                name: company.nome,
-                cnpj: company.cnpj
-            };
-        });
-
-        // Salvar informações detalhadas das empresas selecionadas
-        localStorage.setItem('selectedCompaniesData', JSON.stringify(selectedCompaniesData));
+        const selectedCompaniesData = this.companies.filter(company => 
+            this.selectedCompanies.has(company.id)
+        );
         
-        // Atualizar restrições de menu
-        this.saveSelectedCompanies();
-
-        this.showToast(`${this.selectedCompanies.size} empresa(s) selecionada(s) com sucesso!`, 'success');
+        localStorage.setItem('selectedCompanies', JSON.stringify(selectedCompaniesData));
         
-        // Redirecionar para dashboard após aplicar seleção
+        this.showToast(`${this.selectedCompanies.size} empresa(s) selecionada(s)`, 'success');
+        
         setTimeout(() => {
-            window.location.href = './dashboard.html';
+            window.location.href = 'dashboard.html';
         }, 1500);
     }
 
@@ -484,24 +465,10 @@ class CompanyManager {
 
     async saveCompany() {
         try {
-            console.log('🔄 Iniciando salvamento de empresa...');
-            console.log('👤 Usuário atual:', this.currentUser);
-            
-            if (!this.currentUser) {
-                throw new Error('Usuário não está autenticado');
-            }
-            
             this.showLoading(true);
             
             const formData = new FormData(document.getElementById('company-form'));
             const companyId = document.getElementById('company-id')?.value || '';
-            
-            console.log('📝 Dados do formulário:', {
-                nome: formData.get('nome'),
-                cnpj: formData.get('cnpj'),
-                taxaJuros: formData.get('taxaJuros'),
-                descricao: formData.get('descricao')
-            });
             
             const companyData = {
                 nome: formData.get('nome')?.trim() || '',
@@ -512,51 +479,29 @@ class CompanyManager {
                 updatedAt: new Date()
             };
 
-            console.log('🏢 Dados da empresa processados:', companyData);
-
             // Validações
             const validation = this.validateCompanyData(companyData);
             if (validation.error) {
-                console.error('❌ Erro de validação:', validation.error);
                 throw new Error(validation.error);
             }
 
-            console.log('✅ Validação passou');
-
             if (companyId) {
-                console.log('✏️ Editando empresa existente:', companyId);
                 const companyRef = doc(db, 'empresas', companyId);
                 await updateDoc(companyRef, companyData);
                 this.showToast('Empresa atualizada com sucesso!', 'success');
-                console.log('✅ Empresa atualizada com sucesso');
   } else {
-                console.log('➕ Criando nova empresa...');
                 companyData.createdAt = new Date();
-                const docRef = await addDoc(collection(db, 'empresas'), companyData);
-                console.log('✅ Nova empresa criada com ID:', docRef.id);
+                await addDoc(collection(db, 'empresas'), companyData);
                 this.showToast('Empresa criada com sucesso!', 'success');
             }
 
             this.closeCompanyModal();
 
         } catch (error) {
-            console.error('❌ Erro detalhado ao salvar empresa:', error);
-            console.error('Stack trace:', error.stack);
-            
-            let errorMessage = 'Erro ao salvar empresa';
-            
-            if (error.code === 'permission-denied') {
-                errorMessage = 'Você não tem permissão para salvar empresas. Verifique sua autenticação.';
-            } else if (error.code === 'unauthenticated') {
-                errorMessage = 'Usuário não autenticado. Faça login novamente.';
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-            
-            this.showToast(errorMessage, 'error');
+            console.error('Erro ao salvar empresa:', error);
+            this.showToast(error.message || 'Erro ao salvar empresa', 'error');
         } finally {
             this.showLoading(false);
-            console.log('🔄 Salvamento finalizado');
         }
     }
 
@@ -725,37 +670,6 @@ class CompanyManager {
             info: 'info-circle'
         };
         return icons[type] || icons.info;
-    }
-
-    // Carregar empresas selecionadas do localStorage
-    loadSelectedCompanies() {
-        try {
-            const saved = localStorage.getItem('selectedCompanies');
-            if (saved) {
-                const selectedIds = JSON.parse(saved);
-                this.selectedCompanies = new Set(selectedIds);
-                console.log('Empresas selecionadas carregadas:', selectedIds);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar empresas selecionadas:', error);
-            this.selectedCompanies = new Set();
-        }
-    }
-
-    // Salvar empresas selecionadas no localStorage
-    saveSelectedCompanies() {
-        try {
-            const selectedArray = Array.from(this.selectedCompanies);
-            localStorage.setItem('selectedCompanies', JSON.stringify(selectedArray));
-            console.log('Empresas selecionadas salvas:', selectedArray);
-            
-            // Atualizar restrições de menu
-            if (typeof updateMenuRestrictions === 'function') {
-                updateMenuRestrictions();
-            }
-        } catch (error) {
-            console.error('Erro ao salvar empresas selecionadas:', error);
-        }
     }
 }
 

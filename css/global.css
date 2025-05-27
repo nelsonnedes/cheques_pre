@@ -489,18 +489,16 @@ body {
 }
 
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 280px;
-  height: 100vh;
+  grid-area: sidebar;
   background: white;
   border-right: 1px solid var(--gray-200);
   padding: 5rem 0 1rem 0;
+  position: fixed;
+  height: 100vh;
+  width: 280px;
   overflow-y: auto;
   box-shadow: var(--shadow-md);
-  z-index: 999;
-  transition: transform 0.3s ease;
+  z-index: 900;
 }
 
 .sidebar nav ul {
@@ -541,8 +539,9 @@ body {
 }
 
 .main-content {
-  margin-left: 280px;
+  grid-area: main;
   padding: 6rem 2rem 2rem 2rem;
+  margin-left: 280px;
   min-height: calc(100vh - 4rem);
   background: transparent;
   overflow-x: auto;
@@ -3484,43 +3483,44 @@ input:checked + .slider:before {
 /* Responsive Design */
 @media (max-width: 768px) {
   .profile-content {
-    flex-direction: column;
-    gap: 2rem;
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
-
+  
   .profile-sidebar {
     order: -1;
   }
-
+  
   .form-grid {
     grid-template-columns: 1fr;
   }
-
+  
   .profile-header {
-    flex-direction: column;
-    text-align: center;
+    padding: 20px;
   }
-
+  
   .profile-picture {
-    margin: 0 auto;
+    width: 100px;
+    height: 100px;
   }
-
+  
   .profile-info h1 {
-    font-size: 1.5rem;
+    font-size: 24px;
   }
-
+  
   .modal-content {
-    width: 95%;
-    max-width: none;
+    margin: 10px;
+    padding: 20px;
   }
-
+  
   .toast {
-    margin: 0 1rem;
+    min-width: auto;
+    margin: 0 10px;
   }
-
+  
   .toast-container {
-    right: 0;
-    left: 0;
+    left: 10px;
+    right: 10px;
   }
 }
 
@@ -3895,155 +3895,8 @@ input:checked + .slider:before {
   }
   
   .info-icon {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
   }
-}
-
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-
-  .header {
-    padding: 0 1rem;
-  }
-
-  .header-left {
-    flex: 1;
-  }
-
-  .app-name {
-    font-size: 1.1rem;
-  }
-
-  .sidebar-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: none;
-    border: none;
-    color: var(--primary-700);
-    cursor: pointer;
-    border-radius: var(--radius-md);
-    transition: all 0.2s ease;
-  }
-
-  .sidebar-toggle:hover {
-    background: var(--primary-50);
-  }
-
-  .sidebar {
-    transform: translateX(-100%);
-    z-index: 1001;
-    padding-top: 2rem;
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .sidebar nav ul li a span {
-    display: inline;
-  }
-
-  .main-content {
-    margin-left: 0;
-    padding: 2rem 1rem;
-  }
-
-  .cards-container {
-    grid-template-columns: 1fr;
-  }
-
-  .card {
-    padding: 1rem;
-  }
-
-  .card-content h3 {
-    font-size: 0.9rem;
-  }
-
-  .card-value {
-    font-size: 1.5rem;
-  }
-
-  .dashboard-charts {
-    grid-template-columns: 1fr;
-  }
-
-  .table-container {
-    overflow-x: auto;
-  }
-
-  .table {
-    min-width: 600px;
-  }
-
-  .actions-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  .action-card {
-    padding: 1rem;
-  }
-
-  .action-card i {
-    font-size: 1.5rem;
-  }
-
-  .profile-menu button span {
-    display: none;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-}
-
-/* Estilos para menus restritos - sistema de autenticação */
-.nav-item.menu-restricted {
-  opacity: 0.5;
-  pointer-events: none;
-  position: relative;
-}
-
-.nav-item .lock-icon {
-  margin-left: auto;
-  color: #dc2626;
-  font-size: 0.9rem;
-}
-
-/* Tooltip para menus bloqueados */
-.nav-item.menu-restricted[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #1f2937;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 1000;
-  margin-left: 10px;
-}
-
-.nav-item.menu-restricted[title]:hover::before {
-  content: '';
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 5px solid transparent;
-  border-right-color: #1f2937;
-  margin-left: 5px;
-  z-index: 1000;
 }
